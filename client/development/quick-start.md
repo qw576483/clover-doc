@@ -39,7 +39,7 @@
 ```json
 {
   "dependencies": {
-    "com.clover.unity-engine": "https://github.com/qw576483/clover-full.git"
+    "com.clover.unity-engine": "https://github.com/qw576483/clover-client-unity-engine.git"
   }
 }
 ```
@@ -49,7 +49,7 @@
 ```json
 {
   "dependencies": {
-    "com.clover.unity-engine": "https://github.com/qw576483/clover-full.git#v1.0.0"
+    "com.clover.unity-engine": "https://github.com/qw576483/clover-client-unity-engine.git#v0.1.0"
   }
 }
 ```

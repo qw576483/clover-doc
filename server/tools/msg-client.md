@@ -6,7 +6,7 @@
 > **关于历史页面的说明**：文档里曾出现的 `clover-cli`、`msg-test-tcp`、`msg-test-ws`
 > 在本仓库中**都不存在**（`clover-server-tools/` 下只有 `msg-client`、`msg-web`、`table`、`mkcert`、`windows-env`）。
 > 它们已被 `msg-client` 取代（权限点更全：QUIC/TCP 双传输 + proto 自动解析 + 交互式 REPL + 账号服登录流程），
-> 相关页面已下线。本文以 [`clover-server-tools/msg-client/`](https://github.com/qw576483/clover-server-tools/blob/main/msg-client/.md) 源码为准。
+> 相关页面已下线。本文以 [`clover-server-tools/msg-client/`](https://github.com/qw576483/clover-server-tools/blob/main/msg-client/README.md) 源码为准。
 
 ## 能力
 

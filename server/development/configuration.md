@@ -268,7 +268,7 @@ log_backend_config:
   名字未知、工厂报错、或工厂返回 nil 都**启动即失败**——不静默降级，避免悄悄丢日志。
 - `log_backend_config`：原样交给后端工厂，结构由后端自己定义，引擎不解释。
 - 后端契约：`logstore.Backend`（`WriteBatch(source, entries) (int, error)` + `Close() error`），
-  真身见 [`clover-server-engine/pkg/foundation/logstore`](https://github.com/qw576483/clover-server-engine/blob/main/pkg/foundation/logstore.md)。
+  真身见 [`clover-server-engine/pkg/foundation/logstore`](https://github.com/qw576483/clover-server-engine/tree/main/pkg/foundation/logstore)。
 - 后端只需负责「把一批日志存下去」；**攒批、按片分发到多实例、失败重连**由引擎在 `logbuf` 侧完成。
 
 ### 跨机对象迁移（MMO 切场景）

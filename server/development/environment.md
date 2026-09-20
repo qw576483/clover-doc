@@ -295,18 +295,20 @@ data:
 
 ## 项目设置
 
-### 1. 克隆项目
+### 1. 获取引擎
+
+引擎是标准 Go module，**直接依赖即可，不需要克隆源码**：
 
 ```bash
-# 克隆引擎（monorepo 包含服务端、客户端、文档、工具）
-git clone https://github.com/qw576483/clover-full.git
-cd clover-full/clover-server-engine
+cd your-server
+go mod init your-server
+go get github.com/qw576483/clover-server-engine@latest
 
 # 安装依赖
 go mod tidy
 
 # 构建项目
-go build -o clover-server .
+go build -o server.exe .
 ```
 
 ### 2. 配置开发环境

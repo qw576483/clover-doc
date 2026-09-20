@@ -23,7 +23,7 @@
 
 ## 用哪个包写日志
 
-**业务日志统一使用 [`clover-server-engine/pkg/foundation/logger`](https://github.com/qw576483/clover-server-engine/blob/main/pkg/foundation/logger.md)。**
+**业务日志统一使用 [`clover-server-engine/pkg/foundation/logger`](https://github.com/qw576483/clover-server-engine/blob/main/pkg/foundation/logger/README.md)。**
 
 ```go
 import "github.com/qw576483/clover-server-engine/pkg/foundation/logger"

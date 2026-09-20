@@ -3,7 +3,7 @@
 `robot` 是 clover 的**机器人 / 自动化压测客户端**：批量登录、并发压测，产出一份可判定的量化报告。
 它同时是**给 AI / 脚本用的自动化入口** —— 输出可解析、退出码可判定、非交互不阻塞。
 
-位置：[`clover-server-tools/robot/`](https://github.com/qw576483/clover-server-tools/blob/main/robot/.md)。
+位置：[`clover-server-tools/robot/`](https://github.com/qw576483/clover-server-tools/blob/main/robot/README.md)。
 
 ## 它做什么 / 不做什么
 

@@ -142,5 +142,5 @@ Game.Event.On<EErrorReply>("Net.OnUnauthorized", e =>
 `auth_addr` **必填**：填账号服地址（如 `https://127.0.0.1:8051`）。
 账号服**默认要求 TLS**（服务端没配证书又没显式 `auth.insecure_plaintext` 时启动即失败），
 所以协议头通常是 `https://`；证书只走系统信任链（本地联调证书由
-[`clover-server-tools/mkcert`](https://github.com/qw576483/clover-server-tools/blob/main/mkcert.md) 签、根 CA 已入信任库）。
+[`clover-server-tools/mkcert`](https://github.com/qw576483/clover-server-tools/blob/main/mkcert/README.md) 签、根 CA 已入信任库）。
 留空即未配置，登录 / 注册会抛 `InvalidOperationException`。

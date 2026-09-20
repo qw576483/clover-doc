@@ -3,7 +3,7 @@
 `manager` 是 clover 集群的**命令行编排工具**：查看所有节点、查看节点状态、对节点下发运维指令、
 按顺序做滚动发布。它同时是**给 AI / 脚本用的自动化入口** —— 输出可解析、退出码可判定、非交互不阻塞。
 
-位置：[`clover-server-tools/manager/`](https://github.com/qw576483/clover-server-tools/blob/main/manager/.md)。
+位置：[`clover-server-tools/manager/`](https://github.com/qw576483/clover-server-tools/blob/main/manager/README.md)。
 
 ## 它做什么 / 不做什么
 

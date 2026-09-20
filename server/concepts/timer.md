@@ -1,6 +1,6 @@
 # 定时器 API
 
-Clover 服务端通过 `g.Timer` 提供进程内共享定时器。底层实现位于 [`clover-server-engine/pkg/runtime/timer`](https://github.com/qw576483/clover-server-engine/blob/main/pkg/runtime/timer.md)，由单个调度 goroutine 管理任务；任务函数在独立 goroutine 中执行，并由引擎安全封装，单个任务的 panic 不会中断调度器。
+Clover 服务端通过 `g.Timer` 提供进程内共享定时器。底层实现位于 [`clover-server-engine/pkg/runtime/timer`](https://github.com/qw576483/clover-server-engine/tree/main/pkg/runtime/timer)，由单个调度 goroutine 管理任务；任务函数在独立 goroutine 中执行，并由引擎安全封装，单个任务的 panic 不会中断调度器。
 
 ## 访问入口与生命周期
 

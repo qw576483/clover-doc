@@ -78,7 +78,7 @@ gateway:
 ```
 
 - 客户端只走**系统信任链**校验，引擎没有"跳过校验"的开关 → 生产用公共 CA 证书（Let's Encrypt 等），
-  别把自签证书发给玩家；本地开发用 [`clover-server-tools/mkcert`](https://github.com/qw576483/clover-server-tools/blob/main/mkcert.md)（根 CA 已入信任库）。
+  别把自签证书发给玩家；本地开发用 [`clover-server-tools/mkcert`](https://github.com/qw576483/clover-server-tools/blob/main/mkcert/README.md)（根 CA 已入信任库）。
 - TCP/WS 的 TLS 下限是 **1.2**（兼容只到 1.2 的原生 `SslStream`），QUIC/WT 仍是 1.3。
 - 显式设 `tcp_tls_disabled: true` 会保留明文 TCP 入口，启动日志会打一条告警——那是降级形态。
 

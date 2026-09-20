@@ -30,39 +30,39 @@ Game.Launch(config);
 CloverNet.Init("127.0.0.1:8002", "127.0.0.1:8003");
 ```
 
-> **注意：**   需要 Go 1.25+ 和 **Unity 6（6000.x）**。详见 [环境安装](server/install.md)。
+> **注意：** 需要 Go 1.25+ 和 **Unity 6（6000.x）**。详见 [环境安装](server/install.md)。
 
+### 获取引擎
 
-  ### 安装 Go 并克隆项目
+引擎是标准 Go module，**直接依赖即可，不需要克隆源码**：
 
-    ```bash
-    git clone https://github.com/qw576483/clover-full.git
-    ```
-  
-  ### 构建并启动服务端
+```bash
+mkdir your-server && cd your-server
+go mod init your-server
+go get github.com/qw576483/clover-server-engine@latest
+```
 
-    ```bash
-    cd clover/your-server
-    go build -o server.exe .
-    ./server.exe -config configs/all
-    ```
-  
-  ### Unity 导入客户端包
+### 构建并启动服务端
 
-    Package Manager → Add package from git URL → 输入仓库地址
-  
-  ### 连接并运行
+```bash
+go build -o server.exe .
+./server.exe -config configs/all
+```
 
-    网页端连接 `ws://localhost:8001`；原生客户端连 `127.0.0.1:8002`（TCP）。登录进游戏。
-  
+### Unity 导入客户端包
+
+Package Manager → Add package from git URL → 输入 `https://github.com/qw576483/clover-client-unity-engine.git`
+
+### 连接并运行
+
+网页端连接 `ws://localhost:8001`；原生客户端连 `127.0.0.1:8002`（TCP）。登录进游戏。
 
 ## 为什么选择 Clover？
 
-      NATS 事件总线 + 多进程协作，Gateway / Game / Master 三角色分离，水平扩展支撑万人同服。
-        读取 → 修改 → 返回，handler 返回即自动提交，无需手动 Save，消除遗忘持久化的 bug。
-        客户端 UPM 包内置状态同步，AOI 视野管理 + 帧同步房间，开箱即用。
-        打表工具、调试客户端、可视化测试、Windows 一键环境，开发体验拉满。
-  
+- NATS 事件总线 + 多进程协作，Gateway / Game / Master 三角色分离，水平扩展支撑万人同服。
+- 读取 → 修改 → 返回，handler 返回即自动提交，无需手动 Save，消除遗忘持久化的 bug。
+- 客户端 UPM 包内置状态同步，AOI 视野管理 + 帧同步房间，开箱即用。
+- 打表工具、调试客户端、可视化测试、Windows 一键环境，开发体验拉满。
 
 ## 浏览文档
 
@@ -80,4 +80,4 @@ CloverNet.Init("127.0.0.1:8002", "127.0.0.1:8003");
     Kubernetes 部署、监控告警、性能调优
   </Card>
 </Columns>
-  
+
