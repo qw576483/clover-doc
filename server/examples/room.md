@@ -37,13 +37,9 @@ type FrameRoomCreateReq struct {
 }
 
 type FrameRoomInputReq struct {
-    RoomID string           `json:"room_id"`
-    Input  FramePlayerInput `json:"input"`
-}
-
-type FramePlayerInput struct {
-    MoveX int `json:"move_x"`
-    MoveY int `json:"move_y"`
+    RoomID  string `json:"room_id"`
+    Frame   int64  `json:"frame"`   // 对齐 engframe.Input.Frame
+    Payload []byte `json:"payload"` // 对齐 engframe.Input.Payload
 }
 
 type FramePlayerState struct {
@@ -57,6 +53,7 @@ type FrameRoomReply struct {
     OK       bool   `json:"ok"`
     RoomID   string `json:"room_id,omitempty"`
     NodeAddr string `json:"node_addr,omitempty"`
+    Message  string `json:"message,omitempty"`
 }
 
 type FrameRoomSyncNotify struct {
@@ -82,7 +79,7 @@ import (
 var frameRoomDemo *frameRoomDemoLogic
 
 type frameRoomDemoLogic struct {
-    roomMod *room.Module
+    roomMod room.Module
     g       *app.Game
 }
 

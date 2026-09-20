@@ -170,7 +170,7 @@ var (
 
 ```go
 func levelUpHandler(c event.Ctx) error {
-    var p datadef.PlayerSchema
+    var p PlayerData // 业务结构体；datadef.PlayerSchema 是 data.StructSchema 变量，不是类型
     if err := g.LoadStruct(c, datadef.PlayerSchema, c.PlayerID(), &p); err != nil {
         return fmt.Errorf("加载角色失败: %w", err)
     }

@@ -34,7 +34,7 @@ TCP 流（QUIC / WebTransport 已实现）：
 [1B type][4B length][4B requestID][4B msgID][body]
 ```
 
-- `type`：传输层帧类型（`0`=数据、`1`=ping、`2`=pong、`3`=会话迁移）
+- `type`：传输层帧类型（`0`=数据、`1`=ping、`2`=pong；原 `3`=会话迁移已删除）
 - `length`：其后 `[requestID][msgID][body]` 的字节长度（不含 `type` 与自身）
 - `requestID`：请求配对 ID，0 表示推送
 - `msgID`：消息号（业务 C2S 从 1000101 起）

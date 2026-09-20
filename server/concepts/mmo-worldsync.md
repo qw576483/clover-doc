@@ -153,10 +153,8 @@ scene.SendTo(objID, msgID, body)
 
 | 方法 | 说明 |
 |------|------|
-| `scene.CreateInstance(id)` | 创建隔离实例 |
+| `scene.CreateInstance(id)` | 创建隔离实例（返回 `Instance` 门面） |
 | `scene.RemoveInstance(id)` | 删除实例 |
-| `scene.Instance(id)` | 获取实例 |
-| `scene.Instances()` | 获取所有实例 ID 列表 |
 
 ### 三维空间能力
 

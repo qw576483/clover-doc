@@ -5,11 +5,11 @@
 ## 前置条件
 
 - 已了解 [Clover 框架概述](/)
-- 已安装 **Unity 6（6000.x）**（引擎包可装在 `2022.3`+，但本仓库的开发与验证版本是 Unity 6）
+- 已安装 **Unity 6（6000.x）**（引擎包 `package.json` 声明 `unity: 6000.0`，开发与验证版本也是 Unity 6）
 
 ## 这篇文档讲什么？
 
-Clover 客户端引擎采用**能力域划分**的设计模式，将引擎功能划分为网络域、表现域、数据域和基础域四大能力域。每个能力域包含多个功能模块，通过 Game 门面统一对外提供服务。
+Clover 客户端引擎采用**能力域划分**的设计模式，将引擎功能划分为网络域、表现域、数据域、资源域和基础域五大能力域。每个能力域包含多个功能模块，通过 Game 门面统一对外提供服务。
 
 ## 与服务端的关系
 
@@ -137,8 +137,10 @@ Game.Dispatcher.Post(() => {
 | 模块 | 说明 | 核心功能 |
 |------|------|----------|
 | **DataTable** | 配表管理 | 读取/查询配置表，支持热重载 |
-| **Setting** | 设置管理 | 用户设置、游戏设置持久化 |
 | **Localization** | 多语言 | 本地化字符串、资源加载 |
+
+> **注意：** `Setting` 的实现是 `Runtime/Core/Setting.cs`，属**基础域**（`Game.Setting` 在 Core 的构造函数里创建，
+> 见 `Runtime/Core/Game.cs:384`；`Game.SettingDir` 配持久化目录）。
 
 ```csharp 示例：数据域模块使用
 // 配表查询
@@ -160,7 +162,7 @@ string greeting = Game.Localization.Get("ui.greeting");
 | 模块 | 说明 | 核心功能 |
 |------|------|----------|
 | **Network** | 网络通信 | TCP/UDP 双通道，自动重连，消息收发 |
-| **WorldSync** | 世界同步 | 状态同步，AOI 视野管理，增量同步 |
+| **WorldSync** | 世界同步 | 状态同步，消费服务端 AOI 结果，增量同步（客户端不建 AOI 网格） |
 | **WebRequest** | HTTP 请求 | RESTful API 调用，文件下载 |
 
 ```csharp 示例：网络域模块使用
@@ -213,7 +215,7 @@ com.clover.unity-engine/
 ├── Runtime/
 │   ├── Core/         Game / Event / Timer / Fsm / Dispatcher / Logger / Setting / Json / DeviceId
 │   ├── Data/         DataTable / Localization
-│   ├── Network/      Network / WebRequest / WorldSync / SchemaRegistry（Schema 声明表，**不承担数据订阅**；订阅走 WorldSync）
+│   ├── Network/      Network / WebRequest / WorldSync / SchemaRegistryManager（Schema 声明表，**不承担数据订阅**；订阅走 WorldSync）
 │   ├── Resource/     Resource（后端抽象 / Resources / AssetBundle / 清单热更）
 │   └── Presentation/ Scene / Entity / ObjectPool(GameObject) / UI / UIWidgets / SpriteAtlas
 │                     / Animation / Sound / Input / Camera / Quality

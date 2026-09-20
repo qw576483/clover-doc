@@ -17,11 +17,11 @@ Clover 客户端引擎是一套 Unity UPM 包，提供**能力域划分 + WorldS
 
 | 项 | 版本 | 说明 |
 |---|---|---|
-| 引擎包**声明**的最低兼容版本 | `2022.3` | [`clover-client-unity-engine/package.json`](https://github.com/qw576483/clover-client-unity-engine/blob/main/package.json) 的 `unity` 字段 |
+| 引擎包**声明**的最低兼容版本 | `6000.0` | [`clover-client-unity-engine/package.json`](https://github.com/qw576483/clover-client-unity-engine/blob/main/package.json) 的 `unity` 字段 |
 | 本仓库的**开发与验证**版本 | **Unity 6（6000.x）** | 承载工程实测 `6000.6.0f1`；AI 自动化操作（编译 / 测试 / 构建）强制走 Unity 6 |
 | 新建工程选哪个 | **Unity 6（6000.x）** | Unity 6 可直接打开并升级 2022.3 时代的包 |
 
-> **提示：**   一句话：**包能装在 2022.3+ 上，但请用 Unity 6 建工程** —— 否则本仓库的自动化校验会直接判不过（它要求 `ProjectSettings/ProjectVersion.txt` 的 `m_EditorVersion` 是 `6000.x`）。
+> **提示：**   一句话：**请用 Unity 6（6000.x）建工程** —— 包 `package.json` 的 `unity` 字段写的就是 `6000.0`，且本仓库的自动化校验会直接判不过非 Unity 6 工程（它要求 `ProjectSettings/ProjectVersion.txt` 的 `m_EditorVersion` 是 `6000.x`）。
 
 ## 快速体验
 
@@ -67,7 +67,7 @@ public class GameMain : MonoBehaviour
 
 - **能力域划分**：Network / Entity / WorldSync / Resource / UI 模块解耦
 - **TCP + UDP 双通道**：自动重连，消息收发
-- **WorldSync 状态同步**：AOI 视野管理，增量同步
+- **WorldSync 状态同步**：消费服务端 AOI 结果，增量同步（客户端不建 AOI 网格）
 - **Entity 与 View 解耦**：数据驱动表现，对象池复用
 
 ## 浏览文档

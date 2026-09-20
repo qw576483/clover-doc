@@ -136,7 +136,7 @@ TCP 流（**QUIC 已实现**：流分帧为 `[4B 大端长度][客户端帧]`、
 [0x55][4B requestID][4B msgID][body]
 ```
 
-- `type`：传输层帧类型（`0`=数据、`1`=ping、`2`=pong、`3`=会话迁移；见 `internal/transport/net/tcp/codec.go`）
+- `type`：传输层帧类型（`0`=数据、`1`=ping、`2`=pong；原 `3`=会话迁移已删除，收到类型 `3` 按未知帧类型处理；见 `internal/transport/net/tcp/codec.go`）
 - `length`：其后 `[requestID][msgID][body]` 的字节长度（不含 `type` 与自身），防粘包
 - `requestID` == 0 表示推送
 - 裸 UDP 首字节 0x55 魔数

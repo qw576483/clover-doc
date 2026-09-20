@@ -1,6 +1,6 @@
 
-> **注意：** 以下示例中 `g.OnConnect`、`g.OnDisconnect` 是引擎内部 API（`internal/app`），
-> 业务代码**不可直接调用**。此处仅展示引擎心跳与连接管理的实现逻辑供参考。
+> **注意：** `g.OnConnect`、`g.OnDisconnect` 定义在 `internal/app`，但业务拿到的 `pkg/app.Game`
+> 门面**内嵌**了它（`internal/app/facade.go:61`），所以业务代码**可以直接调用**（即下方示例写法）。
 
 引擎内置了心跳检测与会话恢复，**业务不需要实现心跳消息**。你只需订阅连接钩子（`OnConnect` / `OnDisconnect` 等）处理上线/下线逻辑。
 

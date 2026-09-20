@@ -4,7 +4,7 @@
 `msg-client` 是 clover 网关的**命令行调试客户端**：连上网关，交互式收发消息，用于联调登录与业务消息。
 
 > **关于历史页面的说明**：文档里曾出现的 `clover-cli`、`msg-test-tcp`、`msg-test-ws`
-> 在本仓库中**都不存在**（`clover-server-tools/` 下只有 `msg-client`、`msg-web`、`table`、`mkcert`、`windows-env`）。
+> 在本仓库中**都不存在**（`clover-server-tools/` 下现有 `gmt`、`manager`、`mkcert`、`msg-client`、`msg-web`、`robot`、`windows-env`；`table` 在 `clover-tools`）。
 > 它们已被 `msg-client` 取代（权限点更全：QUIC/TCP 双传输 + proto 自动解析 + 交互式 REPL + 账号服登录流程），
 > 相关页面已下线。本文以 [`clover-server-tools/msg-client/`](https://github.com/qw576483/clover-server-tools/blob/main/msg-client/README.md) 源码为准。
 
@@ -54,7 +54,7 @@ addr: "127.0.0.1:8003"                # 默认网关地址（QUIC/UDP；启动 -
 tcp_addr: "127.0.0.1:8002"            # QUIC 不可用时的 TCP 回退地址（两个端口不同）
                                       # 网关 TCP 口若走 TLS（tcp_tls_disabled=false，默认），
                                       # 本工具会在进程内首次连接时自动判定并复用（TLS 优先 → 明文回退）
-auth_addr: "https://127.0.0.1:8051"   # 账号服地址（必填；账号服默认要求 TLS，故写 https://）
+auth_addr: "http://127.0.0.1:8051"    # 账号服 HTTP 地址（必填；默认值即 http://127.0.0.1:8051）
 
 proto:
   business: []                        # 业务 proto 目录（相对配置文件），可多个

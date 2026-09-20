@@ -300,7 +300,8 @@ sm := mmo.NewSceneManager(
 
 > 注入后 `CreateScene` / `DestroyScene` 自动登记 / 注销路由，`Run` 期间自动续期
 > （TTL 30s，续期间隔 10s）；`TransferRemote` 会先查路由定位目标节点再**定向**投递。
-> 用 `mmo.NewModule(...)` 创建时等价写法是 `mmo.WithClusterTransfer(g.SceneRoute(), g.NodeID())`。
+> 上面两个选项（`WithClusterRoute` / `WithRemoteTransferSubscriber`）是 `pkg/domain/mmo` 暴露的全部接线入口；
+> `internal/domain/mmo` 的 `NewModule` / `WithClusterTransfer` **不对外暴露**，业务侧写不出来。
 
 ### Master 节点健康探测
 
@@ -660,6 +661,7 @@ auth:
 | 键 | 说明 | 引擎默认 |
 | --- | --- | --- |
 | `max_conns` | 连接总数上限（活跃会话数） | `0` 不限制 |
+| `max_conns_per_sec` | 每秒**新建连接数**上限（连接建立限流） | `0` 不限制 |
 | `queue_cap` | 等候队列容量；`>0` 启用排队（限流/满载时缓冲而非直接拒，并向客户端下发排队位置 `EMsgQueuePosition`） | `0` 不排队 |
 | `queue_release_per_sec` | 排队每秒放行数 | `0` 尽快放行 |
 | `queue_timeout` | 排队最长时间（超时关闭连接） | `0` 不限时 |
@@ -709,8 +711,9 @@ auth:
 | 子键 | 说明 | 默认 |
 | --- | --- | --- |
 | `jetstream.enable` | 游戏必须开启持久化，防消息丢失（需显式开启） | `false` |
-| `jetstream.storage_type` | `memory` / `file` | `file` |
-| `jetstream.max_msg_age` | 消息保留时长 | `72h` |
+
+> `jetstream` 目前**只有 `enable` 一个字段**：`storage_type` / `max_msg_age` 已从 `JetStreamConfig` 移除
+> （见 `internal/transport/nats/config.go:34`），配了也不生效。
 | `tls.cert_file` / `tls.key_file` / `tls.ca_file` | 客户端证书 / 私钥 / 验证服务端的 CA | 空=不启用 TLS |
 
 ### 其余顶层 / 小组

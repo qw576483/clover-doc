@@ -332,9 +332,11 @@ public class ErrorHandler : MonoBehaviour
             BackToLogin();
         });
 
-        // 需要按错误码分流更多分支时，直接监听统一错误回包。
-        // 注意：这类回包已被引擎按 requestID 配对并结束对应的 Call，
-        // 这里属于旁路观察（同一个错误在 Call 侧还会以 CloverCallException 抛出）。
+        // 需要按错误码分流更多分支时：用 Net.OnUnauthorized 事件，或接住 Call 抛出的
+        // CloverCallException。⚠️ **不要指望 `Game.OnMsg(EMsg.Error, ...)`**：
+        // 带 requestID 的错误回包在配对分支就被消费并 `return`
+        // （`Runtime/Network/NetworkManager.cs:1098-1112`），到不了 `_router.Dispatch`；
+        // `OnMsg` 只会收到「未配对 / 无 requestID 的错误帧」。
         Game.OnMsg(EMsg.Error, ctx =>
         {
             var error = ctx.Bind<EErrorReply>();

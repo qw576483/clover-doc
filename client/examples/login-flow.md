@@ -34,7 +34,7 @@ public class LoginFlow : MonoBehaviour
     public string serverAddr = "127.0.0.1:8002";   // 网关 TCP 口
     public string udpAddr = "127.0.0.1:8003";      // 网关 UDP 口，留空=不启用
     public bool useTls = true;                    // 与服务端 gateway.tcp_tls_disabled 相反
-    public string authAddr = "https://127.0.0.1:8051"; // 账号服地址（必填；账号服默认要求 TLS）
+    public string authAddr = "http://127.0.0.1:8051"; // 账号服地址（必填；与引擎样例 Samples~/LoginFlow 一致）
     public string account = "player1";
     public string password = "123456";
     public int line;

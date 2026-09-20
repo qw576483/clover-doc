@@ -141,7 +141,8 @@ func main() {
 
 ### 连接 Master
 
-Master 是**固定地址**直连（单点，不参与 etcd 服务发现）；逻辑服 / 账号服 / 日志服之间才走
+Master 在**单分片**（`master_shard.total=1`，默认）时用**固定地址**直连、不注册 etcd；启用多分片时按分片号注册到
+etcd 并可从分片表发现（`clover/services/master/<index>`，见 `internal/app/master_shard_discovery.go`）；逻辑服 / 账号服 / 日志服之间才走
 etcd 服务发现（见 `concepts/cluster.md`「服务发现」）。
 
 ```go

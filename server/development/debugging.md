@@ -448,7 +448,7 @@ logger.Error("处理请求失败",
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "${workspaceFolder}/cmd/server",
+            "program": "${workspaceFolder}",
             "args": ["-config", "configs/all/server.yaml"]
         },
         {

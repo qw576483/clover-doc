@@ -77,8 +77,9 @@ p.Bag().Set("items", itemIDs) // 推全量 items
 ### LRU 缓存
 
 ```go LRU 缓存示例
-// 引擎内置 LRU 缓存
-cache := NewLRUCache(1000) // 最多 1000 条
+// 引擎内置 LRU 缓存：pkg/shared/cache，泛型 + 选项式，容量用 WithMaxNum
+import enginecache "github.com/qw576483/clover-server-engine/pkg/shared/cache"
+cache := enginecache.New[string, any](enginecache.WithMaxNum(1000)) // 最多 1000 条
 
 // 读取：先查缓存，miss 再查 DB
 if v, ok := cache.Get(key); ok {

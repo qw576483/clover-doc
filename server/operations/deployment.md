@@ -140,7 +140,8 @@ gateway:
 ## 监控与日志
 
 - 日志输出到标准错误，由采集器收集
-- 健康检查接入 `/healthz` 路由（业务通过 `g.OnAdminHTTP` 注册）
+- 逻辑服**内置** `/healthz`（存活）与 `/ready`（就绪），仅在业务未注册同名路由时自动响应（`internal/transport/event/logic.go:573`）
+- admin 服务的探针是 `/ping` / `/routes` / `/metrics`（`internal/app/admin.go:106`），业务自定义探针经 `g.OnAdminHTTP` 注册
 - 关键指标：连接数、消息 QPS、定时任务数、Store flush 延迟、etcd/NATS 连接状态
 
 ## 高可用建议

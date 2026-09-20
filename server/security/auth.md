@@ -60,7 +60,7 @@ Clover 引擎的认证流程、Token 设计、会话管理和权限控制机制�
 | 字段 | 说明 |
 | --- | --- |
 | `sub` | 对象标识（owner），通常是账号名 |
-| `iss` | 签发者（`auth.issuer`，默认 `clover-auth`）；不参与验签，仅供排查 |
+| `iss` | 签发者（`auth.issuer`，默认 `clover-auth`）；**强制校验**——不匹配即 `valid=false`（`internal/domain/auth/state/state.go:257`） |
 | `exp` | 过期时间（Unix 秒）；`Verify` 强制校验，`0` 视为立即过期 |
 
 ### 自定义 Token

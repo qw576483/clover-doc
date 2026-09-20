@@ -73,10 +73,10 @@ Package Manager → Add package from git URL → 输入 `https://github.com/qw57
   <Card title="客户端" icon="gamepad" href="/client">
     Unity UPM 包集成、网络接入、WorldSync 世界同步
   </Card>
-  <Card title="核心概念" icon="lightbulb" href="/server/concepts">
+  <Card title="核心概念" icon="lightbulb" href="/server/concepts/app-game">
     进程模型、数据流、事件系统、协议设计
   </Card>
-  <Card title="部署运维" icon="server" href="/server/operations">
+  <Card title="部署运维" icon="server" href="/server/operations/deployment">
     Kubernetes 部署、监控告警、性能调优
   </Card>
 </Columns>

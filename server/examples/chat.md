@@ -87,14 +87,14 @@ func (l *serverLogic) onMsgSetAnnounce(c event.Ctx) error {
 `OwnerServer` 改动是数据驱动的自动广播；若需主动触发推送，用 `Game` 的推送方法：
 
 ```go
-// 全服广播（body 为已编码字节）
-l.g.PushToAll(def.PushDemoBroadcast, mustJSON(def.DemoBroadcastNotify{Content: "hi"}))
+// 全服广播：入参是"任意值"，内部自动 JSON 编码
+l.g.PushToAll(def.PushDemoBroadcast, def.DemoBroadcastNotify{Content: "hi"})
 
-// 单播给指定玩家（自动 JSON 编码）
+// 单播给指定玩家（同样自动 JSON 编码）
 l.g.PushToPlayer(playerID, def.PushDemoBroadcast, def.DemoBroadcastNotify{Content: "hi"})
 
-// 指定空间（MMO 视野广播）
-l.g.PushToScene(space, def.PushDemoBroadcast, body)
+// 指定空间（MMO 视野广播）：要自己给编码后的字节，必须用 *Raw 版本
+l.g.PushToSceneRaw(space, def.PushDemoBroadcast, body)
 ```
 
 > **注意：** `mustJSON` 为 demo 内自定义辅助函数（内部调 `ujson.Marshal` 忽略错误），引擎 `pkg/shared/json` 仅提供 `Marshal`/`Unmarshal`，没有 `MustMarshal`。

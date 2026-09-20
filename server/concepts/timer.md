@@ -84,9 +84,9 @@ func (l *playerLogic) onMsgEnterGame(c event.Ctx) error {
 }
 ```
 
-连接断开时，引擎会以**连接级 owner** 调用 `StopTimerGroup(owner)`（`internal/app/game.go:818`）——
-该 `owner` 取自登录回执的 `owner` 字段（`internal/app/bootstrap.go:431-432`），并被同时当作 `AccountID`
-使用（`internal/app/game.go:901`），**不是角色 ID（`c.PlayerID()`）**。
+连接断开时，引擎会以**连接级 owner** 调用 `StopTimerGroup(owner)`（`internal/app/game.go:879`）——
+该 `owner` 取自登录回执的 `owner` 字段（`internal/app/bootstrap.go:456`），并被同时当作 `AccountID`
+使用（`internal/app/game.go:872-873`），**不是角色 ID（`c.PlayerID()`）**。
 
 由此得出两条互补规则：
 
@@ -99,7 +99,7 @@ func (l *playerLogic) onMsgEnterGame(c event.Ctx) error {
 > 早期文档与示例把它写成「下线自动清理」是错的，本页已按源码更正。
 
 `*timer.Group` 提供 `After(name, delay, task)`、`Every(name, interval, task)`、`OnTimer(name, when, task)` 和 `Cron(name, spec, task)`。
-其中 `OnTimer` 的 `when` 是**绝对 `time.Time`**（不是持续时长），**已过去则立即执行**（`pkg/runtime/timer/timer.go:561-569`）。
+其中 `OnTimer` 的 `when` 是**绝对 `time.Time`**（不是持续时长），**已过去则立即执行**（`pkg/runtime/timer/timer.go:607`）。
 
 具名任务也可以单独停止：
 
@@ -117,7 +117,7 @@ g.Timer.StopTimerGroup(scope)
 ## 持久化与迁移（底层 Scheduler）
 
 > **`g.Timer` 本身不持久化。** 引擎装配的共享调度器只设置了时区、**没有注入 `PersistBackend`**
-> （`internal/app/mount.go:123`），所以经 `g.Timer.Scheduler()` 调用 `PersistScope` / `RestoreScope` /
+> （`internal/app/mount.go:136`），所以经 `g.Timer.Scheduler()` 调用 `PersistScope` / `RestoreScope` /
 > `ClearPersist` 一律返回 `timer.ErrNoBackend`。要用持久化必须自建
 > `timer.NewScheduler(timer.WithPersistence(backend))`。
 
@@ -127,8 +127,8 @@ g.Timer.StopTimerGroup(scope)
 
 **语义边界（重要）**：
 
-- `DumpScope` 导出的 `RemainingMs` 是**相对剩余时间**（按导出时刻换算），**不是绝对到期时刻**（`pkg/runtime/timer/timer.go:644-651`）；
-- `ImportScope` 按剩余量重新入堆，**不补触发已过期的任务**（`timer.go:732-744`）——
+- `DumpScope` 导出的 `RemainingMs` 是**相对剩余时间**（按导出时刻换算），**不是绝对到期时刻**（`pkg/runtime/timer/timer.go:694`）；
+- `ImportScope` 按剩余量重新入堆，**不补触发已过期的任务**（`timer.go:776`）——
   停机 2 小时后恢复，任务会从恢复时刻**顺延**再等一遍剩余时间，而不是补算；
 - 因此持久化 / 迁移**不能替代业务侧的绝对 deadline**。
 

@@ -229,7 +229,7 @@ clover/nodes/<nodeID> = {"type":"game","tags":["room"]}
 
 **接线（业务只碰这几个名字，签名见源码）**：
 `pkg/app` 的 `Game.NodeID()` / `Game.SceneRoute()` / `Game.SceneSubscriber()` 三件套，交给 `mmo` 的
-`WithClusterRoute(...)` 与 `WithRemoteTransferSubscriber(...)`；需要"定向接管投递"时再加 `WithClusterTransfer(...)`。
+`WithClusterRoute(...)` 与 `WithRemoteTransferSubscriber(...)`；需要"定向接管投递"时，业务侧**无法**再加 `WithClusterTransfer` —— 它只存在于 `internal/domain/mmo`（`module.go:44`），`pkg/domain/mmo` 未暴露。
 配置侧给一个 **`node_id`（数字节点标识）** —— NATS subject 不允许地址里带 `:`。
 
 **引擎行为（实现集中在 `internal/domain/mmo/cluster.go`）**：

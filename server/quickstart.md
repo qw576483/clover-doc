@@ -64,7 +64,7 @@ clover> connect 127.0.0.1:8002
 clover> login test_user 123123
 >>> 已发送 EMsgLogin (id=2): {"token":"eyJhbGciOi..."}
 
-<<< [MsgLoginReply]
+<<< [ELoginReply]
 {
   "owner": "test_user",
   "token": "tok-xxx",
@@ -198,7 +198,7 @@ return nil
 
 1. 确保 MySQL 已启动：`mysql -u root -p`
 2. 检查配置文件 `configs/all/server.yaml` 中的数据库配置
-3. 使用 Windows 一键环境：`cd clover-server-tools/windows-env/core && go build -o core/env.exe ./main.go && core/env.exe start all`
+3. 使用 Windows 一键环境：`cd clover-server-tools/windows-env/core && go build -o env.exe ./main.go && ./env.exe start all`
 
 ### NATS 警告日志
 

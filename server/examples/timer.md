@@ -54,12 +54,22 @@ Cron 任务在**所有 Game 节点**都会执行。若要求全集群只执行�
 
 ```go
 g.Timer.Cron("demo-daily-12-singleton", "0 12 * * *", func() {
-    // 使用 etcd 分布式锁确保全集群只执行一次
-    lock, err := g.GetEtcd().Lock(ctx, "cron:demo-daily-12", 30*time.Second)
-    if err != nil || lock == nil {
+    // 引擎的 etcd 封装（internal/transport/etcd）只提供 Get/GetPrefix/Put/Delete/Register/Exists，
+    // 没有分布式锁 API；需要锁时用 Raw() 取原始 clientv3 客户端，配合官方 concurrency 包。
+    raw := g.GetEtcd().Raw()
+    if raw == nil {
+        return
+    }
+    sess, err := concurrency.NewSession(raw, concurrency.WithTTL(30))
+    if err != nil {
+        return
+    }
+    defer sess.Close()
+    mu := concurrency.NewMutex(sess, "cron:demo-daily-12")
+    if err := mu.TryLock(ctx); err != nil {
         return // 其他节点已持有锁，本节点跳过
     }
-    defer lock.Unlock(ctx)
+    defer mu.Unlock(ctx)
     logger.Infof("timer: 全节点只执行一次（本节点抢到锁）")
 })
 ```
@@ -67,7 +77,8 @@ g.Timer.Cron("demo-daily-12-singleton", "0 12 * * *", func() {
 ### 玩家维度定时器（TimerGroup）
 
 引擎在断线时只会以**连接级 owner** 调用 `StopTimerGroup(owner)`——该 `owner` 取自登录回执的 `owner` 字段
-（`internal/app/bootstrap.go:347-365`），并被同时当作 `AccountID` 使用，**不是 `c.PlayerID()`**。因此：
+（提取接线 `internal/app/bootstrap.go:456`，清理点 `internal/app/game.go:879`），并被同时当作 `AccountID`
+使用（`internal/app/game.go:872-873`），**不是 `c.PlayerID()`**。因此：
 
 ```go
 // 要随掉线自动清理的任务：scope 必须等于引擎传入的那个 owner

@@ -27,7 +27,7 @@
 ### 判定口径：为什么用 `ELoginReply` 而不是 `EPushPlayerFullSync`
 
 引擎只在「登录成功**且已有角色**，或创建角色成功后」才推全量同步
-（见 `internal/transport/event/push.go` 的 `EPlayerFullSyncNotify`）。
+（见 `internal/shared/proto/push.go` 的 `EPlayerFullSyncNotify`）。
 **账号没有角色时，登录是成功的，只是没有全量同步。**
 
 若把「没收到全量同步」当成登录失败，一次正常的登录压测会全红 —— 这是最容易踩的判定陷阱。
@@ -59,7 +59,7 @@ go build -o robot.exe ./cmd/robot    # Windows
 ```yaml
 gateway: "127.0.0.1:8003"            # 网关 QUIC/UDP 地址
 gateway_tcp: "127.0.0.1:8002"        # 网关 TCP 地址（QUIC 不可用 / 强制 tcp 时用）
-auth_addr: "https://127.0.0.1:8051"  # 账号服地址（账号服默认要求 TLS，故写 https://）
+auth_addr: "http://127.0.0.1:8051"  # 账号服 HTTP 地址（必填；工具默认值就是 http://127.0.0.1:8051）
 
 load:                                # 只是默认值，命令行参数优先
   robots: 10
@@ -144,7 +144,7 @@ robot run --robots 50 --ramp 5 --duration 30s \
 
 ```
 运行    3 个机器人 · 传输 auto · ramp 1/s · 保持 6s
-        网关 127.0.0.1:8003（tcp 127.0.0.1:8002）· 账号服 https://127.0.0.1:8051
+        网关 127.0.0.1:8003（tcp 127.0.0.1:8002）· 账号服 http://127.0.0.1:8051
 
 连接    成功 3 / 3
         延迟(ms)     P50 3 · P90 3 · P99 3 · 最大 4

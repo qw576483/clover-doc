@@ -92,7 +92,7 @@ auth:
 
 | 方法与路径 | 请求体 | 响应体 | 状态码 |
 | --- | --- | --- | --- |
-| `POST /auth/signup` | `{account, password}` | `{success, owner, token, exp, err}` | `200` / `409` 账号已存在 / `400` 参数错 |
+| `POST /auth/signup` | `{account, password}` | `{success, owner, token, exp, err}` | `200` / `400` 参数错或账号已存在（`internal/domain/auth/server/server.go:77`） |
 | `POST /auth/login` | `{account, password}` | `{success, owner, token, exp, err}` | `200` / `401` 账号或密码错误 / `429` 尝试次数过多 |
 | `POST /auth/verify` | `{token}` | `{valid, owner, exp, err}` | **恒 `200`**（无效时 `valid=false`，不是 5xx） |
 | `GET /auth/health` | — | `{ok, service, time}` | `200` |

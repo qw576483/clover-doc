@@ -240,7 +240,7 @@ if (Game.Net.IsQueued) Debug.Log($"{Game.Net.QueueAhead}/{Game.Net.QueueTotal}")
 
 | 字段 | 长度 | 说明 |
 |------|------|------|
-| `type` | 1 字节 | 传输层帧类型：`0`=数据、`1`=ping、`2`=pong、`3`=会话迁移（见 `Connection.cs`） |
+| `type` | 1 字节 | 传输层帧类型：`0`=数据、`1`=ping、`2`=pong（原 `3`=会话迁移已删除，见 `Connection.cs`） |
 | `length` | 4 字节 | 其后的 `[requestID][msgID][body]` 字节长度（不含 `type` 与自身） |
 | `requestID` | 4 字节 | 请求配对 ID，0 表示推送 |
 | `msgID` | 4 字节 | 消息号（EMsg 枚举） |
@@ -269,7 +269,8 @@ if (Game.Net.IsQueued) Debug.Log($"{Game.Net.QueueAhead}/{Game.Net.QueueTotal}")
 | 特性 | 说明 |
 |------|------|
 | 支持方法 | GET / POST |
-| 超时 / 重试 / 并发上限 | **均未实现**（`IWebRequest` 只有 `Get` / `Post` / `Dispose`） |
+| 超时 | **已内置固定 10s**（`RequestTimeoutSeconds`，写进每条 `UnityWebRequest.timeout`，见 `Runtime/Network/WebRequest.cs:20`） |
+| 重试 / 并发上限 | **未实现**（`IWebRequest` 只有 `Get` / `Post` / `Dispose`，无重试与并发闸门） |
 
 > **注意：** WebRequest **不走游戏长连接**，与 Network 互不干扰。
 

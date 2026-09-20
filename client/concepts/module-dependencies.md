@@ -30,7 +30,6 @@ graph TD
     
     subgraph "数据域 Data"
         DataTable[DataTable]
-        Setting[Setting]
         Localization[Localization]
     end
     
@@ -71,7 +70,6 @@ graph TD
     ObjectPool --> Core
     
     Entity --> Core
-    Entity --> Data
 ```
 
 ### 依赖规则表

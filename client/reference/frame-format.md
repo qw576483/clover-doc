@@ -14,7 +14,7 @@
 
 | 传输协议 | 帧结构 | 说明 |
 |----------|--------|------|
-| TCP | `[1B type][4B length][客户端帧]` | type 区分数据/心跳/迁移；length 防粘包；**单帧 payload 上限 10 MiB**（超硬限直接断线） |
+| TCP | `[1B type][4B length][客户端帧]` | type 区分数据/心跳；length 防粘包；**单帧 payload 上限 10 MiB**（超硬限直接断线） |
 | QUIC 流 | `[4B length][客户端帧]` | **没有 `type` 字节**；与服务端 `internal/transport/net/quic/conn.go` 的 `[4B 大端长度][客户端帧]` 严格对应 |
 | 裸 UDP | `[1B 0x55][4B requestID][4B msgID][body]` | 使用魔数标识，天然分包 |
 | WebSocket | `[4B requestID][4B msgID][body]`（**一条二进制消息 = 一个客户端帧**） | 无 `type` / `length` 前缀、无 0x55 魔数；文本帧按服务端语义丢弃 |
@@ -46,7 +46,7 @@ TCP 传输使用以下传输层帧（`payload` 即客户端帧）：
 
 | 字段 | 长度 | 类型 | 说明 |
 |------|------|------|------|
-| `type` | 1 字节 | byte | 帧类型：0=Data, 1=Ping, 2=Pong, 3=Migrate |
+| `type` | 1 字节 | byte | 帧类型：0=Data, 1=Ping, 2=Pong（原 3=Migrate 已删除，收到按未知帧类型处理） |
 | `length` | 4 字节 | uint32 | 后续数据的字节长度（不含自身，含 requestID+msgID+body）；**也是帧上限的判据**——超过 10 MiB 直接断线 |
 | `requestID` | 4 字节 | uint32 | 请求配对 ID，0 表示推送 |
 | `msgID` | 4 字节 | uint32 | 消息号（EMsg 枚举） |
@@ -296,7 +296,9 @@ public class ErrorHandler : MonoBehaviour
             BackToLogin();
         });
 
-        // 按错误码分流更多分支时，监听统一错误回包（旁路观察，Call 侧仍会抛异常）
+        // 按错误码分流：用 Net.OnUnauthorized 事件或 Catch CloverCallException。
+        // ⚠️ 带 requestID 的错误回包在配对分支就被消费并 return（NetworkManager.cs:1098-1112），
+        // 不会走到 _router.Dispatch，因此 `Game.OnMsg(EMsg.Error, ...)` 只收未配对错误帧。
         Game.OnMsg(EMsg.Error, ctx =>
         {
             var error = ctx.Bind<EErrorReply>();

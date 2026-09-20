@@ -24,7 +24,8 @@ const (
 )
 
 type GetPlayerListRequest struct {
-    Account string `json:"account"`
+    Account  string `json:"account"`
+    ServerID uint32 `json:"server_id"`
 }
 
 type CreatePlayerRequest struct {
@@ -168,7 +169,8 @@ func (l *playerLogic) onMsgEnterGame(c event.Ctx) error {
 
 ## 全量同步
 
-登录/建角成功后，引擎自动下发 `EPushPlayerFullSync`（4001），客户端收到的完整数据结构如下：
+登录/建角成功后，**由业务**调用 `g.PushPlayerFullSync(playerID, account)` 下发 `EPushPlayerFullSync`（4001）
+——引擎**不会**自动推送（`pkg/shared/proto/push.go` 的 `EPushPlayerFullSync` 注释）。客户端收到的完整数据结构如下：
 
 ```json
 {

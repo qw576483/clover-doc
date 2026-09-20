@@ -86,7 +86,7 @@ await CloverAuth.SignupAsync(account, password);  // 注册成功即签发 token
 
 | 成员 | 说明 |
 | --- | --- |
-| `CloverAuth.AuthAddr` | 账号服地址，如 `https://127.0.0.1:8051`（账号服默认要求 TLS）；**必填**（空 = 未配置） |
+| `CloverAuth.AuthAddr` | 账号服地址，如 `http://127.0.0.1:8051`（引擎样例与局域网发现的默认值；账号服**默认要求 TLS**，生产填 `https://`）；**必填**（空 = 未配置） |
 | `CloverAuth.Enabled` | 是否已配置账号服（`AuthAddr` 非空） |
 | `LoginAsync(account, password)` | 返回 `Task<string>`（JWT）；失败抛异常，消息为服务端 `err` |
 | `SignupAsync(account, password)` | 同上；注册成功即签发 token |
@@ -132,14 +132,14 @@ Game.Event.On<EErrorReply>("Net.OnUnauthorized", e =>
   "server": {
     "addr": "127.0.0.1:8002",
     "udp_addr": "127.0.0.1:8003",
-    "auth_addr": "https://127.0.0.1:8051",
+    "auth_addr": "http://127.0.0.1:8051",
     "call_timeout": 10,
     "max_reconnect_count": 5
   }
 }
 ```
 
-`auth_addr` **必填**：填账号服地址（如 `https://127.0.0.1:8051`）。
+`auth_addr` **必填**：填账号服地址（本地如 `http://127.0.0.1:8051`；账号服默认要求 TLS，生产写 `https://`）。
 账号服**默认要求 TLS**（服务端没配证书又没显式 `auth.insecure_plaintext` 时启动即失败），
 所以协议头通常是 `https://`；证书只走系统信任链（本地联调证书由
 [`clover-server-tools/mkcert`](https://github.com/qw576483/clover-server-tools/blob/main/mkcert/README.md) 签、根 CA 已入信任库）。
