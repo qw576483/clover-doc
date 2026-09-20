@@ -1,0 +1,202 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "Clover Docs",
+  "colors": {
+    "primary": "#1FB858",
+    "light": "#1FB858",
+    "dark": "#1FB858"
+  },
+  "favicon": "/favicon.svg",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "服务端",
+        "groups": [
+          {
+            "group": "服务端",
+            "pages": [
+              "server/index",
+              "server/quickstart",
+              "server/install",
+              "server/getting-started",
+              {
+                "group": "核心概念",
+                "pages": [
+                  "server/concepts/app-game",
+                  "server/concepts/structure",
+                  "server/concepts/data",
+                  "server/concepts/data-flow",
+                  "server/concepts/event",
+                  "server/concepts/lifecycle",
+                  "server/concepts/proto",
+                  "server/concepts/request-lifecycle",
+                  "server/concepts/push",
+                  "server/concepts/heartbeat",
+                  "server/concepts/timer",
+                  "server/concepts/cluster",
+                  "server/concepts/network-topology",
+                  "server/concepts/entity-object",
+                  "server/concepts/mmo-world",
+                  "server/concepts/mmo-worldsync"
+                ]
+              },
+              {
+                "group": "开发",
+                "pages": [
+                  "server/development/handler",
+                  "server/development/configuration",
+                  "server/development/environment",
+                  "server/development/network",
+                  "server/development/persistence",
+                  "server/development/protocol-design",
+                  "server/development/state-machine",
+                  "server/development/table-design",
+                  "server/development/error-handling",
+                  "server/development/logging",
+                  "server/development/debugging",
+                  "server/development/testing",
+                  "server/development/performance",
+                  "server/development/data-migration"
+                ]
+              },
+              {
+                "group": "示例",
+                "pages": [
+                  "server/examples/login",
+                  "server/examples/chat",
+                  "server/examples/inventory",
+                  "server/examples/room",
+                  "server/examples/data",
+                  "server/examples/heartbeat",
+                  "server/examples/timer"
+                ]
+              },
+              {
+                "group": "部署",
+                "pages": [
+                  "server/operations/deployment",
+                  "server/operations/kubernetes",
+                  "server/operations/monitoring",
+                  "server/operations/logging",
+                  "server/operations/performance",
+                  "server/operations/scaling",
+                  "server/operations/backup-recovery",
+                  "server/operations/troubleshooting"
+                ]
+              },
+              {
+                "group": "安全",
+                "pages": [
+                  "server/security/security-guide",
+                  "server/security/auth",
+                  "server/security/auth-server",
+                  "server/security/input-validation",
+                  "server/security/anti-cheat"
+                ]
+              },
+              {
+                "group": "工具",
+                "pages": [
+                  "server/tools/msg-client",
+                  "server/tools/manager",
+                  "server/tools/robot",
+                  "server/tools/table-tools",
+                  "server/tools/windows-env",
+                  "server/tools/ai-skill"
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "客户端",
+        "groups": [
+          {
+            "group": "客户端",
+            "pages": [
+              "client/index",
+              "client/development/quick-start",
+              {
+                "group": "核心概念",
+                "pages": [
+                  "client/concepts/architecture",
+                  "client/concepts/design-principles",
+                  "client/concepts/module-dependencies",
+                  "client/concepts/concept-naming"
+                ]
+              },
+              {
+                "group": "开发",
+                "pages": [
+                  "client/development/game-facade",
+                  "client/development/network",
+                  "client/development/auth",
+                  "client/development/entity-view",
+                  "client/development/worldsync",
+                  "client/development/resource",
+                  "client/development/serialization",
+                  "client/development/object-pool",
+                  "client/development/ui-system",
+                  "client/development/event-timer-fsm",
+                  "client/development/input",
+                  "client/development/presentation-modules"
+                ]
+              },
+              {
+                "group": "示例",
+                "pages": [
+                  "client/examples/login-flow"
+                ]
+              },
+              {
+                "group": "参考",
+                "pages": [
+                  "client/reference/api-cheatsheet",
+                  "client/reference/emsg",
+                  "client/reference/frame-format",
+                  "client/reference/constraints"
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "GitHub",
+          "href": "https://github.com/qw576483/html-unity-richtext",
+          "icon": "github"
+        }
+      ]
+    }
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "GitHub",
+        "href": "https://github.com/qw576483/html-unity-richtext"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "快速上手",
+      "href": "/server/quickstart"
+    }
+  },
+  "search": {
+    "prompt": "搜索文档..."
+  },
+  "footer": {
+    "socials": {
+      "github": "https://github.com/qw576483/html-unity-richtext"
+    }
+  }
+}
