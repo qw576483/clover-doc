@@ -18,7 +18,7 @@
 package logic
 
 import (
-    "clover-server-engine/pkg/transport/event"
+    "github.com/qw576483/clover-server-engine/pkg/transport/event"
     "your-game/def"
 )
 
@@ -42,8 +42,8 @@ Handler 通过 `app.Mount(app.RoleGame, ...)` 在 `init` 中注册：
 package logic
 
 import (
-    "clover-server-engine/pkg/app"
-    "clover-server-engine/pkg/transport/event"
+    "github.com/qw576483/clover-server-engine/pkg/app"
+    "github.com/qw576483/clover-server-engine/pkg/transport/event"
     "your-game/def"
 )
 
@@ -496,7 +496,7 @@ func init() {
 ### 3. 性能监控
 
 ```go
-import "clover-server-engine/pkg/foundation/metrics"
+import "github.com/qw576483/clover-server-engine/pkg/foundation/metrics"
 
 func init() {
     app.Mount(app.RoleGame, func(g *app.Game) {

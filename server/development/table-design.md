@@ -18,7 +18,7 @@
 package datadef
 
 import (
-    "clover-server-engine/pkg/domain/data"
+    "github.com/qw576483/clover-server-engine/pkg/domain/data"
 )
 
 // PlayerInfo 标识玩家信息的存储类型

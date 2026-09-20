@@ -19,7 +19,7 @@ package datadef
 
 import (
     "testing"
-    "clover-server-engine/pkg/domain/data"
+    "github.com/qw576483/clover-server-engine/pkg/domain/data"
 )
 
 func TestPlayerSchema(t *testing.T) {

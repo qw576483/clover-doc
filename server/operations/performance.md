@@ -176,6 +176,6 @@ g.PushToPlayer(targetPlayerID, def.MsgXxxPush, data)
 
 ## 相关链接
 
-- [集群架构](/server/concepts/cluster) - 理解多节点部署和跨节点通信
-- [网络拓扑](/server/concepts/network-topology) - 理解三层网络架构
-- [监控告警](/server/operations/monitoring) - 建立性能监控体系
+- [集群架构](../concepts/cluster.md) - 理解多节点部署和跨节点通信
+- [网络拓扑](../concepts/network-topology.md) - 理解三层网络架构
+- [监控告警](monitoring.md) - 建立性能监控体系

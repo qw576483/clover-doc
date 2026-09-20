@@ -38,7 +38,7 @@ Clover 引擎的认证流程、Token 设计、会话管理和权限控制机制�
 引擎涉及两种 Token：
 
 - **登录凭证（JWT）**：由**账号服**签发与校验，客户端经 `EMsgLogin{token}` 带来，
-  游戏服调账号服 `/auth/verify` 换 `owner`（见 [账号服](/server/security/auth-server)）。
+  游戏服调账号服 `/auth/verify` 换 `owner`（见 [账号服](auth-server.md)）。
 - **会话凭证（session token）**：游戏服自己管理，用于断线重连恢复会话。
 
 ### JWT Token（账号服签发）
@@ -240,10 +240,10 @@ func (l *gameLogic) requireGM(c event.Ctx, perm string) error {
 
 **相关链接：**
 
-- [输入校验](/server/security/input-validation) - 详细的输入校验指南
+- [输入校验](input-validation.md) - 详细的输入校验指南
 
-- [反作弊](/server/security/anti-cheat) - 游戏反作弊策略
+- [反作弊](anti-cheat.md) - 游戏反作弊策略
 
-- [Handler 开发](/server/development/handler) - Handler 中的认证实践
+- [Handler 开发](../development/handler.md) - Handler 中的认证实践
 
 

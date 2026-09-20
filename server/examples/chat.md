@@ -42,8 +42,8 @@ package logic
 import (
     "your-game/server/game/datadef"
     "your-game/server/game/def"
-    "clover-server-engine/pkg/app"
-    "clover-server-engine/pkg/transport/event"
+    "github.com/qw576483/clover-server-engine/pkg/app"
+    "github.com/qw576483/clover-server-engine/pkg/transport/event"
 )
 
 var GServer *serverLogic
@@ -105,7 +105,7 @@ l.g.PushToScene(space, def.PushDemoBroadcast, body)
 广播类接口建议限流，防止刷屏：
 
 ```go
-import "clover-server-engine/pkg/runtime/ratelimit"
+import "github.com/qw576483/clover-server-engine/pkg/runtime/ratelimit"
 
 limiter := ratelimit.NewManager(
     ratelimit.WithIdleTTL(10 * time.Minute),

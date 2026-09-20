@@ -22,7 +22,7 @@ Clover 客户端与服务端 `clover-server-engine` 的对齐只发生在两个�
 
 > **注意：**   除此之外**不镜像服务端目录结构**，客户端按自己的能力域组织。
 
-> **提示：**   领域概念的命名约定（如 `Game.Scene` 与 `CloverScene` 的区别）见 [双端概念命名约定](/client/concepts/concept-naming)。
+> **提示：**   领域概念的命名约定（如 `Game.Scene` 与 `CloverScene` 的区别）见 [双端概念命名约定](concept-naming.md)。
 
 ## 模块架构图
 
@@ -261,6 +261,6 @@ graph LR
 
 ## 下一步
 
-- **了解设计理念** → [设计原则](/client/concepts/design-principles)
-- **了解模块依赖** → [模块依赖规则](/client/concepts/module-dependencies)
-- **开始开发** → [Game 门面](/client/development/game-facade) → [网络与会话](/client/development/network)
+- **了解设计理念** → [设计原则](design-principles.md)
+- **了解模块依赖** → [模块依赖规则](module-dependencies.md)
+- **开始开发** → [Game 门面](../development/game-facade.md) → [网络与会话](../development/network.md)

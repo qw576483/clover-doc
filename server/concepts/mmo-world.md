@@ -25,9 +25,9 @@ Clover 引擎的 MMO 模块（`pkg/domain/mmo`）提供 `SceneManager`、`Scene`
 
 ```go
 import (
-    "clover-server-engine/pkg/domain/mmo"
-    "clover-server-engine/pkg/domain/mmo/aoi"
-    "clover-server-engine/pkg/domain/object"
+    "github.com/qw576483/clover-server-engine/pkg/domain/mmo"
+    "github.com/qw576483/clover-server-engine/pkg/domain/mmo/aoi"
+    "github.com/qw576483/clover-server-engine/pkg/domain/object"
 )
 
 grid := mmo.NewGrid(10) // 10 米一格
@@ -56,9 +56,9 @@ vs.SetFilter(func(viewer, target uint64) bool {
 
 ```go
 import (
-    "clover-server-engine/pkg/domain/mmo"
-    "clover-server-engine/pkg/domain/object"
-    "clover-server-engine/pkg/domain/data"
+    "github.com/qw576483/clover-server-engine/pkg/domain/mmo"
+    "github.com/qw576483/clover-server-engine/pkg/domain/object"
+    "github.com/qw576483/clover-server-engine/pkg/domain/data"
 )
 
 // 创建场景管理器（推荐传入 WithObjectManager 复用 Game 的 Manager）
@@ -120,8 +120,8 @@ scene.AttachBeat(beat)
 
 ```go
 import (
-    "clover-server-engine/pkg/domain/room"
-    "clover-server-engine/pkg/domain/room/frame"
+    "github.com/qw576483/clover-server-engine/pkg/domain/room"
+    "github.com/qw576483/clover-server-engine/pkg/domain/room/frame"
 )
 
 // ★ 必须用 room.NewModule 构造（它按 Config 装配「外壳 + 内核」）。

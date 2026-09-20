@@ -60,7 +60,7 @@ Game.Launch(config);
 | **服务端场景** | `Game.CloverScene` | 服务端场景投影（逻辑地图 + 分线），与 `Game.Scene` 不同义 |
 | **帧同步房间** | `Game.FrameRoom` | 帧同步房间生命周期；消息号由业务 `Configure()` 注入 |
 | **场景** | `Game.Scene` | Unity 关卡管理（异步加载/卸载 + 加载门控） |
-| **逻辑地图** | `Game.Map` | 服务端权威地图在客户端的**只读投影**（本地碰撞 / 寻路查询）：`Load(byte[] data, out string error)` / `LoadFromResource(path)` / `WalkableAt(x,z)` / `Clear()`。数据是服务端加载的**同一份字节**（CloverMap 二进制，契约见 `clover-server-engine/pkg/domain/mmo/mapdata/README.md`）。⚠️ 与 `Game.Scene`（Unity 关卡）、`Game.CloverScene`（服务端场景）三者语义不同 |
+| **逻辑地图** | `Game.Map` | 服务端权威地图在客户端的**只读投影**（本地碰撞 / 寻路查询）：`Load(byte[] data, out string error)` / `LoadFromResource(path)` / `WalkableAt(x,z)` / `Clear()`。数据是服务端加载的**同一份字节**（CloverMap 二进制，契约见 [`clover-server-engine/pkg/domain/mmo/mapdata/README.md`](https://github.com/qw576483/clover-server-engine/blob/main/pkg/domain/mmo/mapdata/README.md)）。⚠️ 与 `Game.Scene`（Unity 关卡）、`Game.CloverScene`（服务端场景）三者语义不同 |
 | **实体** | `Game.Entity` | 实体管理 |
 | **资源** | `Game.Res` | 资源管理 |
 | **对象池** | `Game.Pool` | 对象池 |

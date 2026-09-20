@@ -6,8 +6,8 @@
 
 ## 前置条件
 
-- 已了解 [客户端架构](/client/concepts/architecture)
-- 已了解 [服务端 MMO 世界](/server/concepts/mmo-world)
+- 已了解 [客户端架构](architecture.md)
+- 已了解 [服务端 MMO 世界](../../server/concepts/mmo-world.md)
 
 ## 这篇文档讲什么？
 
@@ -207,7 +207,7 @@
 
 ## 与架构原则的关系
 
-[客户端架构](/client/concepts/architecture) 中「与服务端的关系」一节指出：双端对齐发生在 **API 语义** 与 **网络协议** 两个层面，且客户端**不镜像服务端目录结构**。
+[客户端架构](architecture.md) 中「与服务端的关系」一节指出：双端对齐发生在 **API 语义** 与 **网络协议** 两个层面，且客户端**不镜像服务端目录结构**。
 
 本文档补充的是第三个层面：**领域概念的命名**。三者不冲突——
 
@@ -216,6 +216,6 @@
 
 ## 下一步
 
-- **了解客户端架构** → [客户端架构](/client/concepts/architecture)
-- **了解设计原则** → [设计原则](/client/concepts/design-principles)
-- **了解服务端 MMO** → [MMO 世界](/server/concepts/mmo-world)
+- **了解客户端架构** → [客户端架构](architecture.md)
+- **了解设计原则** → [设计原则](design-principles.md)
+- **了解服务端 MMO** → [MMO 世界](../../server/concepts/mmo-world.md)

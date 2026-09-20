@@ -23,10 +23,10 @@
 
 ## 用哪个包写日志
 
-**业务日志统一使用 `clover-server-engine/pkg/foundation/logger`。**
+**业务日志统一使用 [`clover-server-engine/pkg/foundation/logger`](https://github.com/qw576483/clover-server-engine/blob/main/pkg/foundation/logger.md)。**
 
 ```go
-import "clover-server-engine/pkg/foundation/logger"
+import "github.com/qw576483/clover-server-engine/pkg/foundation/logger"
 ```
 
 > **不要用标准库 `log.Printf`，也不要引入第三方日志库（logrus 等）。**
@@ -65,7 +65,7 @@ import "clover-server-engine/pkg/foundation/logger"
 ## 日志输出
 
 ```go
-import "clover-server-engine/pkg/foundation/logger"
+import "github.com/qw576483/clover-server-engine/pkg/foundation/logger"
 
 // 基本日志
 logger.Info("服务器启动")

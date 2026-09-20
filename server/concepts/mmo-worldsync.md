@@ -87,7 +87,7 @@ type EPlayerFullSyncNotify struct {
 ### 4. 分组管理（Instance）
 
 > **地图数据从哪来**（Scene 的可行走位图与碰撞体不是手写的）：引擎地图管线产出 ——
-> Unity 侧烘焙（`clover-client-unity-engine/Editor/MapBake/`，面板 `Clover/地图烘焙`；一次写服务端 + 客户端两份同源字节）、
+> Unity 侧烘焙（[`clover-client-unity-engine/Editor/MapBake/`](https://github.com/qw576483/clover-client-unity-engine/blob/main/Editor/MapBake/.md)，面板 `Clover/地图烘焙`；一次写服务端 + 客户端两份同源字节）、
 > 服务端加载（`pkg/domain/mmo/mapdata`：`Load` → `ApplyTo(scene)`，位图 → `NavGrid3`、AABB → `Collider3(GroupWall)`、出生点净空校验）、
 > 客户端查询（`Game.Map.WalkableAt`）。字节契约见 `pkg/domain/mmo/mapdata/README.md`。
 
@@ -403,7 +403,7 @@ graph TB
 ### Q: 实体位置不同步（或画面抖动）
 **原因**：客户端直接拿 `OnEntityMove` 的**离散目标坐标**驱动 Transform；服务端位置约 10Hz 下发，直接贴会抖
 **解决**：表现层每帧用 `Game.Sync.TryGetPosition(id, out x, out y, out z)` 读**插值后**的位置；
-`OnEntityMove` 的目标坐标只用于逻辑判定。引擎**没有**本地预测 / 回滚 / 预测档位（详见 [WorldSync](/client/development/worldsync)）
+`OnEntityMove` 的目标坐标只用于逻辑判定。引擎**没有**本地预测 / 回滚 / 预测档位（详见 [WorldSync](../../client/development/worldsync.md)）
 
 ### Q: 重连后状态不一致
 **原因**：本地状态未正确覆盖

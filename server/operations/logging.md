@@ -147,7 +147,7 @@ Loki 查询示例：
 
 ## 相关链接
 
-- [监控与告警](/server/operations/monitoring) - 监控体系建设
-- [故障排查](/server/operations/troubleshooting) - 常见问题排查
-- [Kubernetes 部署](/server/operations/kubernetes) - K8s 部署详解
-- [备份与恢复](/server/operations/backup-recovery) - 备份恢复策略
+- [监控与告警](monitoring.md) - 监控体系建设
+- [故障排查](troubleshooting.md) - 常见问题排查
+- [Kubernetes 部署](kubernetes.md) - K8s 部署详解
+- [备份与恢复](backup-recovery.md) - 备份恢复策略

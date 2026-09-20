@@ -73,10 +73,10 @@ package logic
 
 import (
     "your-game/server/game/def"
-    "clover-server-engine/pkg/app"
-    "clover-server-engine/pkg/transport/event"
-    "clover-server-engine/pkg/domain/room"
-    engframe "clover-server-engine/pkg/domain/room/frame"
+    "github.com/qw576483/clover-server-engine/pkg/app"
+    "github.com/qw576483/clover-server-engine/pkg/transport/event"
+    "github.com/qw576483/clover-server-engine/pkg/domain/room"
+    engframe "github.com/qw576483/clover-server-engine/pkg/domain/room/frame"
 )
 
 var frameRoomDemo *frameRoomDemoLogic
@@ -234,7 +234,7 @@ func (l *frameRoomDemoLogic) onSnapshot(c event.Ctx) error {
 | `PushMessageID`（默认 **0**） | `broadcast()` / `broadcastReliable()` / `broadcastReconnectLocked()` 都判 `pushMsgID == 0` **直接 return** ⇒ 帧在推进、客户端永远收不到帧推（现象像"Broadcast 失败"，实际是没配消息号） | `frame.WithPushMessageID(<业务帧推消息号>)`；**等待态帧推也依赖它** |
 | `InputTimeoutTicks`（默认 90） | 兜底判据 `frame - LastFrame >= InputTimeoutTicks` 在"Join 时 LastFrame=0、推进目标恒为 1"下**永不成立** ⇒ 无人提交输入时**帧自锁不推进** | 让业务投喂输入，或把阈值调到 ≤ 每次推进的帧号增量（通常 1） |
 
-> 回归用例在 `clover-server-engine/internal/domain/room/frame/room_test.go`（4 条，把两个根因各钉成断言）。
+> 回归用例在 [`clover-server-engine/internal/domain/room/frame/room_test.go`](https://github.com/qw576483/clover-server-engine/blob/main/internal/domain/room/frame/room_test.go)（4 条，把两个根因各钉成断言）。
 
 ## 相关文档
 

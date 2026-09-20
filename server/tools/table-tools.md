@@ -120,8 +120,8 @@ fmt.Println(item.Name) // "铁剑"
 
 **相关链接：**
 
-- [配置管理](/server/development/configuration) - 配置文件管理
+- [配置管理](../development/configuration.md) - 配置文件管理
 
-- [msg-client](/server/tools/msg-client) - 交互式命令行工具（网关调试客户端）
+- [msg-client](msg-client.md) - 交互式命令行工具（网关调试客户端）
 
 

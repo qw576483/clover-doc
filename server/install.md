@@ -42,13 +42,14 @@ go version
 
 ### Windows 一键环境（推荐）
 
-使用 `windows-env` 工具一键启动所有依赖：
+使用 [clover-server-tools](https://github.com/qw576483/clover-server-tools) 的 `windows-env` 一键启动全部依赖：
 
 ```powershell
+git clone https://github.com/qw576483/clover-server-tools.git
 cd clover-server-tools/windows-env/core
-go build -o core/env.exe ./main.go
-core/env.exe start all
-core/env.exe status
+go build -o env.exe .
+./env.exe start
+./env.exe status
 ```
 
 ### Linux / macOS 手动安装
@@ -73,21 +74,41 @@ sudo cp nats-server-v2.10.0-linux-amd64/nats-server /usr/local/bin/
 
 ## 获取代码
 
-三个仓库平级放置：
+引擎是标准 Go module，**直接依赖即可，不需要克隆引擎源码**：
+
+```bash
+mkdir your-server && cd your-server
+go mod init your-server
+go get github.com/qw576483/clover-server-engine@latest
+```
+
+`go.mod` 里只会多出一行 `require`：
 
 ```text
-full-dev/
-├── clover-server-engine/     # 引擎本体
-├── your-server/              # 你的服务端工程（通过 replace 指令引用本地引擎）
-└── clover-doc/               # 文档站
+module your-server
+
+go 1.25
+
+require github.com/qw576483/clover-server-engine v0.1.0
 ```
+
+> 只有**需要改引擎源码**时才克隆引擎，并用 `replace` 指过去：
+> `replace github.com/qw576483/clover-server-engine => ../clover-server-engine`
+
+按需额外获取：
+
+| 仓库 | 用途 |
+|---|---|
+| [clover-server-tools](https://github.com/qw576483/clover-server-tools) | 本地依赖环境、网关调试客户端、压测机器人、集群编排、运营后台 |
+| [clover-tools](https://github.com/qw576483/clover-tools) | 打表工具（Excel → Go / C# 强类型代码） |
+| [clover-client-unity-engine](https://github.com/qw576483/clover-client-unity-engine) | Unity 客户端引擎（UPM 包） |
 
 ## 验证编译
 
 ```bash
-cd clover-server-engine && go build ./...
-cd ../clover-server-tools/table/core && go build ./...
-cd ../msg-client && go build -o client ./cmd/client
+cd your-server
+go build -o server.exe .
+./server.exe -config configs/all
 ```
 
 > **注意：** `go build` 报 `connection refused` 是正常的——代码本身不依赖运行中的服务，只有启动并连接配置中心/数据库时才需要。
@@ -106,10 +127,10 @@ cd ../msg-client && go build -o client ./cmd/client
 
 **相关链接：**
 
-- [快速上手](/server/quickstart) - 构建并运行第一个 demo
+- [快速上手](quickstart.md) - 构建并运行第一个 demo
 
-- [环境搭建](/server/development/environment) - 开发环境详细配置
+- [环境搭建](development/environment.md) - 开发环境详细配置
 
-- [部署指南](/server/operations/deployment) - 生产环境部署
+- [部署指南](operations/deployment.md) - 生产环境部署
 
 

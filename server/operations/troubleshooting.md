@@ -202,6 +202,6 @@ gosec ./...
 
 ## 相关链接
 
-- [安全指南](/server/security/security-guide) - 安全编码和扫描集成
-- [性能优化](/server/operations/performance) - 性能调优策略
-- [监控告警](/server/operations/monitoring) - 建立监控体系
+- [安全指南](../security/security-guide.md) - 安全编码和扫描集成
+- [性能优化](performance.md) - 性能调优策略
+- [监控告警](monitoring.md) - 建立监控体系

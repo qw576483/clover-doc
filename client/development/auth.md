@@ -1,6 +1,6 @@
 # 账号服登录（CloverAuth）
 
-游戏服只认 token、不碰账号表（见 [账号服](/server/security/auth-server)）。
+游戏服只认 token、不碰账号表（见 [账号服](../../server/security/auth-server.md)）。
 引擎只有这一种登录模式，所以客户端登录固定**两步**：
 
 ```text
@@ -114,7 +114,7 @@ await CloverAuth.SignupAsync(account, password);  // 注册成功即签发 token
 - 客户端拿 token 走 `EMsgLogin{token}` → 游戏服调账号服 `/auth/verify` 换 owner → 网关绑定 owner。
 
 这条链路走完，**后续消息都正常放行**。只有「登录 / 注册 / 恢复会话」三个消息号
-在未登录时可发（见 [认证与授权](/server/security/auth)），其余会收到 `code=401`，
+在未登录时可发（见 [认证与授权](../../server/security/auth.md)），其余会收到 `code=401`，
 引擎同时发布 `Net.OnUnauthorized`：
 
 ```csharp
@@ -142,5 +142,5 @@ Game.Event.On<EErrorReply>("Net.OnUnauthorized", e =>
 `auth_addr` **必填**：填账号服地址（如 `https://127.0.0.1:8051`）。
 账号服**默认要求 TLS**（服务端没配证书又没显式 `auth.insecure_plaintext` 时启动即失败），
 所以协议头通常是 `https://`；证书只走系统信任链（本地联调证书由
-`clover-server-tools/mkcert` 签、根 CA 已入信任库）。
+[`clover-server-tools/mkcert`](https://github.com/qw576483/clover-server-tools/blob/main/mkcert.md) 签、根 CA 已入信任库）。
 留空即未配置，登录 / 注册会抛 `InvalidOperationException`。

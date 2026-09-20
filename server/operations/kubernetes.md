@@ -233,7 +233,7 @@ metadata:
 
 ## 相关链接
 
-- [部署指南](/server/operations/deployment) - 传统部署方式
-- [扩缩容](/server/operations/scaling) - 扩缩容策略
-- [日志](/server/operations/logging) - 日志采集与存储
-- [监控与告警](/server/operations/monitoring) - 监控体系建设
+- [部署指南](deployment.md) - 传统部署方式
+- [扩缩容](scaling.md) - 扩缩容策略
+- [日志](logging.md) - 日志采集与存储
+- [监控与告警](monitoring.md) - 监控体系建设

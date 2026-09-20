@@ -19,7 +19,7 @@ Clover 内置 FSM（Finite State Machine）有限状态机，用于管理游戏�
 ```go
 import (
     "time"
-    "clover-server-engine/pkg/runtime/fsm"
+    "github.com/qw576483/clover-server-engine/pkg/runtime/fsm"
 )
 
 // 创建状态机（初始态 "Idle"，不要求预先 RegisterState）

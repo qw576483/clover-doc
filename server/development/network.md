@@ -344,7 +344,7 @@ sudo iptables -A INPUT -p udp --dport 8003 -j ACCEPT
 ### 1. 连接监控
 
 ```go
-import "clover-server-engine/pkg/foundation/metrics"
+import "github.com/qw576483/clover-server-engine/pkg/foundation/metrics"
 
 // 通过 metrics.ForModule 创建模块级指标
 m := metrics.ForModule("gateway")

@@ -167,6 +167,6 @@ git push origin main
 
 ## 相关链接
 
-- [部署指南](/server/operations/deployment) - 生产环境部署
-- [监控告警](/server/operations/monitoring) - 建立监控体系
-- [故障排查](/server/operations/troubleshooting) - 常见问题排查
+- [部署指南](deployment.md) - 生产环境部署
+- [监控告警](monitoring.md) - 建立监控体系
+- [故障排查](troubleshooting.md) - 常见问题排查

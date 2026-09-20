@@ -124,7 +124,7 @@ import (
     "net"
     "time"
 
-    "clover-server-engine/pkg/foundation/logger"
+    "github.com/qw576483/clover-server-engine/pkg/foundation/logger"
 )
 
 func main() {
@@ -186,7 +186,7 @@ if err != nil {
 ### 环境变量
 
 > 引擎不支持用环境变量覆盖配置，改用不同的配置文件或 `-config` 指定路径。
-> 详见 [配置加载](/server/development/configuration)。
+> 详见 [配置加载](../development/configuration.md)。
 
 ## 常见问题
 

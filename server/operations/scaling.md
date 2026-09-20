@@ -168,6 +168,6 @@ metrics:
 
 ## 相关链接
 
-- [集群架构](/server/concepts/cluster) - 理解 Clover 集群拓扑
-- [Kubernetes 部署](/server/operations/kubernetes) - K8s 部署详解
-- [性能优化](/server/operations/performance) - 性能调优策略
+- [集群架构](../concepts/cluster.md) - 理解 Clover 集群拓扑
+- [Kubernetes 部署](kubernetes.md) - K8s 部署详解
+- [性能优化](performance.md) - 性能调优策略

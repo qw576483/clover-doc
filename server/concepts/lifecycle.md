@@ -8,8 +8,8 @@
 package main
 
 import (
-    "clover-server-engine/pkg/app"
-    "clover-server-engine/pkg/foundation/logger"
+    "github.com/qw576483/clover-server-engine/pkg/app"
+    "github.com/qw576483/clover-server-engine/pkg/foundation/logger"
     _ "your-game/server/game/logic"
 )
 

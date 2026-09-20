@@ -50,7 +50,7 @@ Concepts → Build → Tutorials → Tools → API → Examples
 ### 目录组织
 
 ```
-clover-doc/
+
 ├── index.md              # 首页（概览 + 卡片导航）
 ├── mint.json             # 配置（导航、主题、颜色）
 ├── server/

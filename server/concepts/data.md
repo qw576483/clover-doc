@@ -2,12 +2,12 @@
 
 ## 公共数据 API
 
-业务代码通过 `clover-server-engine/pkg/domain/data` 声明 schema，并在 `init` 中注册；运行时通过 `app.Game.LoadStruct` / `LoadRecord` 读写。引擎负责落库、脏数据提交和跨节点广播，业务不直接依赖 `internal`。
+业务代码通过 [`clover-server-engine/pkg/domain/data`](https://github.com/qw576483/clover-server-engine/blob/main/pkg/domain/data.md) 声明 schema，并在 `init` 中注册；运行时通过 `app.Game.LoadStruct` / `LoadRecord` 读写。引擎负责落库、脏数据提交和跨节点广播，业务不直接依赖 `internal`。
 
 ```go
 package datadef
 
-import "clover-server-engine/pkg/domain/data"
+import "github.com/qw576483/clover-server-engine/pkg/domain/data"
 
 var PlayerSchema = data.StructSchema{
     Type:       "player",

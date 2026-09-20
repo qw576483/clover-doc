@@ -139,7 +139,7 @@ package logic
 
 import (
     "net/http"
-    "clover-server-engine/pkg/app"
+    "github.com/qw576483/clover-server-engine/pkg/app"
 )
 
 func init() {

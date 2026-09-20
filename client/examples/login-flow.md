@@ -3,12 +3,12 @@
 
 本文档展示一个完整的登录/注册/会话建立/全量同步与断线恢复的接入示例，帮助你快速理解客户端引擎的核心 API 用法。
 
-> **注意：** 源码位置：`clover-client-unity-engine/Samples~/LoginFlow/`（可运行样例，本文与之对齐）
+> **注意：** 源码位置：[`clover-client-unity-engine/Samples~/LoginFlow/`](https://github.com/qw576483/clover-client-unity-engine/blob/main/Samples~/LoginFlow/.md)（可运行样例，本文与之对齐）
 >
 > ⚠️ **本文是「引擎自带样例」的说明**：样例挂在任意 Unity 工程里演示 API，没有自己的 `Assets/Configs/`，
 > 因此服务器地址 / 账号服地址用 **Inspector 字段**（可在面板里改）。
 > **业务工程必须把地址写进 `Assets/Configs/config.json` 并由加载器读取**，不要在代码里写地址字面量
-> —— 见 `patterns/client/config.md` 与 [账号服登录](/client/development/auth)。
+> —— 见 `patterns/client/config.md` 与 [账号服登录](../development/auth.md)。
 
 
 ## 流程概览

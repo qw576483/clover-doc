@@ -16,8 +16,8 @@ Clover 服务端引擎是一套面向中重度游戏的 Go 分布式架构，支
 package main
 
 import (
-    "clover-server-engine/pkg/app"
-    "clover-server-engine/pkg/foundation/logger"
+    "github.com/qw576483/clover-server-engine/pkg/app"
+    "github.com/qw576483/clover-server-engine/pkg/foundation/logger"
     _ "your-game/logic"
 )
 
@@ -28,7 +28,7 @@ func main() {
 }
 ```
 
-> **注意：**   需要 Go 1.25+。完整环境配置见 [环境安装](/server/install)。
+> **注意：**   需要 Go 1.25+。完整环境配置见 [环境安装](install.md)。
 
 ## 浏览文档
 
@@ -59,4 +59,4 @@ graph LR
 
 ## 下一步
 
-准备好了？从 [快速上手](/server/quickstart) 开始，5 分钟内跑通第一个 Demo。
+准备好了？从 [快速上手](quickstart.md) 开始，5 分钟内跑通第一个 Demo。

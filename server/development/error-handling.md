@@ -126,9 +126,9 @@ type EAlertNotify struct {
 
 ```go
 import (
-    "clover-server-engine/pkg/domain/data"
-    "clover-server-engine/pkg/domain/data/player"
-    "clover-server-engine/pkg/domain/data/account"
+    "github.com/qw576483/clover-server-engine/pkg/domain/data"
+    "github.com/qw576483/clover-server-engine/pkg/domain/data/player"
+    "github.com/qw576483/clover-server-engine/pkg/domain/data/account"
 )
 
 // 数据层

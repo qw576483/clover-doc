@@ -4,8 +4,8 @@
 
 ## 前置条件
 
-- 已了解 [架构总览](/client/concepts/architecture)
-- 已了解 [设计原则](/client/concepts/design-principles)
+- 已了解 [架构总览](architecture.md)
+- 已了解 [设计原则](design-principles.md)
 
 ## 这篇文档讲什么？
 
@@ -322,6 +322,6 @@ public interface IConnectable
 
 ## 下一步
 
-- **了解架构** → [架构总览](/client/concepts/architecture)
-- **了解设计原则** → [设计原则](/client/concepts/design-principles)
-- **开始开发** → [Game 门面](/client/development/game-facade) → [网络与会话](/client/development/network)
+- **了解架构** → [架构总览](architecture.md)
+- **了解设计原则** → [设计原则](design-principles.md)
+- **开始开发** → [Game 门面](../development/game-facade.md) → [网络与会话](../development/network.md)

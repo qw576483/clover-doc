@@ -17,7 +17,7 @@ Clover 的 **AI 开发规范（skill）体系**：两层 skill 的分工与目�
 
 | | 全局 skill | 项目级 skill |
 |---|---|---|
-| 位置 | `clover-tools/ai-skill/`（安装到 `~/.codebuddy/skills/ai-skill/`） | `<项目根>/tools/ai-skill/` |
+| 位置 | [`clover-tools/ai-skill/`](https://github.com/qw576483/clover-tools/blob/main/ai-skill/.md)（安装到 `~/.codebuddy/skills/ai-skill/`） | `<项目根>/tools/ai-skill/` |
 | 范围 | 所有 Clover 项目通用 | **只有该项目** |
 | 内容 | 引擎 API、范式（`patterns/**`）、速查（`reference/**`）、模板（`scaffold/**`） | 该项目的消息号 / handler / 面板 / 配表登记与约束 |
 | 优先级 | 通用写法 | **项目约定优先**；冲突时以项目为准 |
@@ -98,16 +98,16 @@ type gameLogic struct{ g *app.Game }
 
 **服务端相关链接：**
 
-- [Handler 开发](/server/development/handler) - Handler 开发详解
+- [Handler 开发](../development/handler.md) - Handler 开发详解
 
-- [消息号与协议](/server/concepts/proto) - 消息号分配规则
+- [消息号与协议](../concepts/proto.md) - 消息号分配规则
 
-- [示例](/server/examples/login) - 完整示例参考
+- [示例](../examples/login.md) - 完整示例参考
 
 **客户端相关链接：**
 
-- [客户端架构](/client/concepts/architecture) - 客户端模块架构
+- [客户端架构](../../client/concepts/architecture.md) - 客户端模块架构
 
-- [网络与会话](/client/development/network) - 网络模块用法
+- [网络与会话](../../client/development/network.md) - 网络模块用法
 
-- [Game 门面](/client/development/game-facade) - Game 门面 API
+- [Game 门面](../../client/development/game-facade.md) - Game 门面 API

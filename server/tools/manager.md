@@ -3,7 +3,7 @@
 `manager` 是 clover 集群的**命令行编排工具**：查看所有节点、查看节点状态、对节点下发运维指令、
 按顺序做滚动发布。它同时是**给 AI / 脚本用的自动化入口** —— 输出可解析、退出码可判定、非交互不阻塞。
 
-位置：`clover-server-tools/manager/`。
+位置：[`clover-server-tools/manager/`](https://github.com/qw576483/clover-server-tools/blob/main/manager/.md)。
 
 ## 它做什么 / 不做什么
 
@@ -189,8 +189,8 @@ manager rollout --nodes 10.0.0.11:8011 --target 10.0.0.11:8012 \
 
 **相关链接：**
 
-- [部署指南](/server/operations/deployment) - 组件部署与高可用
-- [Kubernetes 部署](/server/operations/kubernetes) - K8s 部署详解
-- [扩缩容](/server/operations/scaling) - 扩容 / 缩容步骤
-- [本地环境](/server/tools/windows-env) - etcd / nats / redis / mysql 一键起停
-- [AI Skill](/server/tools/ai-skill) - 开发范式与模板
+- [部署指南](../operations/deployment.md) - 组件部署与高可用
+- [Kubernetes 部署](../operations/kubernetes.md) - K8s 部署详解
+- [扩缩容](../operations/scaling.md) - 扩容 / 缩容步骤
+- [本地环境](windows-env.md) - etcd / nats / redis / mysql 一键起停
+- [AI Skill](ai-skill.md) - 开发范式与模板

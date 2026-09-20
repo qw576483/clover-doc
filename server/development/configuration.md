@@ -268,7 +268,7 @@ log_backend_config:
   名字未知、工厂报错、或工厂返回 nil 都**启动即失败**——不静默降级，避免悄悄丢日志。
 - `log_backend_config`：原样交给后端工厂，结构由后端自己定义，引擎不解释。
 - 后端契约：`logstore.Backend`（`WriteBatch(source, entries) (int, error)` + `Close() error`），
-  真身见 `clover-server-engine/pkg/foundation/logstore`。
+  真身见 [`clover-server-engine/pkg/foundation/logstore`](https://github.com/qw576483/clover-server-engine/blob/main/pkg/foundation/logstore.md)。
 - 后端只需负责「把一批日志存下去」；**攒批、按片分发到多实例、失败重连**由引擎在 `logbuf` 侧完成。
 
 ### 跨机对象迁移（MMO 切场景）
@@ -394,8 +394,8 @@ admin:
 **Admin 接口说明**（注册于 `internal/app/admin.go`）：
 - `GET /ping`：admin 自身存活 + 已注册路由列表
 - `GET /routes`：列出已注册路由
-- `GET /metrics`：Prometheus 指标抓取（含自动采集的运行时 / 进程指标，见 [监控](/server/operations/monitoring)）
-- `GET /watchdog`：看门狗（进程内周期巡检）的规则状态快照与告警丢弃计数（注册规则与告警出口见 [监控](/server/operations/monitoring)）
+- `GET /metrics`：Prometheus 指标抓取（含自动采集的运行时 / 进程指标，见 [监控](../operations/monitoring.md)）
+- `GET /watchdog`：看门狗（进程内周期巡检）的规则状态快照与告警丢弃计数（注册规则与告警出口见 [监控](../operations/monitoring.md)）
 - `GET /log/level`：查看当前日志级别
 - `PUT /log/level`：热调整日志级别，body `{"level":"debug"}` 或 `?level=debug`
 - `/deadletter/dlq`、`/deadletter/dlq/retry`、`/deadletter/dlq/remove`、`/deadletter/pending`：
@@ -536,7 +536,7 @@ master_session_token:
   **不会静默回落**——静默回落正是「运维以为已按配置生效、其实没生效」的事故来源。
 - 证书**只配一半**（只有 `cert_file` 或只有 `key_file`）同样报错，不回落明文。
 - 相关键的完整说明见上文「Admin 运维控制面配置」「Master 协调服配置」与
-  [账号服（auth 服）](/server/security/auth-server)。
+  [账号服（auth 服）](../security/auth-server.md)。
 
 ### 旧 → 新 对照
 

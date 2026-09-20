@@ -7,8 +7,8 @@ Clover 是一套面向中重度游戏的全栈框架。服务端 Go 分布式架
 package main
 
 import (
-    "clover-server-engine/pkg/app"
-    "clover-server-engine/pkg/foundation/logger"
+    "github.com/qw576483/clover-server-engine/pkg/app"
+    "github.com/qw576483/clover-server-engine/pkg/foundation/logger"
     _ "your-game/server/logic"
 )
 
@@ -30,7 +30,7 @@ Game.Launch(config);
 CloverNet.Init("127.0.0.1:8002", "127.0.0.1:8003");
 ```
 
-> **注意：**   需要 Go 1.25+ 和 **Unity 6（6000.x）**。详见 [环境安装](/server/install)。
+> **注意：**   需要 Go 1.25+ 和 **Unity 6（6000.x）**。详见 [环境安装](server/install.md)。
 
 
   ### 安装 Go 并克隆项目

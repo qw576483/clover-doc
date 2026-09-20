@@ -73,8 +73,8 @@ package logic
 import (
     "your-game/server/game/datadef"
     "your-game/server/game/def"
-    "clover-server-engine/pkg/app"
-    "clover-server-engine/pkg/transport/event"
+    "github.com/qw576483/clover-server-engine/pkg/app"
+    "github.com/qw576483/clover-server-engine/pkg/transport/event"
 )
 
 var GPlayer *playerLogic

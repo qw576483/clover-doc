@@ -6,7 +6,7 @@
 > **关于历史页面的说明**：文档里曾出现的 `clover-cli`、`msg-test-tcp`、`msg-test-ws`
 > 在本仓库中**都不存在**（`clover-server-tools/` 下只有 `msg-client`、`msg-web`、`table`、`mkcert`、`windows-env`）。
 > 它们已被 `msg-client` 取代（权限点更全：QUIC/TCP 双传输 + proto 自动解析 + 交互式 REPL + 账号服登录流程），
-> 相关页面已下线。本文以 `clover-server-tools/msg-client/` 源码为准。
+> 相关页面已下线。本文以 [`clover-server-tools/msg-client/`](https://github.com/qw576483/clover-server-tools/blob/main/msg-client/.md) 源码为准。
 
 ## 能力
 
@@ -111,7 +111,7 @@ proto:
 | 适用 | 快速联调、可脚本化试消息 | 可视化翻查消息与字段、多人共用 |
 | 账号服接入 | 直连 | 经本工具代理 `/api/auth/*`（规避跨域） |
 
-### msg-web 配置（`clover-server-tools/msg-web/config.yaml`）
+### msg-web 配置（[`clover-server-tools/msg-web/config.yaml`](https://github.com/qw576483/clover-server-tools/blob/main/msg-web/config.yaml)）
 
 | 键 | 说明 | 取值 |
 | --- | --- | --- |
@@ -126,6 +126,6 @@ proto:
 
 **相关链接：**
 
-- [打表工具](/server/tools/table-tools) - 策划表转换与代码生成
-- [本地环境](/server/tools/windows-env) - etcd / nats / redis / mysql 一键起停
-- [AI Skill](/server/tools/ai-skill) - 开发范式与模板
+- [打表工具](table-tools.md) - 策划表转换与代码生成
+- [本地环境](windows-env.md) - etcd / nats / redis / mysql 一键起停
+- [AI Skill](ai-skill.md) - 开发范式与模板

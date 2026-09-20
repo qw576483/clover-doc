@@ -1,6 +1,6 @@
 # 定时器 API
 
-Clover 服务端通过 `g.Timer` 提供进程内共享定时器。底层实现位于 `clover-server-engine/pkg/runtime/timer`，由单个调度 goroutine 管理任务；任务函数在独立 goroutine 中执行，并由引擎安全封装，单个任务的 panic 不会中断调度器。
+Clover 服务端通过 `g.Timer` 提供进程内共享定时器。底层实现位于 [`clover-server-engine/pkg/runtime/timer`](https://github.com/qw576483/clover-server-engine/blob/main/pkg/runtime/timer.md)，由单个调度 goroutine 管理任务；任务函数在独立 goroutine 中执行，并由引擎安全封装，单个任务的 panic 不会中断调度器。
 
 ## 访问入口与生命周期
 
@@ -155,7 +155,7 @@ g.Timer.StopTimerGroup(scope)
 > `Load / Save / LoadJSON / SaveJSON`（可直接写，但**不会**自动做字段级增量广播；需要同步给客户端时显式
 > `g.PushToPlayer`）。
 
-> **完整可照抄模板：** 仓库 `clover-tools/ai-skill/patterns/timer.md` §「到期型任务」（玩家维度 datadef + 重建 +
+> **完整可照抄模板：** 仓库 [`clover-tools/ai-skill/patterns/timer.md`](https://github.com/qw576483/clover-tools/blob/main/ai-skill/patterns/timer.md) §「到期型任务」（玩家维度 datadef + 重建 +
 > 幂等结算，服务器维度启动重建骨架）。
 
 ## 注意事项

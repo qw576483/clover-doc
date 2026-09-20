@@ -224,7 +224,7 @@ POST /auth/login  {"channel":"wechat","ticket":"<客户端拿到的 code>"}
 
 ## 客户端两步登录
 
-见 [账号服登录（CloverAuth）](/client/development/auth)。要点：
+见 [账号服登录（CloverAuth）](../../client/development/auth.md)。要点：
 
 - 客户端先 HTTP 调账号服换 JWT，再经游戏长连接发 `EMsgLogin{token}`。
 - `CloverAuth.AuthAddr` 是**必填配置**：为空即未配置，调用登录 / 注册会抛异常。

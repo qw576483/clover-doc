@@ -13,7 +13,7 @@
 引擎在 `pkg/foundation/metrics` 提供 Prometheus 兼容的指标能力：
 
 ```go 指标埋点示例
-import "clover-server-engine/pkg/foundation/metrics"
+import "github.com/qw576483/clover-server-engine/pkg/foundation/metrics"
 
 var loginTotal = metrics.CounterOf("handler.login.total")
 var loginLatency = metrics.HistogramOf("handler.login.latency", []float64{1, 5, 10, 50, 100, 500})
@@ -261,7 +261,7 @@ go tool pprof http://127.0.0.1:8041/debug/pprof/profile?seconds=30
 
 ## 相关链接
 
-- [日志](/server/operations/logging) - 日志采集与存储
-- [性能优化](/server/operations/performance) - 性能调优策略
-- [故障排查](/server/operations/troubleshooting) - 常见问题排查
-- [Kubernetes 部署](/server/operations/kubernetes) - K8s 部署详解
+- [日志](logging.md) - 日志采集与存储
+- [性能优化](performance.md) - 性能调优策略
+- [故障排查](troubleshooting.md) - 常见问题排查
+- [Kubernetes 部署](kubernetes.md) - K8s 部署详解

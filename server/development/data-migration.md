@@ -84,7 +84,7 @@ COMMIT;
 package datadef
 
 import (
-    "clover-server-engine/internal/domain/data/migration"
+    "github.com/qw576483/clover-server-engine/internal/domain/data/migration"
 )
 
 func init() {
@@ -281,7 +281,7 @@ COMMIT;
 package migrations
 
 import (
-    "clover-server-engine/internal/domain/data/migration"
+    "github.com/qw576483/clover-server-engine/internal/domain/data/migration"
 )
 
 func init() {
@@ -328,7 +328,7 @@ func init() {
 package main
 
 import (
-    "clover-server-engine/pkg/foundation/logger"
+    "github.com/qw576483/clover-server-engine/pkg/foundation/logger"
     "time"
 )
 

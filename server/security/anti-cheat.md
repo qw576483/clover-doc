@@ -68,7 +68,7 @@ func validateMovement(oldPos, newPos Position, deltaTime float64) error {
 ### 物品校验
 
 ```go
-import "clover-server-engine/pkg/domain/object"
+import "github.com/qw576483/clover-server-engine/pkg/domain/object"
 
 func validateItemUse(c event.Ctx, playerID string, itemID uint32) error {
     // 通过 Record 查询背包是否拥有该物品
@@ -171,7 +171,7 @@ func secureRoll() int {
 
 ```go
 // 记录可疑行为（使用引擎 zap 门面 logger）
-import "clover-server-engine/pkg/foundation/logger"
+import "github.com/qw576483/clover-server-engine/pkg/foundation/logger"
 
 func logSuspiciousActivity(playerID string, activity string, details string) {
     logger.Warn("suspicious activity detected",
@@ -192,10 +192,10 @@ func logSuspiciousActivity(playerID string, activity string, details string) {
 
 **相关链接：**
 
-- [认证与权限](/server/security/auth) - 认证流程和权限控制
+- [认证与权限](auth.md) - 认证流程和权限控制
 
-- [输入校验](/server/security/input-validation) - 详细的输入校验指南
+- [输入校验](input-validation.md) - 详细的输入校验指南
 
-- [安全指南](/server/security/security-guide) - 安全编码和扫描集成
+- [安全指南](security-guide.md) - 安全编码和扫描集成
 
 

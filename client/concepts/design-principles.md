@@ -4,7 +4,7 @@
 
 ## 前置条件
 
-- 已了解 [架构总览](/client/concepts/architecture)
+- 已了解 [架构总览](architecture.md)
 - 已了解 Unity C# 开发基础
 
 ## 这篇文档讲什么？
@@ -166,7 +166,7 @@ public const uint MsgLogin = MsgDef.Login;
 
 ### G8: 跨边界传递
 
-**规则**：引用类型**跨程序集**传递不得让渡可变状态：或返回**拷贝快照**，或返回**只读契约 / 不可变对象**（判据见 `clover-client-unity-engine/结构规则.md` §5.3）。
+**规则**：引用类型**跨程序集**传递不得让渡可变状态：或返回**拷贝快照**，或返回**只读契约 / 不可变对象**（判据见 [`clover-client-unity-engine/结构规则.md`](https://github.com/qw576483/clover-client-unity-engine/blob/main/结构规则.md) §5.3）。
 
 ```csharp 错误示例
 // ❌ 错误：直接传递引用
@@ -270,6 +270,6 @@ public class ShopUI : MonoBehaviour
 
 ## 下一步
 
-- **了解架构** → [架构总览](/client/concepts/architecture)
-- **了解依赖** → [模块依赖规则](/client/concepts/module-dependencies)
-- **开始开发** → [Game 门面](/client/development/game-facade) → [网络与会话](/client/development/network)
+- **了解架构** → [架构总览](architecture.md)
+- **了解依赖** → [模块依赖规则](module-dependencies.md)
+- **开始开发** → [Game 门面](../development/game-facade.md) → [网络与会话](../development/network.md)

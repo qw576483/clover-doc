@@ -17,7 +17,7 @@ Clover 客户端引擎是一套 Unity UPM 包，提供**能力域划分 + WorldS
 
 | 项 | 版本 | 说明 |
 |---|---|---|
-| 引擎包**声明**的最低兼容版本 | `2022.3` | `clover-client-unity-engine/package.json` 的 `unity` 字段 |
+| 引擎包**声明**的最低兼容版本 | `2022.3` | [`clover-client-unity-engine/package.json`](https://github.com/qw576483/clover-client-unity-engine/blob/main/package.json) 的 `unity` 字段 |
 | 本仓库的**开发与验证**版本 | **Unity 6（6000.x）** | 承载工程实测 `6000.6.0f1`；AI 自动化操作（编译 / 测试 / 构建）强制走 Unity 6 |
 | 新建工程选哪个 | **Unity 6（6000.x）** | Unity 6 可直接打开并升级 2022.3 时代的包 |
 
@@ -61,7 +61,7 @@ public class GameMain : MonoBehaviour
 }
 ```
 
-> **注意：**   需要 **Unity 6（6000.x）**。完整集成流程见 [快速开始](/client/development/quick-start)。
+> **注意：**   需要 **Unity 6（6000.x）**。完整集成流程见 [快速开始](development/quick-start.md)。
 
 ## 核心特性
 
@@ -89,7 +89,7 @@ public class GameMain : MonoBehaviour
 
 ## 下一步
 
-- **新用户** → [快速开始](/client/development/quick-start)，集成到 Unity 项目
-- **了解架构** → [架构总览](/client/concepts/architecture) → [设计原则](/client/concepts/design-principles)
-- **开始开发** → [Game 门面](/client/development/game-facade) → [网络与会话](/client/development/network)
-- **完整示例** → [登录流程](/client/examples/login-flow)
+- **新用户** → [快速开始](development/quick-start.md)，集成到 Unity 项目
+- **了解架构** → [架构总览](concepts/architecture.md) → [设计原则](concepts/design-principles.md)
+- **开始开发** → [Game 门面](development/game-facade.md) → [网络与会话](development/network.md)
+- **完整示例** → [登录流程](examples/login-flow.md)

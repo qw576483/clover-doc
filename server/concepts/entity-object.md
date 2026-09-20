@@ -25,7 +25,7 @@ id2 := object.FromUint64(wire)
 | `manager.SendQueueEvent` | 串行，per-object 锁，不同对象仍并行 | 掉血、掉落归属、对象级共享计数 |
 
 ```go
-import "clover-server-engine/pkg/domain/object"
+import "github.com/qw576483/clover-server-engine/pkg/domain/object"
 
 // 对象类型由业务自定义（引擎内置只有 TypePlayer=1 / TypeScene=2）
 const TypeMonster uint16 = 1001
@@ -46,9 +46,9 @@ g.SendQueueEventToGObject(ctx, bossID, "take_damage", &Damage{Amount: 90}) // �
 
 ```go
 import (
-    "clover-server-engine/pkg/domain/mmo"
-    "clover-server-engine/pkg/domain/mmo/aoi"
-    "clover-server-engine/pkg/domain/object"
+    "github.com/qw576483/clover-server-engine/pkg/domain/mmo"
+    "github.com/qw576483/clover-server-engine/pkg/domain/mmo/aoi"
+    "github.com/qw576483/clover-server-engine/pkg/domain/object"
 )
 
 grid := mmo.NewGrid(10)         // 10 米一格，返回 aoi.Grid

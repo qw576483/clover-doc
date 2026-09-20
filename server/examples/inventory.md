@@ -26,10 +26,10 @@ package logic
 import (
     "your-game/server/game/datadef"
     "your-game/server/game/def"
-    "clover-server-engine/pkg/app"
-    "clover-server-engine/pkg/transport/event"
-    "clover-server-engine/pkg/domain/object"
-    "clover-server-engine/pkg/shared/proto"
+    "github.com/qw576483/clover-server-engine/pkg/app"
+    "github.com/qw576483/clover-server-engine/pkg/transport/event"
+    "github.com/qw576483/clover-server-engine/pkg/domain/object"
+    "github.com/qw576483/clover-server-engine/pkg/shared/proto"
 )
 
 var GItem *itemLogic

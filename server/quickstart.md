@@ -220,12 +220,12 @@ return nil
 
 **相关链接：**
 
-- [消息号与协议](/server/concepts/proto) - 理解消息号三段分配规则
+- [消息号与协议](concepts/proto.md) - 理解消息号三段分配规则
 
-- [进程与挂载](/server/concepts/app-game) - 理解角色架构与 `app.Mount` 挂载
+- [进程与挂载](concepts/app-game.md) - 理解角色架构与 `app.Mount` 挂载
 
-- [Handler 开发](/server/development/handler) - 深入学习 Context API 和业务编写
+- [Handler 开发](development/handler.md) - 深入学习 Context API 和业务编写
 
-- [配置说明](/server/development/configuration) - 详细配置项解析
+- [配置说明](development/configuration.md) - 详细配置项解析
 
-- [部署指南](/server/operations/deployment) - 生产环境部署
+- [部署指南](operations/deployment.md) - 生产环境部署

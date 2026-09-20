@@ -23,14 +23,14 @@ internal/*：引擎私有实现，外部模块不可 import
 ## 仓库布局
 
 ```text
-full-dev/
-├── clover-server-engine/     # 引擎本体
-│   ├── internal/             # 私有实现（业务禁止 import）
-│   ├── pkg/                  # 公共契约层（业务唯一 import 入口）
-│   └── go.mod                # module clover-server-engine
-├── your-server/              # 业务服务端工程
-│   └── server/               # 服务器工程（game + master 双逻辑）
-└── clover-doc/               # 本文档站
+clover-server-engine/          # 引擎本体（独立仓库）
+├── internal/                  # 私有实现（业务禁止 import）
+├── pkg/                       # 公共契约层（业务唯一 import 入口）
+└── go.mod                     # module github.com/qw576483/clover-server-engine
+
+your-server/                   # 业务服务端工程（独立仓库）
+├── go.mod                     # require github.com/qw576483/clover-server-engine
+└── server/                    # 服务器工程（game + master 双逻辑）
 ```
 
 ## 依赖方向
@@ -65,17 +65,17 @@ full-dev/
 
 ```go
 import (
-    "clover-server-engine/pkg/app"             // app.Run / RunWithConfig / Game / MasterGame
-    "clover-server-engine/pkg/app/types"       // AdminConfig / TableLoader / ConnDisconnectEvent
-    "clover-server-engine/pkg/domain/data"     // Store / Record / Key / OwnerType
-    "clover-server-engine/pkg/domain/data/account" // EAccount / EChannel
-    "clover-server-engine/pkg/domain/master"   // MasterRank / PlayerLookup / RankMember / Threshold
-    "clover-server-engine/pkg/domain/mmo"      // SceneManager / Scene / Instance
-    "clover-server-engine/pkg/domain/object"   // ObjectID / Manager / Value / AttrSet
-    "clover-server-engine/pkg/domain/room"     // Module（房间外壳）/ Kernel（可插拔内核）
-    "clover-server-engine/pkg/transport/event" // Ctx / Handler / Envelope / Bus
-    "clover-server-engine/pkg/foundation/logger" // logger API
-    "clover-server-engine/pkg/shared/conv"     // 纯工具
+    "github.com/qw576483/clover-server-engine/pkg/app"             // app.Run / RunWithConfig / Game / MasterGame
+    "github.com/qw576483/clover-server-engine/pkg/app/types"       // AdminConfig / TableLoader / ConnDisconnectEvent
+    "github.com/qw576483/clover-server-engine/pkg/domain/data"     // Store / Record / Key / OwnerType
+    "github.com/qw576483/clover-server-engine/pkg/domain/data/account" // EAccount / EChannel
+    "github.com/qw576483/clover-server-engine/pkg/domain/master"   // MasterRank / PlayerLookup / RankMember / Threshold
+    "github.com/qw576483/clover-server-engine/pkg/domain/mmo"      // SceneManager / Scene / Instance
+    "github.com/qw576483/clover-server-engine/pkg/domain/object"   // ObjectID / Manager / Value / AttrSet
+    "github.com/qw576483/clover-server-engine/pkg/domain/room"     // Module（房间外壳）/ Kernel（可插拔内核）
+    "github.com/qw576483/clover-server-engine/pkg/transport/event" // Ctx / Handler / Envelope / Bus
+    "github.com/qw576483/clover-server-engine/pkg/foundation/logger" // logger API
+    "github.com/qw576483/clover-server-engine/pkg/shared/conv"     // 纯工具
 )
 ```
 
@@ -111,7 +111,7 @@ your-server/server/
 ## 文档工程结构
 
 ```text
-clover-doc/
+
 ├── index.md                 # 首页
 ├── mint.json / docs.json    # Mintlify 导航（新增页面必须在这里登记，否则页面上不出现）
 ├── STANDARDS.md             # 文档规范

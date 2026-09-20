@@ -12,7 +12,7 @@
 package logic
 
 import (
-    "clover-server-engine/pkg/app"
+    "github.com/qw576483/clover-server-engine/pkg/app"
 )
 
 func init() {

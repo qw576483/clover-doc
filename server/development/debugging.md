@@ -150,7 +150,7 @@ dlv connect :2345
 使用结构化日志便于分析：
 
 ```go
-import "clover-server-engine/pkg/foundation/logger"
+import "github.com/qw576483/clover-server-engine/pkg/foundation/logger"
 
 func loginHandler(c event.Ctx) error {
     // 记录日志（字段用 logger.Field 构造，无需 import zap）

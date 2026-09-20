@@ -110,7 +110,7 @@ g.SendQueueEventToPlayer(c, playerID, "battle.damage", &DamageData{Amount: 90})
 ### 注册与发送
 
 ```go
-import "clover-server-engine/pkg/domain/mmo"
+import "github.com/qw576483/clover-server-engine/pkg/domain/mmo"
 
 // 注册场景事件处理器
 scene.OnEvent("capture.tick", func(ctx context.Context, s mmo.Scene, eventType string, payload any) error {
@@ -142,7 +142,7 @@ handler 内禁止对同一场景再调 `SendQueueEvent`（自我死锁），嵌�
 `Scene.Tick` 由业务定时器驱动，与 handler 在不同 goroutine。直接在 Tick 里修改场景共享状态会与 handler 并发覆盖。用 `scene.Sync` 包住 Tick 内的状态读写：
 
 ```go
-import "clover-server-engine/pkg/domain/mmo"
+import "github.com/qw576483/clover-server-engine/pkg/domain/mmo"
 
 beat := mmo.NewSceneBeat(50*time.Millisecond, 0)
 beat.Add(mmo.TierFast, func(dt time.Duration) {
@@ -166,7 +166,7 @@ GObject 事件作用于独立的游戏对象（怪物、NPC、掉落物等），
 ### 注册与发送
 
 ```go
-import "clover-server-engine/pkg/domain/object"
+import "github.com/qw576483/clover-server-engine/pkg/domain/object"
 
 // 对象类型由业务自定义（引擎内置只有 TypePlayer=1 / TypeScene=2）
 const TypeMonster uint16 = 1001
