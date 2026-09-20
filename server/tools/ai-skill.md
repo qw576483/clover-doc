@@ -17,7 +17,7 @@ Clover 的 **AI 开发规范（skill）体系**：两层 skill 的分工与目�
 
 | | 全局 skill | 项目级 skill |
 |---|---|---|
-| 位置 | [`clover-tools/ai-skill/`](https://github.com/qw576483/clover-tools/tree/main/ai-skill)（安装到 `~/.codebuddy/skills/ai-skill/`） | `<项目根>/tools/ai-skill/` |
+| 位置 | [`clover-ai-skill/`](https://github.com/qw576483/clover-tools/tree/main/ai-skill)（安装到 `~/.codebuddy/skills/ai-skill/`） | `<项目根>/tools/ai-skill/` |
 | 范围 | 所有 Clover 项目通用 | **只有该项目** |
 | 内容 | 引擎 API、范式（`patterns/**`）、速查（`reference/**`）、模板（`scaffold/**`） | 该项目的消息号 / handler / 面板 / 配表登记与约束 |
 | 优先级 | 通用写法 | **项目约定优先**；冲突时以项目为准 |
@@ -27,7 +27,7 @@ Clover 的 **AI 开发规范（skill）体系**：两层 skill 的分工与目�
 ## 全局 skill 的结构
 
 ```text
-clover-tools/ai-skill/
+clover-ai-skill/
 ├── SKILL.md            # 入口：工作流、硬约束、目录索引
 ├── patterns/           # 服务端范式（handler / datadef / mount / timer / crossnode / table / game-demo …）
 ├── patterns/client/    # 客户端范式（network / ui / entity-view / resource / config / fsm …）

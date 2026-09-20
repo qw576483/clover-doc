@@ -110,7 +110,7 @@ func (l *playerLogic) rebuildTodos(c event.Ctx) error {
 ```
 
 > **完整模板：** 玩家维度（含幂等结算写法）与服务器维度（启动重建 + 周期兜底）见仓库
-> [`clover-tools/ai-skill/patterns/timer.md`](https://github.com/qw576483/clover-tools/blob/main/ai-skill/patterns/timer.md) §「到期型任务」。
+> [`clover-ai-skill/patterns/timer.md`](https://github.com/qw576483/clover-tools/blob/main/ai-skill/patterns/timer.md) §「到期型任务」。
 
 ### 停止任务
 

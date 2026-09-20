@@ -155,7 +155,7 @@ g.Timer.StopTimerGroup(scope)
 > `Load / Save / LoadJSON / SaveJSON`（可直接写，但**不会**自动做字段级增量广播；需要同步给客户端时显式
 > `g.PushToPlayer`）。
 
-> **完整可照抄模板：** 仓库 [`clover-tools/ai-skill/patterns/timer.md`](https://github.com/qw576483/clover-tools/blob/main/ai-skill/patterns/timer.md) §「到期型任务」（玩家维度 datadef + 重建 +
+> **完整可照抄模板：** 仓库 [`clover-ai-skill/patterns/timer.md`](https://github.com/qw576483/clover-tools/blob/main/ai-skill/patterns/timer.md) §「到期型任务」（玩家维度 datadef + 重建 +
 > 幂等结算，服务器维度启动重建骨架）。
 
 ## 注意事项
