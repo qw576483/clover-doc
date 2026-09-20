@@ -168,7 +168,7 @@
       "anchors": [
         {
           "anchor": "GitHub",
-          "href": "https://github.com/qw576483/html-unity-richtext",
+          "href": "https://github.com/qw576483/clover-doc",
           "icon": "github"
         }
       ]
@@ -182,7 +182,7 @@
     "links": [
       {
         "label": "GitHub",
-        "href": "https://github.com/qw576483/html-unity-richtext"
+        "href": "https://github.com/qw576483/clover-doc"
       }
     ],
     "primary": {
@@ -196,7 +196,7 @@
   },
   "footer": {
     "socials": {
-      "github": "https://github.com/qw576483/html-unity-richtext"
+      "github": "https://github.com/qw576483/clover-doc"
     }
   }
 }

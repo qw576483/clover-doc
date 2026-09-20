@@ -18,7 +18,7 @@
 | QUIC 流 | `[4B length][客户端帧]` | **没有 `type` 字节**；与服务端 `internal/transport/net/quic/conn.go` 的 `[4B 大端长度][客户端帧]` 严格对应 |
 | 裸 UDP | `[1B 0x55][4B requestID][4B msgID][body]` | 使用魔数标识，天然分包 |
 | WebSocket | `[4B requestID][4B msgID][body]`（**一条二进制消息 = 一个客户端帧**） | 无 `type` / `length` 前缀、无 0x55 魔数；文本帧按服务端语义丢弃 |
-| WebTransport | **尚未实现**（见工作区根 `客户端待做.md` #2） | 接入后由协议自动处理帧格式 |
+| WebTransport | **尚未实现**（待办由客户端引擎仓库维护） | 接入后由协议自动处理帧格式 |
 
 > 上表的**客户端帧** = `[4B requestID][4B msgID][body]`（全大端）。
 
@@ -446,5 +446,5 @@ public class NetworkSender : MonoBehaviour
 
 ## 下一步
 
--   了解消息号定义与两端一致性要求
--   了解网络模块完整用法
+- 了解 [消息号定义](emsg.md) 与两端一致性要求
+- 了解 [网络模块](../development/network.md) 完整用法

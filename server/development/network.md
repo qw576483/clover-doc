@@ -494,5 +494,5 @@ master_token: "<强随机串>"            # 内部 RPC 共享密钥；各 game �
 
 - [配置管理](configuration.md)
 - [性能优化](performance.md)
-- [安全配置](../operations/kubernetes.md)
-- [监控配置](../operations/scaling.md)
+- [安全配置](../security/security-guide.md)
+- [监控配置](../operations/monitoring.md)

@@ -528,4 +528,4 @@ alerts:
 - [性能优化](performance.md)
 - [日志管理](logging.md)
 - [测试指南](testing.md)
-- [监控配置](../operations/scaling.md)
+- [监控配置](../operations/monitoring.md)

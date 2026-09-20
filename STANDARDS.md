@@ -52,7 +52,7 @@ Concepts → Build → Tutorials → Tools → API → Examples
 ```
 
 ├── index.md              # 首页（概览 + 卡片导航）
-├── mint.json             # 配置（导航、主题、颜色）
+├── docs.json             # 配置（导航、主题、颜色）
 ├── server/
 │   ├── index.md          # 服务端概览
 │   ├── quickstart.md     # 快速开始（5分钟上手）

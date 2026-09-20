@@ -191,7 +191,8 @@ Game.Res.CheckUpdate(info =>
 > （`BuildPipeline.BuildAssetBundles` / `AssetBundleManifest` 全仓零命中）。
 > 手工维护依赖表不现实 ⇒ 必须补一个 Editor 打包脚本：`BuildPipeline.BuildAssetBundles` →
 > 用 `AssetBundleManifest.GetAllDependencies()` 生成清单的 `deps` 与版本 → 再上传。
-> 发布流程与目录约定见 `客户端待做.md` #19（清单 URL 来源、`rs/<版本>` 规范、灰度与回滚）。
+> 发布流程与目录约定（清单 URL 来源、`rs/<版本>` 规范、灰度与回滚）属客户端引擎未交付项，
+> 待办由客户端引擎仓库维护。
 
 ### 生效时机（重要）
 

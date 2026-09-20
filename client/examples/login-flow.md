@@ -8,7 +8,7 @@
 > ⚠️ **本文是「引擎自带样例」的说明**：样例挂在任意 Unity 工程里演示 API，没有自己的 `Assets/Configs/`，
 > 因此服务器地址 / 账号服地址用 **Inspector 字段**（可在面板里改）。
 > **业务工程必须把地址写进 `Assets/Configs/config.json` 并由加载器读取**，不要在代码里写地址字面量
-> —— 见 `patterns/client/config.md` 与 [账号服登录](../development/auth.md)。
+> —— 配置说明见 [账号服登录](../development/auth.md) 的「配置示例（`config.json`）」一节。
 
 
 ## 流程概览

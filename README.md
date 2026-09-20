@@ -9,7 +9,7 @@ Clover 框架的官方文档站，用 [Mintlify](https://mintlify.com) 构建，
 | 路径 | 内容 |
 |---|---|
 | `index.md`、`quickstart.md`、`install.md`、`getting-started.md` | 环境安装与 5 分钟跑通 |
-| `concepts/` | 核心概念（18 篇）：app-game、structure、data、data-flow、event、timer、proto、push、request-lifecycle、network-topology、cluster、heartbeat、lifecycle、entity-object、mmo-world、mmo-worldsync |
+| `concepts/` | 核心概念（16 篇）：app-game、structure、data、data-flow、event、timer、proto、push、request-lifecycle、network-topology、cluster、heartbeat、lifecycle、entity-object、mmo-world、mmo-worldsync |
 | `development/` | 开发指南（14 篇）：handler、network、persistence、logging、configuration、debugging、error-handling、state-machine、testing、performance、protocol-design、table-design、data-migration、environment |
 | `examples/` | 示例（7 篇）：login、chat、room、data、inventory、timer、heartbeat |
 | `operations/` | 部署运维（8 篇）：deployment、kubernetes、scaling、monitoring、logging、backup-recovery、performance、troubleshooting |
@@ -32,7 +32,7 @@ Clover 框架的官方文档站，用 [Mintlify](https://mintlify.com) 构建，
 | `index.md` | 站点首页（框架定位、快速上手代码片段、选型理由） |
 | `logo/`、`favicon.svg`、`styles.css` | 站点资源与样式 |
 | `STANDARDS.md` | 文档编写规范（分层组织、导航结构、术语与示例口径）——**新增文档前先读** |
-| `docs.json` / `mint.json` | Mintlify 站点配置（主题、颜色、导航树） |
+| `docs.json` | Mintlify 站点配置（主题、颜色、导航树） |
 
 ## 本地预览
 

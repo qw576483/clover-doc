@@ -486,4 +486,4 @@ diff before.txt after.txt
 - [配置管理](configuration.md)
 - [性能优化](performance.md)
 - [测试指南](testing.md)
-- [监控配置](../operations/scaling.md)
+- [监控配置](../operations/monitoring.md)

@@ -570,4 +570,4 @@ http GET http://localhost:8041/ping
 
 - [配置管理](configuration.md)
 - [快速开始](../getting-started.md)
-- [故障排除](../operations/kubernetes.md)
+- [故障排除](../operations/troubleshooting.md)

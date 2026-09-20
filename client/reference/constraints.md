@@ -19,11 +19,11 @@
 | **N3** | EMsg 两端一致 | 消息号由两端各自维护（服务端 `game/def/` ↔ 客户端 `Runtime/Network/EMsg.cs`（引擎段）与 `MsgDef`（业务段）），**常量名与值必须逐字一致**，禁用裸字面量 | 消息号不一致，通信失败 |
 | **N4** | 会话恢复 | 重连走 session resume 不重登；次数上限 + 指数退避，超限抛事件停手 | 重复登录，数据丢失 |
 | **N5** | UDP 绑定流程 | 服务端经 TCP 下发 `EMsg.UDPBindGrant` → 客户端经 UDP 上报 `EMsg.BindUDP`；每 10 秒重报绑定帧 | UDP 通信失败 |
-| **N6** | 传输协议 | QUIC / WebSocket / RawUDP 为 P0 级交付（**WebTransport 未实现**，见工作区根 `客户端待做.md` #2） | 缺少传输协议支持 |
+| **N6** | 传输协议 | QUIC / WebSocket / RawUDP 为 P0 级交付（**WebTransport 未实现**，待办由客户端引擎仓库维护） | 缺少传输协议支持 |
 | **N7** | 证书校验 | 全场景禁止自签证书；引擎不提供跳过证书校验的开关 | 安全风险，连接失败 |
 | **N8** | Keepalive 处理 | WebTransport keepalive（msgID==0 空包）直接丢弃，不进 Router | 资源浪费，性能下降 |
 | **N9** | 多设备被踢 | 清理 UDP → 走 `OnKicked`，不自动重连 | 多设备冲突 |
-| **N10** | 平台线路 | Standalone = QUIC → TCP + RawUDP；GL（WebGL）= **当前无可用线路**（WebSocket 与 WebTransport 均需浏览器 jslib 桥接、尚未落地，见 `客户端待做.md` #2；浏览器无 BSD socket，原生家族线路也不可用） | 平台兼容性问题 |
+| **N10** | 平台线路 | Standalone = QUIC → TCP + RawUDP；GL（WebGL）= **当前无可用线路**（WebSocket 与 WebTransport 均需浏览器 jslib 桥接、尚未落地，待办由客户端引擎仓库维护；浏览器无 BSD socket，原生家族线路也不可用） | 平台兼容性问题 |
 | **N11** | 线路 TLS | `GameConfig.UseTls` 与服务端 `gateway.tcp_tls_disabled` **必须相反**；证书只走系统信任链 | 握手失败，连上就断 |
 | **N12** | 排队与通道加密 | 由引擎自动处理（`EMsg.QueuePosition` 位置帧 + 登录时自动协商 AES-GCM）；业务**不得**手填 `ELoginRequest.encrypt`，也不得自行加解密帧 | 收到密钥却解不开 / 帧被丢弃 |
 
@@ -368,5 +368,5 @@ public class GoodExamples : MonoBehaviour
 
 ## 下一步
 
--   了解约束背后的设计理念
--   了解模块划分和依赖关系
+- 了解约束背后的 [设计原则](../concepts/design-principles.md)
+- 了解 [模块划分和依赖关系](../concepts/module-dependencies.md)

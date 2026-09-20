@@ -1,6 +1,9 @@
 
-> **注意：** 以下示例中 `g.OnConnect`、`g.OnDisconnect`、`g.CreatePlayer` 是引擎内部 API（`internal/app`），
-> 业务代码**不可直接调用**。此处仅展示引擎登录流程的完整实现逻辑供参考。
+> **注意：** 以下示例中 `g.OnConnect`、`g.OnDisconnect`、`g.CreatePlayer` 都是 `pkg/app` 门面上的**公开 API**，
+> 业务可直接调用：引擎的 `internal/app` 类型经 `pkg/app` 门面（`type Game = internal/app.GameFacade`，
+> `GameFacade` 内嵌 `*internal/app.Game`）透出，这三个方法由内嵌结构**提升**到 `*app.Game` 的方法集上
+> （同族还有 `OnSoftDisconnect` / `OnHardDisconnect`）。所以本页把连接钩子与建角放在
+> `app.Mount(app.RoleGame, …)` 的业务挂载回调里，正是业务侧的写法。
 > 业务侧只需定义消息 → 定义 Schema → 挂载 Handler → 实现业务，引擎自动处理登录/注册/会话恢复。
 
 引擎内置了完整的登录与会话恢复流程（`EMsgLogin` / `EMsgResumeSession`），**业务无需编写任何登录代码**；注册走账号服 HTTP，不经过游戏服。你只需完成四步：定义消息 → 定义 Schema → 挂载 Handler → 实现业务。

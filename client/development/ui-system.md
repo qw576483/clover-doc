@@ -196,7 +196,7 @@ public class ShopManager
     async void OnBuyRequest(object data)
     {
         var request = (dynamic)data;
-        var reply = await Game.Net.Call<ShopBuyReply>(EMsg.ShopBuy, new ShopBuyRequest
+        var reply = await Game.Net.Call<ShopBuyReply>(MsgDef.ShopBuy, new ShopBuyRequest
         {
             ItemID = request.ItemID,
         });
@@ -231,7 +231,7 @@ Game.UI.FloatText(monster.transform.position, "-120", Color.red);
 
 // Loading：引用计数，两个异步流程各自 Show/Hide 互不干扰
 Game.UI.ShowLoading("正在购买...");
-try { await Game.Net.Call<ShopBuyReply>(EMsg.ShopBuy, req); }
+try { await Game.Net.Call<ShopBuyReply>(MsgDef.ShopBuy, req); }
 finally { Game.UI.HideLoading(); }
 
 // 确认框：回调式（不阻塞主线程）

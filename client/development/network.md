@@ -17,7 +17,7 @@
 
 | 能力 | 说明 |
 |------|------|
-| Connection | 传输抽象与线路计划：QUIC / TCP / WebSocket / 裸 UDP（**WebTransport 尚未实现**，见工作区根 `客户端待做.md` #2）。原生家族 = QUIC → TCP + RawUDP，Web 家族 = WT → WS（两者均需浏览器 jslib 桥接、**当前均未落地 ⇒ WebGL 无可用线路**），**两家族互斥**；跨家族换线不是「降级」而是换协议家族，引擎禁止 |
+| Connection | 传输抽象与线路计划：QUIC / TCP / WebSocket / 裸 UDP（**WebTransport 尚未实现**，待办由客户端引擎仓库维护）。原生家族 = QUIC → TCP + RawUDP，Web 家族 = WT → WS（两者均需浏览器 jslib 桥接、**当前均未落地 ⇒ WebGL 无可用线路**），**两家族互斥**；跨家族换线不是「降级」而是换协议家族，引擎禁止 |
 | Session | 登录态：account / playerID / token / 线路 / requestID 分配 / 请求-回包配对 |
 | Router | `OnMsg(msgID, handler)` 注册派发，推送（requestID==0）走这里 |
 | Call 配对 | `Call<T>` 按 requestID 配对，超时默认 10s |
@@ -125,7 +125,7 @@ Game.Net.SendUnreliable(MsgDef.PositionSync, new PositionData
 // 异步请求
 try
 {
-    var reply = await Game.Net.Call<ShopBuyReply>(EMsg.ShopBuy, new ShopBuyRequest
+    var reply = await Game.Net.Call<ShopBuyReply>(MsgDef.ShopBuy, new ShopBuyRequest
     {
         ItemID = 1001,
         Count = 1,
@@ -335,11 +335,11 @@ Game.Event.On("Net.OnKicked", () =>
 | **N3** | EMsg 两端一致：常量名与值逐字相同（服务端 `game/def/` ↔ 客户端 `Runtime/Network/EMsg.cs`（引擎段）与 `MsgDef`（业务段）） |
 | **N4** | 重连走 session resume 不重登；次数上限 + 指数退避 |
 | **N5** | UDP 绑定两步流程，每 10 秒重报绑定帧 |
-| **N6** | QUIC / WebSocket / RawUDP 为 P0 级交付（**WebTransport 未实现**，见工作区根 `客户端待做.md` #2） |
+| **N6** | QUIC / WebSocket / RawUDP 为 P0 级交付（**WebTransport 未实现**，待办由客户端引擎仓库维护） |
 | **N7** | 全场景禁止自签证书 |
 | **N8** | WebTransport keepalive（msgID==0 空包）直接丢弃 |
 | **N9** | 多设备被踢 → 清理 UDP → 走 `OnKicked`，不自动重连 |
-| **N10** | 平台线路：Standalone = QUIC → TCP + RawUDP；GL（WebGL）= **当前无可用线路**（WebSocket 与 WebTransport 均需浏览器 jslib 桥接、尚未落地，见 `客户端待做.md` #2；浏览器无 BSD socket，原生家族线路也不可用） |
+| **N10** | 平台线路：Standalone = QUIC → TCP + RawUDP；GL（WebGL）= **当前无可用线路**（WebSocket 与 WebTransport 均需浏览器 jslib 桥接、尚未落地，待办由客户端引擎仓库维护；浏览器无 BSD socket，原生家族线路也不可用） |
 | **N11** | 线路 TLS 开关与服务端 `gateway.tcp_tls_disabled` **必须相反**；证书只走系统信任链（无跳过开关） |
 | **N12** | 会话通道加密由引擎协商（登录时自动填 `ELoginRequest.encrypt`）；业务不得手填该字段，也不得自行加解密帧 |
 

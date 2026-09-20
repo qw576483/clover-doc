@@ -84,10 +84,10 @@ import (
 | 顶层 | 公开子包 |
 |------|----------|
 | `pkg/app` | `app`, `types` |
-| `pkg/domain` | `data`, `data/account`, `data/bridge`, `data/order`, `data/player`, `master`, `mmo`, `mmo/ai/btree`, `mmo/aoi`, `mmo/buff`, `mmo/collide`, `mmo/combat`, `mmo/mob`, `mmo/mover`, `mmo/pathfinding`, `mmo/skill`, `mmo/sync`, `object`, `object/gobject`, `object/idgen`, `object/objstore`, `room`, `room/frame` |
-| `pkg/foundation` | `logbuf`, `logger`, `metrics`, `trace` |
-| `pkg/runtime` | `async`, `fsm`, `pool`, `ratelimit`, `timer` |
-| `pkg/shared` | `bitset`, `bloom`, `cache`, `compress`, `conv`, `geom`, `hyperloglog`, `id`, `json`, `memrank`, `proto`, `rand`, `ringbuf`, `safe`, `semaphore`, `timeutil`, `timewindow`, `traceid`, `util`, `validate` |
+| `pkg/domain` | `data`, `data/account`, `data/bridge`, `data/order`, `data/player`, `master`, `mmo`, `mmo/ai/btree`, `mmo/aoi`, `mmo/buff`, `mmo/collide`, `mmo/combat`, `mmo/mapdata`, `mmo/mob`, `mmo/mover`, `mmo/pathfinding`, `mmo/skill`, `mmo/sync`, `object`, `object/gobject`, `object/idgen`, `object/objstore`, `room`, `room/frame` |
+| `pkg/foundation` | `logbuf`, `logger`, `logstore`, `metrics`, `trace` |
+| `pkg/runtime` | `async`, `fsm`, `pool`, `ratelimit`, `timer`, `watchdog` |
+| `pkg/shared` | `bitset`, `bloom`, `cache`, `compress`, `conv`, `geom`, `graph`, `hyperloglog`, `id`, `json`, `jwt`, `memrank`, `proto`, `rand`, `ringbuf`, `safe`, `semaphore`, `timeutil`, `timewindow`, `traceid`, `util`, `validate` |
 | `pkg/transport` | `event` |
 
 ## internal 私有实现层
@@ -113,7 +113,7 @@ your-server/server/
 ```text
 
 ├── index.md                 # 首页
-├── mint.json / docs.json    # Mintlify 导航（新增页面必须在这里登记，否则页面上不出现）
+├── docs.json                # Mintlify 导航（新增页面必须在这里登记，否则页面上不出现）
 ├── STANDARDS.md             # 文档规范
 ├── logo/ favicon.svg styles.css
 ├── client/                  # 客户端文档
@@ -121,8 +121,7 @@ your-server/server/
 │   ├── concepts/            # 核心概念
 │   ├── development/         # 开发指南
 │   ├── examples/            # 实战示例
-│   ├── reference/           # 速查（emsg / frame-format / constraints / api-cheatsheet）
-│   └── tools/
+│   └── reference/           # 速查（emsg / frame-format / constraints / api-cheatsheet）
 └── server/                  # 服务端文档
     ├── index.md / getting-started.md / install.md / quickstart.md
     ├── concepts/            # 核心概念
