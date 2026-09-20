@@ -224,10 +224,15 @@ using CloverEngine; // 拿 Game 门面起步
 ```json Packages/manifest.json
 {
   "dependencies": {
-    "com.clover.unity-engine": "file:../clover-client-unity-engine"
+    "com.clover.unity-engine": "https://github.com/qw576483/clover-client-unity-engine.git"
   }
 }
 ```
+
+> 引擎是独立仓库（UPM 包），**推荐用上面的 git URL**，别人 clone 工程即可打开。
+> 仅当要在本机联调引擎源码时才改用本地路径，且**基准是 `Packages/` 目录**：
+> `"file:../../../clover-client-unity-engine"`（指到与工程仓库同父的那一层）。
+> 不要写 `file:../clover-client-unity-engine`（会解析成 `<工程根>/clover-client-unity-engine`，必报找不到 `package.json`），也不要写绝对路径。
 
 ## 违反依赖的后果
 

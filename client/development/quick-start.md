@@ -29,10 +29,16 @@
 ```json
 {
   "dependencies": {
-    "com.clover.unity-engine": "file:../clover-client-unity-engine"
+    "com.clover.unity-engine": "file:../../../clover-client-unity-engine"
   }
 }
 ```
+
+> **路径基准是工程的 `Packages/` 目录**（Unity 规定：`file:` 相对路径相对 `Packages/` 解析），**不是工程根**。
+> 上例的 `../../../` 指「引擎仓库与工程仓库同父目录」的那一层（`<工作区>/clover-client-unity-engine`）。
+> 写 `file:../clover-client-unity-engine` 会被解析成 `<工程根>/clover-client-unity-engine`（不存在），
+> Unity 报 `com.clover.unity-engine: The file [...\clover-client-unity-engine\package.json] cannot be found`。
+> 要把工程分发给别人 → 用**方式二（git URL）**，本地路径只适合自己这台机器联调。
 
 ### 方式二：Git URL
 
