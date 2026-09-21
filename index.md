@@ -61,7 +61,7 @@ Package Manager → Add package from git URL → 输入 `https://github.com/qw57
 
 - NATS 事件总线 + 多进程协作，Gateway / Game / Master 三角色分离，水平扩展支撑万人同服。
 - 读取 → 修改 → 返回，handler 返回即自动提交，无需手动 Save，消除遗忘持久化的 bug。
-- 客户端 UPM 包内置状态同步，AOI 视野管理 + 帧同步房间，开箱即用。
+- 客户端 UPM 包内置状态同步，AOI 视野管理 + 帧同步房间。
 - 打表工具、调试客户端、可视化测试、Windows 一键环境，开发体验拉满。
 
 ## 浏览文档

@@ -1,7 +1,7 @@
 
 # 客户端引擎
 
-Clover 客户端引擎是一套 Unity UPM 包，提供**能力域划分 + WorldSync 世界同步**，开箱即用的客户端底座。
+Clover 客户端引擎是一套 Unity UPM 包，提供**能力域划分 + WorldSync 世界同步**。
 
 ## 这篇文档讲什么？
 
