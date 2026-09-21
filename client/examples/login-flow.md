@@ -231,13 +231,15 @@ catch (System.Exception ex)
 
 ## 导入示例
 
-  1. 打开 Unity Package Manager
-  2. 点击 `com.clover.unity-engine` 包
-  3. 点击 **Samples** 标签
-  4. 点击 **LoginFlow** 的 **Import** 按钮
+1. 打开 Unity Package Manager
+2. 点击 `com.clover.unity-engine` 包
+3. 点击 **Samples** 标签
+4. 点击 **LoginFlow** 的 **Import** 按钮
 
 ## 下一步
 
-     深入了解网络模块、重连机制和会话管理
-       了解引擎初始化和模块入口
+1. **先补机制**：[网络与会话](../development/network.md) —— 连接管理、消息收发、重连与会话恢复（本页只走了一条链路，这里讲全）
+2. **再看门面**：[Game 门面](../development/game-facade.md) —— 引擎初始化次序与各模块入口
+3. **上线前**：[硬约束](../reference/constraints.md) —— 必须守住的边界与静默失败风险
+
 

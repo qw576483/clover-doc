@@ -175,8 +175,9 @@ g.PushToPlayer(targetPlayerID, def.MsgXxxPush, data)
 3. 优化缓存策略
 4. 检查对象池使用情况
 
-## 相关链接
+## 下一步
 
-- [集群架构](../concepts/cluster.md) - 理解多节点部署和跨节点通信
-- [网络拓扑](../concepts/network-topology.md) - 理解三层网络架构
-- [监控告警](monitoring.md) - 建立性能监控体系
+1. [集群架构](../concepts/cluster.md) —— 理解多节点部署和跨节点通信
+2. [网络拓扑](../concepts/network-topology.md) —— 理解三层网络架构
+3. [监控告警](monitoring.md) —— 建立性能监控体系
+

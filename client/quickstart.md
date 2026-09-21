@@ -221,10 +221,11 @@ BuildUi();
 | Package Manager 报 `package.json cannot be found` | 本地路径按 `Packages/` 为基准算错了层数（见第 1 节） |
 | Unity 版本不兼容 | 需要 **6000.0（Unity 6）** 及以上 |
 
-**相关链接：**
+## 下一步
 
-- [Game 门面](development/game-facade.md) — `Game.*` 各入口
-- [网络模块](development/network.md) — 连接、重连、会话、推送
-- [资源模块](development/resource.md) — 加载、池化、热更
-- [输入](development/input.md) — `CloverInput` 与输入后端
-- [客户端引擎总览](index.md) — 能力域与模块全貌
+1. [Game 门面](development/game-facade.md) — `Game.*` 各入口
+2. [网络模块](development/network.md) — 连接、重连、会话、推送
+3. [资源模块](development/resource.md) — 加载、池化、热更
+4. [输入](development/input.md) — `CloverInput` 与输入后端
+5. [客户端引擎总览](index.md) — 能力域与模块全貌
+

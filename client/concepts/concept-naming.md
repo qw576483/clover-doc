@@ -216,6 +216,7 @@
 
 ## 下一步
 
-- **了解客户端架构** → [客户端架构](architecture.md)
-- **了解设计原则** → [设计原则](design-principles.md)
-- **了解服务端 MMO** → [MMO 世界](../../server/concepts/mmo-world.md)
+1. **了解客户端架构** → [客户端架构](architecture.md)
+2. **了解设计原则** → [设计原则](design-principles.md)
+3. **了解服务端 MMO** → [MMO 世界](../../server/concepts/mmo-world.md)
+

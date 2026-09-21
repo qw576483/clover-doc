@@ -237,13 +237,7 @@ func (l *gameLogic) requireGM(c event.Ctx, perm string) error {
 
 ## 下一步
 
-
-**相关链接：**
-
-- [输入校验](input-validation.md) - 详细的输入校验指南
-
-- [反作弊](anti-cheat.md) - 游戏反作弊策略
-
-- [Handler 开发](../development/handler.md) - Handler 中的认证实践
-
+1. [Handler 开发](../development/handler.md) —— Handler 中的认证实践
+2. [输入校验](input-validation.md) —— 详细的输入校验指南
+3. [反作弊](anti-cheat.md) —— 游戏反作弊策略
 

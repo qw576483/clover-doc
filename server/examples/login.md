@@ -197,13 +197,8 @@ func (l *playerLogic) onMsgEnterGame(c event.Ctx) error {
 | 修改即广播 | 修改 `Player` 结构体后直接返回，引擎自动 Commit + 增量广播 |
 | 手动回包用 Reply | 不依赖自动广播的场景用 `g.Reply()` |
 
-## 相关文档
+## 下一步
 
-
-**相关链接：**
-
-- [心跳与连接生命周期](../concepts/heartbeat.md) - 连接、会话与心跳机制
-
-- [协议与消息号](../concepts/proto.md) - 消息号定义与协议规范
-
+1. [心跳与连接生命周期](../concepts/heartbeat.md) —— 连接、会话与心跳机制
+2. [协议与消息号](../concepts/proto.md) —— 消息号定义与协议规范
 

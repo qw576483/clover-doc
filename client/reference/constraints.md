@@ -368,5 +368,6 @@ public class GoodExamples : MonoBehaviour
 
 ## 下一步
 
-- 了解约束背后的 [设计原则](../concepts/design-principles.md)
-- 了解 [模块划分和依赖关系](../concepts/module-dependencies.md)
+1. 了解约束背后的 [设计原则](../concepts/design-principles.md)
+2. 了解 [模块划分和依赖关系](../concepts/module-dependencies.md)
+

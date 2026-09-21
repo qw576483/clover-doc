@@ -155,13 +155,8 @@ Game 侧读 `OwnerServer` 走本地镜像缓存，写操作在 master 侧。
 | Load-Modify-Return | 修改在 handler 返回时统一 Commit，无需显式 Save |
 | `c.SetNoPush()` | 关闭本次请求的增量广播（如高频数值只回包不同步） |
 
-## 相关文档
+## 下一步
 
-
-**相关链接：**
-
-- [数据存储概念](../concepts/data.md) - 数据模型、ORM 与 Load-Modify-Return
-
-- [实体与对象](../concepts/entity-object.md) - Schema 定义与属性袋机制
-
+1. [数据存储概念](../concepts/data.md) —— 数据模型、ORM 与 Load-Modify-Return
+2. [实体与对象](../concepts/entity-object.md) —— Schema 定义与属性袋机制
 

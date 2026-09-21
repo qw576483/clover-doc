@@ -89,7 +89,8 @@ public class GameMain : MonoBehaviour
 
 ## 下一步
 
-- **新用户** → [快速开始](quickstart.md)，集成到 Unity 项目
-- **了解架构** → [架构总览](concepts/architecture.md) → [设计原则](concepts/design-principles.md)
-- **开始开发** → [Game 门面](development/game-facade.md) → [网络与会话](development/network.md)
-- **完整示例** → [登录流程](examples/login-flow.md)
+1. **新用户** → [快速开始](quickstart.md)，集成到 Unity 项目
+2. **了解架构** → [架构总览](concepts/architecture.md) → [设计原则](concepts/design-principles.md)
+3. **开始开发** → [Game 门面](development/game-facade.md) → [网络与会话](development/network.md)
+4. **完整示例** → [登录流程](examples/login-flow.md)
+

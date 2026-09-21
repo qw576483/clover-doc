@@ -263,6 +263,7 @@ graph LR
 
 ## 下一步
 
-- **了解设计理念** → [设计原则](design-principles.md)
-- **了解模块依赖** → [模块依赖规则](module-dependencies.md)
-- **开始开发** → [Game 门面](../development/game-facade.md) → [网络与会话](../development/network.md)
+1. **了解设计理念** → [设计原则](design-principles.md)
+2. **了解模块依赖** → [模块依赖规则](module-dependencies.md)
+3. **开始开发** → [Game 门面](../development/game-facade.md) → [网络与会话](../development/network.md)
+

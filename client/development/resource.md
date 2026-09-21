@@ -280,5 +280,6 @@ var prefab = Resources.Load<GameObject>("prefabs/shop_ui");  // 不要这样做
 
 ## 下一步
 
-- 了解 [对象池](./object-pool.md) 和实例复用
-- 了解 [Entity 与 View](./entity-view.md) 和数据绑定
+1. 了解 [对象池](./object-pool.md) 和实例复用
+2. 了解 [Entity 与 View](./entity-view.md) 和数据绑定
+

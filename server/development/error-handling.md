@@ -284,9 +284,10 @@ func TestLevelUpHandler_MaxLevel(t *testing.T) {
 4. **不要吞错误**：`if err != nil { return nil }` 会让客户端以为成功了，非常危险。
 5. **利用引擎预置错误**：`data.ErrNotFound`、`player.ErrPlayerNotFound` 等可直接复用。
 
-## 相关文档
+## 下一步
 
-- [Handler 开发指南](handler.md) — handler 签名、回包、注册
-- [日志管理](logging.md) — 结构化日志与链路追踪
-- [测试指南](testing.md) — 单元测试与集成测试
-- [配置管理](configuration.md) — 引擎配置
+1. [Handler 开发指南](handler.md) — handler 签名、回包、注册
+2. [日志管理](logging.md) — 结构化日志与链路追踪
+3. [测试指南](testing.md) — 单元测试与集成测试
+4. [配置管理](configuration.md) — 引擎配置
+

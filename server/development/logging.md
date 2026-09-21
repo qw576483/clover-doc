@@ -150,7 +150,8 @@ logger.CtxInfo(ctx, "进入战斗")            // 自动带上 trace_id
 logger.CtxError(ctx, "战斗结算失败", logger.Field("error", err))
 ```
 
-## 相关文档
+## 下一步
 
-- [错误处理](error-handling.md) — 错误分类与「每条非预期分支都要打日志」的约定
-- [日志采集与存储](../operations/logging.md) — 运维侧：采集、存储、告警
+1. [错误处理](error-handling.md) — 错误分类与「每条非预期分支都要打日志」的约定
+2. [日志采集与存储](../operations/logging.md) — 运维侧：采集、存储、告警
+

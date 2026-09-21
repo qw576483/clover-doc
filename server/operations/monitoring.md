@@ -259,9 +259,10 @@ go tool pprof http://127.0.0.1:8041/debug/pprof/profile?seconds=30
 1. 看 `clover_watchdog_alerts_dropped_total` 与 `/watchdog` 的 `dropped` 字段（非零 = 有告警没送出去）；
 2. 给 `Sink.Notify` 加超时与异步（引擎只保证队列有界不阻塞巡检，不替外部通道兜底）。
 
-## 相关链接
+## 下一步
 
-- [日志](logging.md) - 日志采集与存储
-- [性能优化](performance.md) - 性能调优策略
-- [故障排查](troubleshooting.md) - 常见问题排查
-- [Kubernetes 部署](kubernetes.md) - K8s 部署详解
+1. [日志](logging.md) —— 日志采集与存储
+2. [性能优化](performance.md) —— 性能调优策略
+3. [故障排查](troubleshooting.md) —— 常见问题排查
+4. [Kubernetes 部署](kubernetes.md) —— K8s 部署详解
+

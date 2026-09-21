@@ -187,10 +187,11 @@ manager rollout --nodes 10.0.0.11:8011 --target 10.0.0.11:8012 \
 **AI 调用卡在确认提示上**：不该发生（见自动化契约第 3 条）。若遇到，说明命令没带 `--yes`
 且 stdin 被误判为终端——优先检查调用方式，别改成"自动填空输入"绕过。
 
-**相关链接：**
+## 下一步
 
-- [部署指南](../operations/deployment.md) - 组件部署与高可用
-- [Kubernetes 部署](../operations/kubernetes.md) - K8s 部署详解
-- [扩缩容](../operations/scaling.md) - 扩容 / 缩容步骤
-- [本地环境](windows-env.md) - etcd / nats / redis / mysql 一键起停
-- [AI Skill](../../ai/skill.md) - 开发范式与模板
+1. [部署指南](../operations/deployment.md) —— 组件部署与高可用
+2. [Kubernetes 部署](../operations/kubernetes.md) —— K8s 部署详解
+3. [扩缩容](../operations/scaling.md) —— 扩容 / 缩容步骤
+4. [本地环境](windows-env.md) —— etcd / nats / redis / mysql 一键起停
+5. [AI Skill](../../ai/skill.md) —— 开发范式与模板
+

@@ -210,5 +210,6 @@ Game.FrameRoom.SendInput(JsonUtility.ToJson(input));
 
 ## 下一步
 
-- 了解 [Entity 与 View](./entity-view.md) 和数据绑定
-- 了解 [Event / Timer / Fsm](./event-timer-fsm.md) 详细用法
+1. 了解 [Entity 与 View](./entity-view.md) 和数据绑定
+2. 了解 [Event / Timer / Fsm](./event-timer-fsm.md) 详细用法
+

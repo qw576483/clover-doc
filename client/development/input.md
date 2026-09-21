@@ -144,6 +144,7 @@ but you have switched active Input handling to Input System package in Player Se
 
 ## 下一步
 
-- [UI 系统](./ui-system.md)：EventSystem / InputModule 由引擎输入模块统一维护
-- [Game 门面](./game-facade.md)：模块入口一览
-- [常见约束](../reference/constraints.md)
+1. [UI 系统](./ui-system.md)：EventSystem / InputModule 由引擎输入模块统一维护
+2. [Game 门面](./game-facade.md)：模块入口一览
+3. [常见约束](../reference/constraints.md)
+

@@ -481,9 +481,10 @@ mysql -u clover -p clover_game -e "SELECT COUNT(*) FROM player_info" > after.txt
 diff before.txt after.txt
 ```
 
-## 相关文档
+## 下一步
 
-- [配置管理](configuration.md)
-- [性能优化](performance.md)
-- [测试指南](testing.md)
-- [监控配置](../operations/monitoring.md)
+1. [配置管理](configuration.md)
+2. [性能优化](performance.md)
+3. [测试指南](testing.md)
+4. [监控配置](../operations/monitoring.md)
+

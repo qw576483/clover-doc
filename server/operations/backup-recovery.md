@@ -165,8 +165,9 @@ git push origin main
 2. 确认恢复步骤的正确顺序
 3. 考虑使用时间点恢复（PITR）
 
-## 相关链接
+## 下一步
 
-- [部署指南](deployment.md) - 生产环境部署
-- [监控告警](monitoring.md) - 建立监控体系
-- [故障排查](troubleshooting.md) - 常见问题排查
+1. [部署指南](deployment.md) —— 生产环境部署
+2. [监控告警](monitoring.md) —— 建立监控体系
+3. [故障排查](troubleshooting.md) —— 常见问题排查
+

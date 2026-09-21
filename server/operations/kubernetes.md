@@ -231,9 +231,10 @@ metadata:
 3. 检查网络策略（NetworkPolicy）
 4. 验证负载均衡器配置
 
-## 相关链接
+## 下一步
 
-- [部署指南](deployment.md) - 传统部署方式
-- [扩缩容](scaling.md) - 扩缩容策略
-- [日志](logging.md) - 日志采集与存储
-- [监控与告警](monitoring.md) - 监控体系建设
+1. [部署指南](deployment.md) —— 传统部署方式
+2. [扩缩容](scaling.md) —— 扩缩容策略
+3. [日志](logging.md) —— 日志采集与存储
+4. [监控与告警](monitoring.md) —— 监控体系建设
+

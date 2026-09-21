@@ -125,13 +125,7 @@ result, _ := db.QueryContext(ctx, query)
 
 ## 下一步
 
-
-**相关链接：**
-
-- [输入校验](input-validation.md) - 详细的输入校验指南
-
-- [反作弊](anti-cheat.md) - 游戏反作弊策略
-
-- [认证与权限](auth.md) - 认证流程和权限控制
-
+1. [输入校验](input-validation.md) —— 详细的输入校验指南
+2. [反作弊](anti-cheat.md) —— 游戏反作弊策略
+3. [认证与权限](auth.md) —— 认证流程和权限控制
 

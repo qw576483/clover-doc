@@ -233,15 +233,9 @@ func (l *frameRoomDemoLogic) onSnapshot(c event.Ctx) error {
 
 > 回归用例在 [`clover-server-engine/internal/domain/room/frame/room_test.go`](https://github.com/qw576483/clover-server-engine/blob/main/internal/domain/room/frame/room_test.go)（4 条，把两个根因各钉成断言）。
 
-## 相关文档
+## 下一步
 
-
-**相关链接：**
-
-- [进程与挂载](../concepts/app-game.md) - `app.Mount` 与 Game 生命周期
-
-- [跨节点与 Master](../concepts/cluster.md) - 连接迁移与集群架构
-
-- [推送机制](../concepts/push.md) - PushToPlayer 与数据推送
-
+1. [进程与挂载](../concepts/app-game.md) —— `app.Mount` 与 Game 生命周期
+2. [跨节点与 Master](../concepts/cluster.md) —— 连接迁移与集群架构
+3. [推送机制](../concepts/push.md) —— PushToPlayer 与数据推送
 

@@ -523,9 +523,10 @@ alerts:
     message: "内存使用过高: {{ .MemoryUsage }}%"
 ```
 
-## 相关文档
+## 下一步
 
-- [性能优化](performance.md)
-- [日志管理](logging.md)
-- [测试指南](testing.md)
-- [监控配置](../operations/monitoring.md)
+1. [性能优化](performance.md)
+2. [日志管理](logging.md)
+3. [测试指南](testing.md)
+4. [监控配置](../operations/monitoring.md)
+

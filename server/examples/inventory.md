@@ -130,15 +130,9 @@ func (l *itemLogic) onEventPlayerCreated(c event.Ctx) error {
 > **注意：** `LoadRecord` 返回的 `*data.Record` 支持行列级增量追踪，handler 返回时引擎只推送变化部分，带宽效率极高。
 
 
-## 相关文档
+## 下一步
 
-
-**相关链接：**
-
-- [数据读写示例](data.md) - StructSchema / RecordSchema / OwnerServer 完整读写
-
-- [实体与对象](../concepts/entity-object.md) - Schema 定义与属性袋机制
-
-- [数据存储概念](../concepts/data.md) - 数据模型与持久化
-
+1. [实体与对象](../concepts/entity-object.md) —— Schema 定义与属性袋机制
+2. [数据存储概念](../concepts/data.md) —— 数据模型与持久化
+3. [数据读写示例](data.md) —— StructSchema / RecordSchema / OwnerServer 完整读写
 

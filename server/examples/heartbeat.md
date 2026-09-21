@@ -115,13 +115,8 @@ WebSocket 断线重连后发送 `EMsgResumeSession`（消息号 3）：
 | `OnHardDisconnect` | 宽限结束 | 清理玩家数据 |
 | `OnKick` | 多端互踢 | 通知被踢、清理旧连接 |
 
-## 相关文档
+## 下一步
 
-
-**相关链接：**
-
-- [心跳概念](../concepts/heartbeat.md) - 心跳机制与宽限流程详解
-
-- [登录与建角](login.md) - 引擎内置登录/注册/会话恢复
-
+1. [心跳概念](../concepts/heartbeat.md) —— 心跳机制与宽限流程详解
+2. [登录与建角](login.md) —— 引擎内置登录/注册/会话恢复
 

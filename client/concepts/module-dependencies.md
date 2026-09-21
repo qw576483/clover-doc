@@ -325,6 +325,7 @@ public interface IConnectable
 
 ## 下一步
 
-- **了解架构** → [架构总览](architecture.md)
-- **了解设计原则** → [设计原则](design-principles.md)
-- **开始开发** → [Game 门面](../development/game-facade.md) → [网络与会话](../development/network.md)
+1. **了解架构** → [架构总览](architecture.md)
+2. **了解设计原则** → [设计原则](design-principles.md)
+3. **开始开发** → [Game 门面](../development/game-facade.md) → [网络与会话](../development/network.md)
+

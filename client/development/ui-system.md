@@ -308,5 +308,6 @@ var safeArea = Screen.safeArea;
 
 ## 下一步
 
-- 了解 [资源管理](./resource.md) 和异步加载
-- 了解 [对象池](./object-pool.md) 和实例复用
+1. 了解 [资源管理](./resource.md) 和异步加载
+2. 了解 [对象池](./object-pool.md) 和实例复用
+

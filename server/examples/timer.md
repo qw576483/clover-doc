@@ -149,13 +149,8 @@ g.Timer.StopTimerGroup(scope)
 > **警告：** Cron 任务在所有 Game 节点都会触发。需要全集群只执行一次的场景，务必用 Redis 分布式锁（`SetNX`）。
 
 
-## 相关文档
+## 下一步
 
-
-**相关链接：**
-
-- [定时器概念](../concepts/timer.md) - Timer API 与作用域机制
-
-- [连接生命周期](../concepts/heartbeat.md) - 连接钩子与玩家维度清理
-
+1. [定时器概念](../concepts/timer.md) —— Timer API 与作用域机制
+2. [连接生命周期](../concepts/heartbeat.md) —— 连接钩子与玩家维度清理
 

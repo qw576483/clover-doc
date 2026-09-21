@@ -200,8 +200,9 @@ gosec ./...
 3. 使用 pprof 进行性能剖析
 4. 优化热点代码
 
-## 相关链接
+## 下一步
 
-- [安全指南](../security/security-guide.md) - 安全编码和扫描集成
-- [性能优化](performance.md) - 性能调优策略
-- [监控告警](monitoring.md) - 建立监控体系
+1. [性能优化](performance.md) —— 性能调优策略
+2. [监控告警](monitoring.md) —— 建立监控体系
+3. [安全指南](../security/security-guide.md) —— 安全编码和扫描集成
+

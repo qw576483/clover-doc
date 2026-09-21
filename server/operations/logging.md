@@ -145,9 +145,10 @@ Loki 查询示例：
 3. 增加存储系统资源
 4. 设置查询超时时间
 
-## 相关链接
+## 下一步
 
-- [监控与告警](monitoring.md) - 监控体系建设
-- [故障排查](troubleshooting.md) - 常见问题排查
-- [Kubernetes 部署](kubernetes.md) - K8s 部署详解
-- [备份与恢复](backup-recovery.md) - 备份恢复策略
+1. [监控与告警](monitoring.md) —— 监控体系建设
+2. [故障排查](troubleshooting.md) —— 常见问题排查
+3. [Kubernetes 部署](kubernetes.md) —— K8s 部署详解
+4. [备份与恢复](backup-recovery.md) —— 备份恢复策略
+

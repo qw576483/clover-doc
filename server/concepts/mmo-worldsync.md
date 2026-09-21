@@ -415,9 +415,10 @@ graph TB
 **原因**：网络延迟过高或预测参数不合理
 **解决**：调整 `maxPending` 参数，或切换到纯权威+插值模式
 
-## 相关文档
+## 下一步
 
-- [客户端 WorldSync 开发指南](../../client/development/worldsync.md)
-- [Entity 与 View](../../client/development/entity-view.md)
-- [网络与会话](../../client/development/network.md)
-- [Event / Timer / Fsm](../../client/development/event-timer-fsm.md)
+1. [客户端 WorldSync 开发指南](../../client/development/worldsync.md)
+2. [Entity 与 View](../../client/development/entity-view.md)
+3. [网络与会话](../../client/development/network.md)
+4. [Event / Timer / Fsm](../../client/development/event-timer-fsm.md)
+

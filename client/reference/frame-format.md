@@ -448,5 +448,6 @@ public class NetworkSender : MonoBehaviour
 
 ## 下一步
 
-- 了解 [消息号定义](emsg.md) 与两端一致性要求
-- 了解 [网络模块](../development/network.md) 完整用法
+1. 了解 [网络模块](../development/network.md) 完整用法
+2. 了解 [消息号定义](emsg.md) 与两端一致性要求
+

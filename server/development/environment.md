@@ -566,8 +566,9 @@ sudo apt install httpie
 http GET http://localhost:8041/ping
 ```
 
-## 相关文档
+## 下一步
 
-- [配置管理](configuration.md)
-- [快速开始](../quickstart.md)
-- [故障排除](../operations/troubleshooting.md)
+1. [快速开始](../quickstart.md)
+2. [配置管理](configuration.md)
+3. [故障排除](../operations/troubleshooting.md)
+

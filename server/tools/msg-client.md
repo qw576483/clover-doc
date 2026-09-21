@@ -124,8 +124,9 @@ proto:
 > **页面协议必须与网关一致**：网关开了 TLS（`gateway.tls_cert`）时页面也要配证书；
 > 若把网关证书清空退回明文，这两行也要注释掉、或启动加 `-http`，否则浏览器 WS 与 WebTransport 两条通道都连不上。
 
-**相关链接：**
+## 下一步
 
-- [打表工具](table-tools.md) - 策划表转换与代码生成
-- [本地环境](windows-env.md) - etcd / nats / redis / mysql 一键起停
-- [AI Skill](../../ai/skill.md) - 开发范式与模板
+1. [打表工具](table-tools.md) —— 策划表转换与代码生成
+2. [本地环境](windows-env.md) —— etcd / nats / redis / mysql 一键起停
+3. [AI Skill](../../ai/skill.md) —— 开发范式与模板
+

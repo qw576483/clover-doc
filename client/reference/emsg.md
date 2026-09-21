@@ -394,5 +394,6 @@ public class ErrorHandler : MonoBehaviour
 
 ## 下一步
 
-- 了解 [帧结构和传输协议](frame-format.md)
-- 了解 [网络模块](../development/network.md) 完整用法
+1. 了解 [网络模块](../development/network.md) 完整用法
+2. 了解 [帧结构和传输协议](frame-format.md)
+

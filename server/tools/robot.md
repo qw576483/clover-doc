@@ -296,9 +296,10 @@ cd clover-server-tools/robot && go test ./...
 **几百个机器人时本机报 `too many open files`**
 调 `ulimit -n`；或用 `--transport tcp` 降低单连接资源占用。
 
-**相关链接：**
+## 下一步
 
-- [集群编排工具](manager.md) - 看节点 / 灰度下线 / 滚动发布
-- [命令行调试客户端](msg-client.md) - 单连接联调某一条消息
-- [性能与压测建议](../development/performance.md) - 压测指标与瓶颈定位
-- [部署与扩展](../operations/scaling.md) - 扩容 / 缩容步骤
+1. [集群编排工具](manager.md) —— 看节点 / 灰度下线 / 滚动发布
+2. [命令行调试客户端](msg-client.md) —— 单连接联调某一条消息
+3. [性能与压测建议](../development/performance.md) —— 压测指标与瓶颈定位
+4. [部署与扩展](../operations/scaling.md) —— 扩容 / 缩容步骤
+

@@ -373,5 +373,6 @@ Game.Event.On("Net.OnKicked", () =>
 
 ## 下一步
 
-- 了解 [序列化协议](./serialization.md) 和帧格式
-- 了解 [Game 门面](./game-facade.md) 和模块入口
+1. 了解 [序列化协议](./serialization.md) 和帧格式
+2. 了解 [Game 门面](./game-facade.md) 和模块入口
+

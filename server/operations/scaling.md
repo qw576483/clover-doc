@@ -166,8 +166,9 @@ metrics:
 3. 验证数据同步状态
 4. 制定回滚方案
 
-## 相关链接
+## 下一步
 
-- [集群架构](../concepts/cluster.md) - 理解 Clover 集群拓扑
-- [Kubernetes 部署](kubernetes.md) - K8s 部署详解
-- [性能优化](performance.md) - 性能调优策略
+1. [集群架构](../concepts/cluster.md) —— 理解 Clover 集群拓扑
+2. [Kubernetes 部署](kubernetes.md) —— K8s 部署详解
+3. [性能优化](performance.md) —— 性能调优策略
+

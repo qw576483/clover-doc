@@ -337,11 +337,12 @@ send MsgGetPlayerList      # 按字段名自动组包，发一条业务消息
 
 > **证书每台机器独立，绝不能跨机器拷贝**：mkcert 的根 CA 是在本机随机生成并装进本机信任库的，A 机器的证书拿到 B 机器必然报 `tls: unknown certificate`。
 
-**相关链接：**
+## 下一步
 
-- [安装与环境](development/environment.md) — 各依赖的手工安装方式（Linux / macOS）
-- [配置说明](development/configuration.md) — 全部配置字段
-- [Handler 开发](development/handler.md) — 开始写业务逻辑
-- [本地环境工具](tools/windows-env.md) — windows-env 详解
-- [调试客户端](tools/msg-client.md) — msg-client 详解
-- [部署](operations/deployment.md) — 生产环境
+1. [安装与环境](development/environment.md) — 各依赖的手工安装方式（Linux / macOS）
+2. [配置说明](development/configuration.md) — 全部配置字段
+3. [Handler 开发](development/handler.md) — 开始写业务逻辑
+4. [本地环境工具](tools/windows-env.md) — windows-env 详解
+5. [调试客户端](tools/msg-client.md) — msg-client 详解
+6. [部署](operations/deployment.md) — 生产环境
+

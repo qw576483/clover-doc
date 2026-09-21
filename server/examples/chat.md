@@ -132,15 +132,9 @@ if !limiter.Allow(c.PlayerID(), "announce") {
 | 限流 | `ratelimit.Manager.Allow(key, policy)` | 防刷屏，按玩家/连接维度隔离 |
 | 不回包即广播 | 纯广播场景可不 `Reply` | 客户端以推送为准 |
 
-## 相关文档
+## 下一步
 
-
-**相关链接：**
-
-- [推送机制](../concepts/push.md) - 数据驱动广播与命令式推送
-
-- [数据存储](../concepts/data.md) - 数据模型与 Load-Modify-Return
-
-- [集群与 Master](../concepts/cluster.md) - 跨节点数据同步与 NATS 广播
-
+1. [推送机制](../concepts/push.md) —— 数据驱动广播与命令式推送
+2. [数据存储](../concepts/data.md) —— 数据模型与 Load-Modify-Return
+3. [集群与 Master](../concepts/cluster.md) —— 跨节点数据同步与 NATS 广播
 

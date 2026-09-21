@@ -270,6 +270,7 @@ public class ShopUI : MonoBehaviour
 
 ## 下一步
 
-- **了解架构** → [架构总览](architecture.md)
-- **了解依赖** → [模块依赖规则](module-dependencies.md)
-- **开始开发** → [Game 门面](../development/game-facade.md) → [网络与会话](../development/network.md)
+1. **了解架构** → [架构总览](architecture.md)
+2. **了解依赖** → [模块依赖规则](module-dependencies.md)
+3. **开始开发** → [Game 门面](../development/game-facade.md) → [网络与会话](../development/network.md)
+

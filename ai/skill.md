@@ -98,18 +98,10 @@ type gameLogic struct{ g *app.Game }
 
 ## 下一步
 
-**服务端相关链接：**
+1. [消息号与协议](../server/concepts/proto.md) —— 消息号分配规则
+2. [客户端架构](../client/concepts/architecture.md) —— 客户端模块架构
+3. [Handler 开发](../server/development/handler.md) —— Handler 开发详解
+4. [网络与会话](../client/development/network.md) —— 网络模块用法
+5. [Game 门面](../client/development/game-facade.md) —— Game 门面 API
+6. [示例](../server/examples/login.md) —— 完整示例参考
 
-- [Handler 开发](../server/development/handler.md) - Handler 开发详解
-
-- [消息号与协议](../server/concepts/proto.md) - 消息号分配规则
-
-- [示例](../server/examples/login.md) - 完整示例参考
-
-**客户端相关链接：**
-
-- [客户端架构](../client/concepts/architecture.md) - 客户端模块架构
-
-- [网络与会话](../client/development/network.md) - 网络模块用法
-
-- [Game 门面](../client/development/game-facade.md) - Game 门面 API

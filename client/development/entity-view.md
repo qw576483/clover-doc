@@ -186,5 +186,6 @@ Game.Entity.DestroyGroup(sceneID);
 
 ## 下一步
 
-- 了解 [WorldSync 世界同步](./worldsync.md) 和数据同步
-- 了解 [对象池](./object-pool.md) 和实例复用
+1. 了解 [WorldSync 世界同步](./worldsync.md) 和数据同步
+2. 了解 [对象池](./object-pool.md) 和实例复用
+

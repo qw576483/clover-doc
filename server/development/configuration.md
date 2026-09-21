@@ -732,10 +732,11 @@ auth:
 | `master_session_token.*` | `backend`（`memory`/`redis`）/ `ttl` / `key_prefix` |
 | `reliable.*` | 跨节点可靠投递（`enabled`/`ack_timeout`/`max_attempts`/退避参数/`dedup_*`/`dlq_capacity` 等 14 键） |
 
-## 相关文档
+## 下一步
 
-- [快速开始](../quickstart.md)
-- [网络拓扑](../concepts/network-topology.md)
-- [应用游戏架构](../concepts/app-game.md)
-- [数据持久化](persistence.md)
-- [错误处理](error-handling.md)
+1. [快速开始](../quickstart.md)
+2. [网络拓扑](../concepts/network-topology.md)
+3. [应用游戏架构](../concepts/app-game.md)
+4. [数据持久化](persistence.md)
+5. [错误处理](error-handling.md)
+

@@ -225,5 +225,6 @@ Game.Timer.AfterUnscaled(4f, () => Game.Fsm.Transition("Menu"));
 
 ## 下一步
 
-- 了解 [Game 门面](./game-facade.md) 和模块入口
-- 了解 [网络与会话](./network.md) 完整用法
+1. 了解 [Game 门面](./game-facade.md) 和模块入口
+2. 了解 [网络与会话](./network.md) 完整用法
+

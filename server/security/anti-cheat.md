@@ -189,13 +189,7 @@ func logSuspiciousActivity(playerID string, activity string, details string) {
 
 ## 下一步
 
-
-**相关链接：**
-
-- [认证与权限](auth.md) - 认证流程和权限控制
-
-- [输入校验](input-validation.md) - 详细的输入校验指南
-
-- [安全指南](security-guide.md) - 安全编码和扫描集成
-
+1. [认证与权限](auth.md) —— 认证流程和权限控制
+2. [输入校验](input-validation.md) —— 详细的输入校验指南
+3. [安全指南](security-guide.md) —— 安全编码和扫描集成
 

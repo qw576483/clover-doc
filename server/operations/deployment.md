@@ -202,9 +202,10 @@ gateway:
 2. 检查 NATS 配置和认证信息
 3. 确认端口未被占用
 
-## 相关链接
+## 下一步
 
-- [Kubernetes 部署](kubernetes.md) - K8s 部署详解
-- [扩缩容](scaling.md) - 扩缩容策略
-- [监控与告警](monitoring.md) - 监控体系建设
-- [备份与恢复](backup-recovery.md) - 备份恢复策略
+1. [Kubernetes 部署](kubernetes.md) —— K8s 部署详解
+2. [扩缩容](scaling.md) —— 扩缩容策略
+3. [监控与告警](monitoring.md) —— 监控体系建设
+4. [备份与恢复](backup-recovery.md) —— 备份恢复策略
+

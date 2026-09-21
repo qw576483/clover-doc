@@ -120,7 +120,7 @@ cd clover-server-tools/windows-env/core
 
 服务端从零到能登录的完整流程，见 [服务端快速开始](../server/quickstart.md)。
 
-## 接下来读什么
+## 下一步
 
 | 想干什么 | 去哪 |
 |---|---|

@@ -221,5 +221,6 @@ Game.Event.On("Net.OnKicked", () =>
 
 ## 下一步
 
-- 了解 [网络与会话](./network.md) 完整用法
-- 了解 [Event / Timer / Fsm](./event-timer-fsm.md) 详细用法
+1. 了解 [网络与会话](./network.md) 完整用法
+2. 了解 [Event / Timer / Fsm](./event-timer-fsm.md) 详细用法
+
