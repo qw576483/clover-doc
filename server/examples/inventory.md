@@ -86,7 +86,13 @@ func (l *itemLogic) onMsgCostItem(c event.Ctx) error {
 
 ### 事件驱动初始化
 
-玩家创建后经 `EvtPlayerCreated` 事件发放初始道具：
+> ⛔ **这段 handler 永远不会被触发**：引擎**只 emit 连接类事件**
+> （`conn.connect` / `conn.reconnect` / `conn.soft_disconnect` / `conn.disconnect`）；
+> `CreatePlayer` 只做 `playerStore.Create` 落库，**不 emit 任何事件**。
+> 初始道具请在**创建角色那条业务链路里直接发放**，或自己 emit 一个业务事件再监听。
+> 下面保留原写法，仅作"事件驱动长什么样"的示意。
+
+玩家创建后经 `EvtPlayerCreated` 事件发放初始道具（**写法示意，见上方警告**）：
 
 ```go
 func (l *itemLogic) onEventPlayerCreated(c event.Ctx) error {

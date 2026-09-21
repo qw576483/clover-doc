@@ -113,9 +113,16 @@ g.SendQueueEventToPlayer(c, playerID, "battle.damage", &DamageData{Amount: 90})
 import "github.com/qw576483/clover-server-engine/pkg/domain/mmo"
 
 // 注册场景事件处理器
+// ⛔ `s` 是**接口** mmo.Scene（SceneFacade，只有方法集）—— 取 `s.progress` **编译不过**
+//    （那是 internal 实现里的未导出字段，接口值没有字段可读）。
+//    要记进度请放在**业务自己的** map/结构里（按场景 id 或 objID 索引），⛔ 不要试图改引擎内部状态。
 scene.OnEvent("capture.tick", func(ctx context.Context, s mmo.Scene, eventType string, payload any) error {
-    data := payload.(*CaptureData)
-    s.progress += data.Value
+    data, ok := payload.(*CaptureData)
+    if !ok {
+        return nil
+    }
+    // captureProgress 是业务侧的表：captureProgress[sceneID] += data.Value
+    _ = data
     return nil
 })
 ```

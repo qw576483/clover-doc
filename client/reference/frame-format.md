@@ -46,7 +46,7 @@ TCP 传输使用以下传输层帧（`payload` 即客户端帧）：
 
 | 字段 | 长度 | 类型 | 说明 |
 |------|------|------|------|
-| `type` | 1 字节 | byte | 帧类型：0=Data, 1=Ping, 2=Pong（原 3=Migrate 已删除，收到按未知帧类型处理） |
+| `type` | 1 字节 | byte | 帧类型：0=Data, 1=Ping, 2=Pong、**3=Migrate**（⛔ **未删除**：`Connection.cs` 仍有 `FrameTypeMigrate` 与显式 case，收到只打一条 Info；首帧合法性判定也是 `type > 3` 才算非法） |
 | `length` | 4 字节 | uint32 | 后续数据的字节长度（不含自身，含 requestID+msgID+body）；**也是帧上限的判据**——超过 10 MiB 直接断线 |
 | `requestID` | 4 字节 | uint32 | 请求配对 ID，0 表示推送 |
 | `msgID` | 4 字节 | uint32 | 消息号（EMsg 枚举） |
@@ -279,7 +279,7 @@ bool bound = Game.Net.IsUdpBound;
 
 | 消息 | 说明 | 处理方式 |
 |------|------|----------|
-| **WebTransport keepalive** | msgID == 0 空包，直接丢弃不进 Router | 引擎自动处理 |
+| **QUIC keepalive**（⛔ 不是 WebTransport —— 客户端没有 WT 实现） | msgID == 0 空包，方向客户端→服务端 | 客户端收到的帧**一律进 Router**，无 handler 即无声息（没有"丢弃"分支） |
 | **EMsg.Error** | 统一错误回包，body 为 `EErrorReply{err, code}`。来源两处：逻辑服 handler 返回 error、网关登录门禁拒绝未登录连接 | 引擎按 requestID 结束该次 `Call`（抛 `CloverCallException`，含 `Code`）；`code=401` 时额外发布 `Net.OnUnauthorized` |
 
 ### 错误消息处理
@@ -382,7 +382,9 @@ udpClient.Send(frame, frame.Length, remoteEndPoint);
 ```csharp 标题：完整发送示例
 public class NetworkSender : MonoBehaviour
 {
-    public async void SendRequest(int msgID, object body)
+    // ⛔ 消息号是 **uint**：`void Send(uint, object)` / `Task<T> Call<T>(uint, object) where T : class`。
+    //    写成 int 编译不过（C# 没有 int→uint 隐式转换）—— 下面 SendUnreliable 用的就是 uint。
+    public async void SendRequest(uint msgID, object body)
     {
         try
         {
@@ -397,7 +399,7 @@ public class NetworkSender : MonoBehaviour
         }
     }
     
-    public void SendPush(int msgID, object body)
+    public void SendPush(uint msgID, object body)
     {
         // 使用引擎 API 发送推送
         Game.Net.Send(msgID, body);

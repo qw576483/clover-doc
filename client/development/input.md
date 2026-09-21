@@ -127,11 +127,11 @@ but you have switched active Input handling to Input System package in Player Se
 
 | 序号 | 检查项 |
 |------|--------|
-| 1 | Console 里 `[Clover.Input] 输入后端=?`：期望 `InputSystem`；若是 `Legacy` 看括号里的回退原因；若是 `None` 按日志提示改设置 |
+| 1 | Console 里 `[Input] 输入后端=?`：期望 `InputSystem`；若是 `Legacy` 看括号里的回退原因；若是 `None` 按日志提示改设置 |
 | 2 | `activeInputHandler` 至少要含 New（即 `1` 或 `2`） |
 | 3 | 改完设置有没有**完全重启** Unity |
 | 4 | 日志里 `InputModule=` 期望 `InputSystemUIInputModule`；若是 `StandaloneInputModule` 说明回退了旧模块 |
-| 5 | 有没有 `[Clover.Input] EventSystem ...`：没有 → `CloverInput.Init()` 没排在构建 UI 之前 |
+| 5 | 有没有 `[Input] EventSystem ...`：没有 → `CloverInput.Init()` 没排在构建 UI 之前 |
 | 6 | 有没有两个 InputModule 并存（引擎会打印「移除不匹配的输入模块」） |
 
 > **键鼠无响应先查输入后端**，不必排查 UI 布局、RectTransform、射线、DPI 缩放 —— 与它们无关。

@@ -21,7 +21,7 @@
 | **N5** | UDP 绑定流程 | 服务端经 TCP 下发 `EMsg.UDPBindGrant` → 客户端经 UDP 上报 `EMsg.BindUDP`；每 10 秒重报绑定帧 | UDP 通信失败 |
 | **N6** | 传输协议 | QUIC / WebSocket / RawUDP 为 P0 级交付（**WebTransport 未实现**，待办由客户端引擎仓库维护） | 缺少传输协议支持 |
 | **N7** | 证书校验 | 全场景禁止自签证书；引擎不提供跳过证书校验的开关 | 安全风险，连接失败 |
-| **N8** | Keepalive 处理 | WebTransport keepalive（msgID==0 空包）直接丢弃，不进 Router | 资源浪费，性能下降 |
+| **N8** | Keepalive 处理 | ⛔ **不存在"WebTransport keepalive"这条路径** —— 客户端从来没有 WebTransport 实现（`TransportKind` 里的 WT 已删，`TransportPlanner.Create` 走 default 抛 `NotSupportedException`）。msgID==0 的空包保活帧来自 **QUIC**（`KeepAliveMsgId = 0`，方向客户端→服务端）；客户端收到的帧一律进 `_router.Dispatch`，没有 handler 就无声息 —— **不存在"丢弃不进 Router"的分支** | 别按"引擎会自动处理"去等一个不会发生的处理 |
 | **N9** | 多设备被踢 | 清理 UDP → 走 `OnKicked`，不自动重连 | 多设备冲突 |
 | **N10** | 平台线路 | Standalone = QUIC → TCP + RawUDP；GL（WebGL）= **当前无可用线路**（WebSocket 与 WebTransport 均需浏览器 jslib 桥接、尚未落地，待办由客户端引擎仓库维护；浏览器无 BSD socket，原生家族线路也不可用） | 平台兼容性问题 |
 | **N11** | 线路 TLS | `GameConfig.UseTls` 与服务端 `gateway.tcp_tls_disabled` **必须相反**；证书只走系统信任链 | 握手失败，连上就断 |
@@ -92,7 +92,10 @@ public class ThreadSafeExample : MonoBehaviour
     void Start()
     {
         // 所有业务回调在主线程
-        Game.OnMsg(EMsg.SomeMsg, ctx =>
+        // ⛔ 示例号位取真实存在的 EMsg.Login —— 引擎的 EMsg 只有 13 个常量
+        //    （Login/ResumeSession/RankQuery/BindUDP/UDPBindGrant/QueuePosition/4001-4005/Error/InternalMsgMax），
+        //    原先写的 EMsg.SomeMsg / EMsg.ShopInfo **不存在**，照抄编译不过。
+        Game.OnMsg(EMsg.Login, ctx =>
         {
             // 这里是主线程
             Debug.Log("主线程执行");
@@ -117,7 +120,7 @@ public class ThreadSafeExample : MonoBehaviour
         await Task.Run(() =>
         {
             // 这里是后台线程
-            Game.Net.Send(EMsg.SomeMsg, data);  // 错误！
+            Game.Net.Send(EMsg.Login, data);  // 错误！
         });
     }
     
@@ -132,7 +135,7 @@ public class ThreadSafeExample : MonoBehaviour
             // 切回主线程（引擎唯一入口：Game.Dispatcher.Post）
             Game.Dispatcher.Post(() =>
             {
-                Game.Net.Send(EMsg.SomeMsg, result);
+                Game.Net.Send(EMsg.Login, result);
             });
         });
     }
@@ -185,7 +188,7 @@ public class WrongShopUI : MonoBehaviour
     void Start()
     {
         // UI 直接监听网络消息
-        Game.OnMsg(EMsg.ShopInfo, ctx =>
+        Game.OnMsg(EMsg.Login, ctx =>
         {
             var info = ctx.Bind<ShopInfo>();
             UpdateUI(info);  // 直接更新 UI
@@ -246,7 +249,7 @@ public class BadExamples : MonoBehaviour
     {
         void Start()
         {
-            Game.OnMsg(EMsg.ShopInfo, ctx => { /* 刷新 UI */ });
+            Game.OnMsg(EMsg.Login, ctx => { /* 刷新 UI */ });
         }
     }
     
@@ -255,7 +258,7 @@ public class BadExamples : MonoBehaviour
     {
         await Task.Run(() =>
         {
-            Game.Net.Send(EMsg.SomeMsg, data);  // 错误！
+            Game.Net.Send(EMsg.Login, data);  // 错误！
         });
     }
     
@@ -307,7 +310,7 @@ public class GoodExamples : MonoBehaviour
             // 切回主线程（引擎唯一入口：Game.Dispatcher.Post）
             Game.Dispatcher.Post(() =>
             {
-                Game.Net.Send(EMsg.SomeMsg, result);
+                Game.Net.Send(EMsg.Login, result);
             });
         });
     }

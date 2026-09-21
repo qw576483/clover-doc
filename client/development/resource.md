@@ -219,16 +219,22 @@ Game.Res.LoadAsset<GameObject>("prefabs/bullet", prefab =>
 {
     if (prefab == null) return;
 
-    // 2. 使用时从对象池获取（传入路径字符串）
-    var bullet = Game.Pool.Spawn("prefabs/bullet");
-    bullet.transform.position = firePoint.position;
-
-    // 3. 归还到对象池
-    Game.Pool.Despawn(bullet);
-
-    // 4. 不再需要时释放资源
-    Game.Res.Release("prefabs/bullet");
+    // ⛔ 池取预制体走的是 **Unity 原生 `Resources.Load<GameObject>(key)`**，**不经过 Game.Res**：
+    //    不认 CloverRes 的 root、不走热更后端、不共享缓存/引用计数。
+    //    ⇒ key 必须是 **Resources 下的相对路径**；与 Game.Res 的路径不同源时
+    //      `Spawn` 会返回 **null**（只留一条 "Prefab not found"），紧接着用它的成员就是 NRE。
+    Game.Pool.Preload("prefabs/bullet", 100);
 });
+
+// 2. 使用时从对象池获取（注意已经出了回调）
+var bullet = Game.Pool.Spawn("prefabs/bullet");
+if (bullet != null) bullet.transform.position = firePoint.position;
+
+// 3. 归还到对象池
+Game.Pool.Despawn(bullet);
+
+// 4. 不再需要时释放资源
+Game.Res.Release("prefabs/bullet");
 ```
 
 ## 最佳实践

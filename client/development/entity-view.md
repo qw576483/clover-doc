@@ -41,6 +41,10 @@ Entity 是纯数据对象，不继承 MonoBehaviour。
 | `Game.Entity.DestroyGroup(group)` | `string` | `void` | 销毁分组内所有实体 |
 | `Game.Entity.ClearAll()` | - | `void` | 清空所有实体 |
 
+> ⛔ **实体号有两个不同的类型，绝不能串用**：`Game.Entity.*` 一律收 **`long`**；
+> 而 `Game.Sync.*`（`TryGetPosition` / `OnEntityMove` / `OnEntityProperty`）与协议里的实体号是 **`ulong`**。
+> 把 `OnEntityMove` 回调里的 id 直接喂给 `Game.Entity.Get(...)` **编译不过** —— 必须显式 `(long)id`。
+
 ## EntityManager
 
 ### 操作说明
@@ -94,7 +98,7 @@ graph LR
 |------|------|
 | 异步绑定 | View 加载完成前 Entity 已可参与表现计算 |
 | 解耦 | View 销毁不影响 Entity |
-| 自动挂接 | View 加载完成后自动挂接到 Entity |
+| ⛔ **没有**自动挂接 | 引擎**没有任何**自动绑定路径 —— 必须业务显式 `Game.Entity.BindView(id, view)`（视图工厂也只负责造对象，绑定同样要手写）。信了"自动挂接"就会漏调：实体永远拿不到视图，且实体销毁时视图无人管 |
 
 ### 使用示例
 

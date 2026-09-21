@@ -287,7 +287,9 @@ var safeArea = Screen.safeArea;
 
 ### 窗口无法打开
 
-**症状**：`Game.UI.Open<T>()` 无响应，日志出现 `Panel prefab not found: Resources/UI/XxxPanel`
+**症状**：`Game.UI.Open<T>()` 无响应，日志出现 `Panel prefab not found: {类型名}`
+（⛔ 真实文案**只有类型名**，后面括注"默认查 `Resources/UI/{类型名}`；可设置 `CloverPresentation.PanelProvider` 自定义来源"——
+按 `Panel prefab not found: Resources/UI/...` 这一整串去搜日志**搜不到**）
 
 **原因**：预制体没放对位置，或类名与文件名不一致
 

@@ -74,7 +74,7 @@ scrape_configs:
 
 | 端点 | 归属 | 说明 |
 |------|------|------|
-| `GET /ping` | admin（`admin.listen_addr`，示例 `127.0.0.1:8041`，需配置才启用） | admin 自身存活 + 列出已注册路由 |
+| `GET /ping` | admin（`admin.listen_addr`，示例 `127.0.0.1:8041`）—— ⛔ **零值即启用**（默认就监听 `127.0.0.1:8041`），要关得显式 `admin.disable: true` | admin 自身存活 + 列出已注册路由 |
 | `GET /healthz` | **逻辑服**（`logic.http_listen`，示例 `127.0.0.1:8012`，需配置才启用） | 逻辑服存活探针 |
 | `GET /ready` | 逻辑服（同上） | 就绪探针 |
 

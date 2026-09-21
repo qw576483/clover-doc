@@ -104,6 +104,8 @@ SceneManager (全局容器)
 - 同一 Instance 内实体通过 AOI 互相可见
 - 跨 Instance 互不可见，但共享 Scene 的物理碰撞（墙壁/障碍物）
 - `DefaultInstance = 0` 用于不关心分实例的场景
+  ⛔ **业务侧写 `mmo.DefaultInstance` 编译不过**：该常量只存在于 `internal/domain/mmo`，
+  `pkg/domain/mmo` **没有做转发**。业务直接用字面量 `0`，或在自己包里定义一个 `const DefaultInstance = 0`。
 
 **广播策略**：
 ```go
@@ -172,7 +174,7 @@ scene.SendTo(objID, msgID, body)
 
 | 方法 | 说明 |
 |------|------|
-| `NewSyncManager(mode)` | 创建同步管理器（自动选择策略） |
+| `NewSyncManager(mode)` | 按传入的 `mode` 分支创建管理器。⚠️ **不是"自动选择"** —— 传了未知 mode 会**静默回落为插值策略**（只打一条 Warn） |
 | `NewInterpolation(renderDelayMS, maxHistory)` | 创建插值策略（默认 100ms 延迟，6 帧历史） |
 | `NewExtrapolation(maxExtrapMS)` | 创建外推策略（默认 200ms 最大外推） |
 | `NewPrediction(maxPending)` | 创建客户端预测策略（默认 10 待确认输入） |
@@ -376,6 +378,10 @@ graph TB
 
 ## 配置参数
 
+> ⛔ **最后两行不可配**：`maxQueryRadius` / `cleanupInterval` 是 AOI 包里的**未导出常量**，
+> 没有任何 Option、配置键或构造函数入口能改到它们（超限只打日志截断）。
+> 它们在表里只为解释行为 —— 按这张表去"调参"**不会有任何效果**。
+
 | 参数 | 默认值 | 说明 |
 |------|--------|------|
 | `cellSize` | 1.0 | AOI 格子边长（建议略大于常见视野半径） |
@@ -385,8 +391,8 @@ graph TB
 | `maxHistory` | 6 | 插值策略最大保留快照数 |
 | `maxExtrapMS` | 200ms | 外推策略最大外推时间 |
 | `maxPending` | 10 | 客户端预测最大待确认输入数 |
-| `maxQueryRadius` | 500.0 | AOI 查询半径上限 |
-| `cleanupInterval` | 30s | 空网格/空分片定期清理间隔 |
+| ⚠️ `maxQueryRadius` | 500.0 | AOI 查询半径上限 —— **内部常量，不可配** |
+| ⚠️ `cleanupInterval` | 30s | 空网格/空分片清理间隔 —— **内部常量，不可配** |
 
 ## 最佳实践
 

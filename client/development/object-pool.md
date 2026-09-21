@@ -108,12 +108,15 @@ Game.Res.LoadAsset<GameObject>("prefabs/bullet", prefab =>
 {
     if (prefab == null) return;
 
-    // 预热对象池
-    Game.Pool.Preload("prefab_key", 100);
+    // ⛔ 池取预制体走 **Resources.Load<GameObject>(key)**，不经 Game.Res ⇒
+    //    key 必须是 Resources 下的相对路径（不是 Game.Res 的自定义 root 路径）。
+    //    不同源时 Spawn 返回 **null**（只留 "Prefab not found"），下一行就是 NRE。
+    Game.Pool.Preload("prefabs/bullet", 100);
+});
 
-// 使用时
-var bullet = Game.Pool.Spawn("prefab_key");
-bullet.transform.position = firePoint.position;
+// 使用时（已出回调）
+var bullet = Game.Pool.Spawn("prefabs/bullet");
+if (bullet != null) bullet.transform.position = firePoint.position;
 
 // 归还时
 Game.Pool.Despawn(bullet);

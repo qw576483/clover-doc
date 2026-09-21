@@ -45,7 +45,11 @@ type PlayerInfoGo struct {
 
 // 使用 LoadStruct 加载
 var p PlayerInfoGo
-err := g.LoadStruct(c, datadef.PlayerSchema, playerID, &p)
+// ⛔ 两处别照抄：① Go 里声明后没用到的局部变量是**编译错误**（declared and not used）⇒ 用 if 短声明；
+//    ② schema 变量名必须与上面定义的一致 —— 上文是 `PlayerInfo`，这里却写了 `PlayerSchema`（未定义）。
+if err := g.LoadStruct(c, PlayerInfo, playerID, &p); err != nil {
+    return err
+}
 ```
 
 > **注意：** `StructSchema` 描述数据类型和存储属性，不是 ORM 表定义。字段映射由 Go 结构体 + `json` tag 驱动。

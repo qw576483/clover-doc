@@ -33,7 +33,8 @@ for _, conn := range conns {
 }
 
 // 正确：批量广播
-gateway.BroadcastToRoom(roomID, msg)
+// ⛔ 引擎**没有** `gateway.BroadcastToRoom`（全仓 0 命中）；场景广播用 mmo.Broadcast：
+mmo.Broadcast(scene, msgID, body)   // body 是 []byte（不是 msg 对象）
 ```
 
 > **注意：** 使用 `object.Value` 的字段级增量广播（`EPushDataSync`），只推变化的字段，不推全量数据。
@@ -60,11 +61,11 @@ AOI（Area of Interest）确保玩家只收到视野范围内的数据：
 ### object.Value vs Bag
 
 ```go 数据序列化示例
-// object.Value：增量更新，适合少量字段频繁变化
-p.Set("hp", 100) // 只推 {"hp": 100}
-
-// Bag：整体序列化，适合整表读写
-p.Bag().Set("items", itemIDs) // 推全量 items
+// ⛔ 下面两行**照抄编译不过**：object 包既没有 `Set` 也没有 `Bag()` ——
+//    `object.Value` 上只有 GetCell / SetCell（作用于 data.Record），不存在字段级 Set。
+//    字段级增量请走 data.Record 的 SetCell / AddRowValues（见 development/table-design.md）。
+// p.Set("hp", 100)             // ⛔ 不存在
+// p.Bag().Set("items", ids)    // ⛔ 不存在（没有 Bag）
 ```
 
 | 方案 | 推送粒度 | 序列化成本 | 适用场景 |

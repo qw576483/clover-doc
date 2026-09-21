@@ -157,7 +157,8 @@ string greeting = Game.Localization.Get("ui.greeting");
 
 ### 网络域 (Network)
 
-网络域负责网络通信，依赖基础域和数据域。
+网络域负责网络通信，**只依赖基础域**。⛔ "依赖数据域"是错的：Network 的 asmdef 只引用 Core，
+对数据/资源的访问是**运行时经 `Game` 门面**发生的，不是程序集依赖 —— 见本节 asmdef 表与 `module-dependencies.md`。
 
 | 模块 | 说明 | 核心功能 |
 |------|------|----------|
@@ -182,7 +183,7 @@ Game.Sync.OnFullSync((data, accountData) => {
 
 ### 表现域 (Presentation)
 
-表现域负责表现层，依赖基础域和资源域。所有模块均已挂载到 Game 门面，业务直接通过 `Game.UI` / `Game.Scene` / `Game.Sound` / … 访问，无需手动初始化：
+表现域负责表现层，**只依赖基础域**（⛔ "依赖资源域"是错的：Presentation 的 asmdef 只引用 Core；对资源/数据的访问是**运行时经 `Game` 门面**发生的，不是程序集依赖）。所有模块均已挂载到 Game 门面，业务直接通过 `Game.UI` / `Game.Scene` / `Game.Sound` / … 访问，无需手动初始化：
 
 | 模块 | 说明 | 核心功能 | Game 门面 |
 |------|------|----------|-----------|

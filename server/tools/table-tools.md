@@ -66,7 +66,7 @@ AI 写 txt ──[table -pack]──▶ xlsx（策划用 Excel 编辑）
 
 | 后缀 | 去向 | 说明 |
 | --- | --- | --- |
-| `.tsv` | 运行时加载 | 打表产物，运行时按目录读取（默认 `tsv/`，Go 侧 `table.LoadAll(dir)`） |
+| `.tsv` | 运行时加载 | 打表产物，运行时按目录读取（默认 `tsv/`，Go 侧 **`table.Default.LoadAll(dir)`**） |
 | `.go` | 编译时使用 | Go 类型化结构体（`base/` 层），供业务代码引用 |
 | `.cs` | 编译时使用 | C# 类型化结构体（`Base/` 层），供 Unity 侧引用 |
 
@@ -108,13 +108,18 @@ func (t *BaseItemsTable) Get(id int) *BaseItemsRow
 ## 运行时加载
 
 ```go
+// ⛔ 别写成 `table.LoadAll()` / `table.Items[1001]` —— 两个都编译不过：
+//    ① `LoadAll` 是 `*Tables` 的方法，全局只有 `var Default *Tables`；
+//    ② 表实例是 `Tables` 的**字段**，取行用 `Get(id)`，不是下标索引。
 // 在 game logic 初始化时加载
 func init() {
-    table.LoadAll()
+    if err := table.Default.LoadAll("tsv"); err != nil { // 目录按实际产物路径
+        panic(err)
+    }
 }
 
 // 使用
-item := table.Items[1001]
+item := table.Default.Items.Get(1001)
 fmt.Println(item.Name) // "铁剑"
 ```
 

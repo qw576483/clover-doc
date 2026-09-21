@@ -24,7 +24,7 @@ graph LR
 
 ## 完整代码
 
-```typescript C#
+```csharp C#
 using System.Collections.Generic;
 using CloverEngine;
 using UnityEngine;
@@ -132,7 +132,7 @@ public class LoginFlow : MonoBehaviour
 
 ### 1. 启动引擎
 
-```typescript C#
+```csharp C#
 var config = new GameConfig
 {
     ServerAddr = "127.0.0.1:8002",     // 服务器地址
@@ -147,7 +147,7 @@ Game.Launch(config);
 
 ### 2. 初始化网络
 
-```typescript C#
+```csharp C#
 CloverNet.Init("127.0.0.1:8002", "127.0.0.1:8003");
 // 参数1：TCP 地址（网关 gateway.listen_tcp，默认 8002）
 // 参数2：UDP 地址（网关 gateway.listen_udp，默认 8003；传 null 表示不启用）
@@ -156,7 +156,7 @@ CloverNet.Init("127.0.0.1:8002", "127.0.0.1:8003");
 
 ### 3. 登录请求与登记会话
 
-```typescript C#
+```csharp C#
 // ① HTTP：账号服是登录链路的必经依赖，先经 HTTPS 换取 JWT。
 // 这一步失败（密码错 / 账号服不可达）直接抛异常，无需再发长连接请求。
 var token = await CloverAuth.LoginAsync("player1", "123456");
@@ -185,7 +185,7 @@ Game.Net.SetupSession("player1", null, line);
 （原 `EMsgSignup`=1 号位已作废保留，发出去会被登录门禁直接挡下，只剩「没有 handler」这一结果）。
 注册成功即签发 token（注册即登录），直接接上正常的两步登录：
 
-```typescript C#
+```csharp C#
 try
 {
     await CloverAuth.SignupAsync(account, password);   // 走账号服 /auth/signup，成功即签发 token
@@ -201,7 +201,7 @@ catch (System.Exception ex)
 
 ### 5. 错误处理
 
-```typescript C#
+```csharp C#
 var request = new ELoginRequest { token = token };   // token 来自上一步 CloverAuth.LoginAsync
 try
 {

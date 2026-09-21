@@ -208,11 +208,15 @@ func Login(ctx *Ctx, req *LoginReq) (*LoginResp, error) {
 
 ## 环境变量
 
-支持环境变量覆盖：
+⛔ **引擎不读环境变量做配置覆盖**（全仓没有 `BindEnv` / `AutomaticEnv`）：
+下面这种写法**不会有任何效果，也不报错**（静默失效）。唯一被读取的环境变量是 `CLOVER_WT_ROTATE_INTERVAL`。
 
 ```bash
+# ⛔ 无效示例（勿照抄）：设了也没用
 export CLOVER_MASTER_ADDR="192.168.1.100:8021"
 ```
+
+配置一律走 `configs/<role>/server.yaml`（含 `$ENV` 展开之类的能力也不存在）。
 ```
 
 ### 4. 错误处理

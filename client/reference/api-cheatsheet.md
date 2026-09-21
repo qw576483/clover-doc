@@ -117,7 +117,7 @@ public class ModuleAccessExample : MonoBehaviour
 | `Game.OffMsg(msgID, handler)` | `uint, MsgHandler` | `void` | 注销指定处理器 | 精确移除 |
 | `Game.Net.Send(msgID, body)` | `uint, object` | `void` | 可靠发送（TCP） | 重要消息发送 |
 | `Game.Net.SendUnreliable(msgID, body)` | `uint, object` | `void` | 非可靠发送（UDP 优先） | 高频位置同步 |
-| `Game.Net.Call<T>(msgID, body)` | `uint, object` | `Task<T>` | 请求-回包（async），超时默认 10s | 需要回复的请求 |
+| `Game.Net.Call<T>(msgID, body)` | `uint, object` | `Task<T>` | 请求-回包（async），超时默认 10s。⛔ 泛型约束 **`where T : class`** —— `Call<SomeStruct>(...)` 编译不过，回复体必须是**类** | 需要回复的请求 |
 | `Game.Net.IsQueued` / `QueueAhead` / `QueueTotal` | - | `bool` / `int` / `int` | 是否在服务端等候队列中、「前面还有多少人」、队列总人数（来自 `EMsg.QueuePosition`） | 排队等待界面 |
 | `Game.Net.IsChannelEncrypted` | - | `bool` | 本次连接是否已启用会话通道加密（AES-256-GCM，引擎自动协商） | 排查 / 状态展示 |
 
@@ -833,7 +833,7 @@ public class PooledObject : MonoBehaviour
 
 | API | 参数 | 返回值 | 说明 | 使用场景 |
 |-----|------|--------|------|----------|
-| `ReferencePool.Acquire<T>()` | - | `T` | 取一个实例（池空则 `new`），`T` 须有**无参构造函数** | 复用短命对象、降低 GC |
+| `ReferencePool.Acquire<T>()` | - | `T` | 取一个实例（池空则 `new`）。⛔ 约束是 **`where T : class, new()`** —— 必须是**引用类型**且有无参构造函数（`Acquire<SomeStruct>` 编译不过） | 复用短命对象、降低 GC |
 | `ReferencePool.Release<T>(item)` | `T` | `void` | 归还实例（传 `null` 静默忽略；同一实例重复归还被忽略并告警） | 用完归还 |
 | `ReferencePool.Count<T>()` | - | `int` | 当前池中的空闲实例数 | 调试 / 测试 |
 | `ReferencePool.Clear<T>()` | - | `void` | 清空该类型的池 | 单类清理 |
@@ -889,7 +889,7 @@ public class PooledObject : MonoBehaviour
 | --- | --- | --- | --- | --- |
 | `AStar.Find(walkable, from, to, ...)` | `Func<Vector2Int,bool>, Vector2Int, Vector2Int` | `List<Vector2Int>` | **回调式**（零业务类型依赖）；不可达 / 入参非法 ⇒ `null` + 限频告警 | 随机地图寻路 |
 | `AStar.FindSmoothed` / `Smooth` / `HasLineOfSight` / `Describe` | - | - | 平滑路径 / 视线判定 / 文字诊断 | 怪物 AI / 点击移动 |
-| `new IsoLayout(halfW, halfH, sortOrderStep, sortOrderBase)` | `float × 4` | `IsoLayout` | 构造收参数 ⇒ **不绑定任何项目常量** | 2.5D / 等距 |
+| `new IsoLayout(halfW, halfH, sortOrderStep, sortOrderBase)` | `float, float, int, int` | `IsoLayout` | 构造收参数 ⇒ **不绑定任何项目常量**（⛔ 后两个是 **int**：写 `1f, 0f` 编译不过） | 2.5D / 等距 |
 | `IsoLayout.GridToWorld / WorldToGrid / ScreenToGrid / SortOrder / GridDistance* / DirectionTo` | - | - | 正逆投影 / 深度排序 / 距离 / 方向 | 坐标换算 |
 
 > ⚠️ 引擎 `MapBake` 是**静态烘焙**（不解决"每局随机生成"）⇒ 运行时格子寻路用 `AStar`。

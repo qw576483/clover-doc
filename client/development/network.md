@@ -61,7 +61,7 @@ Game.Launch(new GameConfig
 > ⚠️ Unity 客户端**必须填 8002**（`gateway.listen_tcp`）。填 8001 是常见错误：
 > 8001 是 WebSocket 口，裸 TCP 连上去会出现「TCP 握手成功 → 立刻被断开 → 自动重连 →
 > 重连耗尽报被踢 → 之后所有 `Call`（登录 / 建房 / 同步）全部超时」这种极难定位的现象。
-> 客户端日志特征：`[Clover][Network] reliable link connected (…)` 紧跟着 `reliable link lost (…)` /
+> 客户端日志特征：`[Network] reliable link connected (…)` 紧跟着 `reliable link lost (…)` /
 > `reconnecting in …s`（链路日志由 `Game.Logger` 以 `Network` tag 输出，可在 `logs/` 文件日志里检索）。
 >
 > 另注：`CloverNet.Init` 的第一个参数缺省（null / 空串）时**会回退读取 `GameConfig.ServerAddr`**；
@@ -240,7 +240,7 @@ if (Game.Net.IsQueued) Debug.Log($"{Game.Net.QueueAhead}/{Game.Net.QueueTotal}")
 
 | 字段 | 长度 | 说明 |
 |------|------|------|
-| `type` | 1 字节 | 传输层帧类型：`0`=数据、`1`=ping、`2`=pong（原 `3`=会话迁移已删除，见 `Connection.cs`） |
+| `type` | 1 字节 | 传输层帧类型：`0`=数据、`1`=ping、`2`=pong、**`3`=会话迁移（仍在 `Connection.cs`：有常量、有显式 case，收到只打一条 Info，不报错）** |
 | `length` | 4 字节 | 其后的 `[requestID][msgID][body]` 字节长度（不含 `type` 与自身） |
 | `requestID` | 4 字节 | 请求配对 ID，0 表示推送 |
 | `msgID` | 4 字节 | 消息号（EMsg 枚举） |
@@ -368,7 +368,9 @@ Game.Event.On("Net.OnKicked", () =>
 
 > ⚠️ **另一种「看起来恢复了、其实废了」**：`Net.OnResumed` 正常触发，但紧接着**每条业务请求都返回
 > `code=401 unauthenticated`**。这不是网络抖动，而是**网关没把 owner 绑到重连后的新连接**上
-> （恢复回包缺 `owner` 字段）。引擎侧已内置修复（`ResumeSessionHandler` 按 playerID 反查账号补 `owner`）；
+> （恢复回包缺 `owner` 字段）。**补 `owner` 是服务端/网关的职责**（`EResumeSessionReply.owner` 的语义就是
+> "服务端在恢复会话时下发、供网关把新连接绑回原 owner"）；
+> ⛔ 客户端引擎里**没有** `ResumeSessionHandler` 这个组件（全仓 0 命中）—— 别去找它；
 > 业务侧若遇到，监听 `Net.OnUnauthorized` 回登录流程即可，不要当成弱网重试。
 
 ## 下一步

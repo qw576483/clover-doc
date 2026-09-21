@@ -94,7 +94,7 @@ auth:
 | --- | --- | --- | --- |
 | `POST /auth/signup` | `{account, password}` | `{success, owner, token, exp, err}` | `200` / `400` 参数错或账号已存在（`internal/domain/auth/server/server.go:77`） |
 | `POST /auth/login` | `{account, password}` | `{success, owner, token, exp, err}` | `200` / `401` 账号或密码错误 / `429` 尝试次数过多 |
-| `POST /auth/verify` | `{token}` | `{valid, owner, exp, err}` | **恒 `200`**（无效时 `valid=false`，不是 5xx） |
+| `POST /auth/verify` | `{token}` | `{valid, owner, exp, err}` | **业务结果恒 `200`**（无效时 `valid=false`，不是 5xx）；⚠️ 但它**同样被 per-IP 限流器包住**：超限回 `429`、坏 JSON 回 `400`、非 POST 回 `405` |
 | `GET /auth/health` | — | `{ok, service, time}` | `200` |
 
 - 注册成功**即签发 token**（注册即登录），客户端无需再调一次 login。
@@ -109,8 +109,10 @@ auth:
 
 权威防护点在账号服 `/auth/login`（凭证校验发生在这里），按账号计失败次数：
 
-- **连续 10 次失败 → 锁定 5 分钟**，锁定期内返回 **HTTP `429`**
-  「尝试次数过多，请稍后再试」；锁定期内继续尝试**不延长**锁定。
+- **双维度计数**：`maxAccountAttempts = 10`（按账号）× `maxPairAttempts = 5`（按"账号 + 来源"）
+  ⇒ **同一来源的攻击者实际第 5 次就被锁**，不是 10 次。
+- 锁定从 **5 分钟起指数退避、封顶 30 分钟**（再犯翻倍）。锁定期内返回 **HTTP `429`**
+  「尝试次数过多，请稍后再试」。
 - 防护状态在账号服**进程内**（`internal/domain/auth/state/guard.go` 的 `loginGuard`）：
   账号服多实例横扩时**各实例各算各的**；需要全局一致时把该实现换成共享后端即可。
 - **游戏服不做任何失败计数**：它只转发 token、拿不到账号名。按空串计数会让所有玩家
@@ -169,7 +171,9 @@ POST /auth/login  {"channel":"wechat","ticket":"<客户端拿到的 code>"}
 
 - 未注册校验器时 `/auth/login {channel,...}` 返回 **501** +「账号服未接入该渠道」——
   与「票据错误(401)」明确区分，否则业务会去查渠道 SDK，而问题其实在服务端没接渠道。
-- 校验器返回**空**渠道账号 → **500** 且**不建号**；票据校验失败 → **401**，同样不留账号。
+- 校验器返回**空**渠道账号 → **500** 且**不建号**（⚠️ 仅对**直接注册的** verifier 成立）。
+  用推荐的 `app.NewChannelRouter()` 注册时，router 把空标识转成 error，而 `ChannelLogin` 对 verifier 的
+  任何 error 一律判 `KindTicketInvalid` ⇒ **实际返回 `401`**（不是 500）。票据校验失败同样是 401，都不留账号。
 - 渠道账号没有可用密码：首次建号用随机占位密码，密码登录路径事实上无法命中它。
 - 渠道登录**不做**撞库防护：票据由渠道签发、无法枚举。
 - 并发首登（同一用户两个请求同时到达）靠 `account_channel` 唯一键收敛，不会建出两个号。
@@ -197,7 +201,8 @@ POST /auth/login  {"channel":"wechat","ticket":"<客户端拿到的 code>"}
 ⑥ 客户端  拉起渠道支付（orderID = 商户订单号）
 ⑦ 渠道    ──HTTP──▶  账号服    /auth/pay/notify（验签 → MarkPaid → MarkDone）
 ⑧ 游戏服  ──CallAuth──▶ 账号服  查「这单付了吗」（客户端回报触发；另有定时兜底）← 已有通道
-⑨ 游戏服  SendQueueEventToPlayer(playerID, "order.paid") → 发道具
+⑨ 游戏服  SendQueueEventToPlayer(c, playerID, "order.paid", payload) → 发道具
+   （⛔ 真签名是 **4 参**：`SendQueueEventToPlayer(c event.Ctx, playerID, typ string, payload any) error`）
 ```
 
 | 环节 | 谁做 |

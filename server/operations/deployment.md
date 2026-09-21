@@ -139,7 +139,7 @@ gateway:
 
 ## 监控与日志
 
-- 日志输出到标准错误，由采集器收集
+- 日志输出到**标准输出**（`Config.Stdout=true` 时写 `os.Stdout`；stderr 只用于日切失败这类兜底打印），由采集器收集 —— 采集配置按 stdout 接
 - 逻辑服**内置** `/healthz`（存活）与 `/ready`（就绪），仅在业务未注册同名路由时自动响应（`internal/transport/event/logic.go:573`）
 - admin 服务的探针是 `/ping` / `/routes` / `/metrics`（`internal/app/admin.go:106`），业务自定义探针经 `g.OnAdminHTTP` 注册
 - 关键指标：连接数、消息 QPS、定时任务数、Store flush 延迟、etcd/NATS 连接状态

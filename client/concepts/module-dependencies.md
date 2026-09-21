@@ -288,9 +288,10 @@ public class MyService
 // ✅ 依赖注入
 public class MyService
 {
-    private readonly INetworkManager network;
-    
-    public MyService(INetworkManager network)
+    // ⛔ 引擎里**没有** INetworkManager（全仓 0 命中）：契约叫 INetwork，实现类是 NetworkManager（internal）
+    private readonly INetwork network;
+
+    public MyService(INetwork network)
     {
         this.network = network;
     }

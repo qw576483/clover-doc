@@ -19,7 +19,8 @@ public static class EMsg
 {
     // 连接与会话
     // 号位 1 原为 Signup（账号注册）：注册已完全移到账号服 HTTP，号位**作废保留不复用**。
-    public const uint Login = 2;               // 账号登录（body 只有 token）
+    public const uint Login = 2;               // 账号登录（body 是 ELoginRequest{token, encrypt}）
+                                               // ⛔ 不是"只有 token"：encrypt 由引擎按平台能力自动置位，业务不许手填
     public const uint ResumeSession = 3;       // 断线重连恢复会话
     public const uint RankQuery = 4;           // 排行榜查询
     public const uint BindUDP = 5;             // TCP 上报 UDP 端点
@@ -88,7 +89,9 @@ public static class MsgDef
 **约束**：
 
 - 新增消息号时**两端同时改**。只改一端不会有编译错误，只会在运行期表现为「消息发出去没有反应」或「handler 不触发」；
-- 两端**常量名与值必须完全一致**（含大小写）；
+- **值必须一致**；⛔ 但**常量名两端本来就不同**（别照这句话去"改成同名"，改了反而对不上）：
+  客户端 `EMsg.Login` ↔ 服务端 `proto.EMsgLogin`（服务端带 `EMsg` 前缀、无点号），4001-4005 推送同理。
+  真正要对齐的是**值**（2 / 3 / 4 / 5 / 6 / 7 / 4001-4005），名字两侧各自命名；
 - 客户端协议结构体的字段名用 **snake_case**，与服务端 `json:"..."` tag 对齐。
 
 > 建议在 CI 里加一个「两端消息号比对」脚本：分别解析两边的常量名与值，不一致就让构建失败。

@@ -127,7 +127,9 @@ import (
 // ★ 必须用 room.NewModule 构造（它按 Config 装配「外壳 + 内核」）。
 //   FrameCfg 是真正的「房间默认配置」，这里的 TargetFPS 会生效。
 roomMod := room.NewModule(room.Config{
-    Pusher:   broadcaster.Broadcast,        // 向玩家推送帧数据
+    // ⛔ Pusher 的真实类型是 `func(playerID string, msgID uint32, v any) error`；
+    //    `g.PushToPlayer` 带 `opts ...proto.DeliveryMode` 变参，**不能直接赋值**，必须包一层：
+    Pusher: func(id string, msgID uint32, v any) error { return g.PushToPlayer(id, msgID, v) },
     FrameCfg: &frame.Config{TargetFPS: 50}, // 50 FPS ⇒ 20ms 一帧（真实生效）
 })
 

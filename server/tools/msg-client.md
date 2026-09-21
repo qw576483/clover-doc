@@ -50,8 +50,10 @@ go build -o client ./cmd/client
 ## 配置（config.yaml）
 
 ```yaml
-addr: "127.0.0.1:8003"                # 默认网关地址（QUIC/UDP；启动 -addr 可覆盖）
-tcp_addr: "127.0.0.1:8002"            # QUIC 不可用时的 TCP 回退地址（两个端口不同）
+# ⛔ msg-client 的 Default() **三项全为空串**：addr / tcp_addr / auth_addr 都**必填**，空则启动即 os.Exit(1)。
+#    （8003/8002/8051 那组"默认值"是 **robot** 的，不是本工具的。）下面填的是示例值。
+addr: "127.0.0.1:8003"                # 网关 QUIC/UDP 地址（必填；启动 -addr 可覆盖）
+tcp_addr: "127.0.0.1:8002"            # QUIC 不可用时的 TCP 回退地址（必填；两个端口不同）
                                       # 网关 TCP 口若走 TLS（tcp_tls_disabled=false，默认），
                                       # 本工具会在进程内首次连接时自动判定并复用（TLS 优先 → 明文回退）
 auth_addr: "http://127.0.0.1:8051"    # 账号服 HTTP 地址（必填；默认值即 http://127.0.0.1:8051）

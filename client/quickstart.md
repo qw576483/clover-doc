@@ -117,7 +117,7 @@ public sealed class Bootstrap : MonoBehaviour
 | `CloverNet.Init` | 能启动、能画 UI，但**永远连不上**（Launch 本身不联网） |
 | `CloverRes.Init` | `Game.Res` 恒 `null`，图永远加载不出来 |
 | `CloverAuth.AuthAddr` | 登录 / 注册直接抛 `InvalidOperationException` |
-| 面板供给者（`PanelFactory.Install` 之类） | 第一次 `Game.UI.Open` 会去 `Resources/UI/{类名}` 找预制体并报 `Panel prefab not found` |
+| 面板供给者 | ⛔ 没有 `PanelFactory`（全仓 0 命中）；真实机制是 **`CloverPresentation.PanelProvider`**（`Func<string,GameObject>`）。不设它时，第一次 `Game.UI.Open` 会去 `Resources/UI/{类名}` 找预制体并报 `Panel prefab not found` |
 
 > ⛔ `CloverRes.Init("Assets/Resources")` 是**错的**：它会去找 `Resources/Assets/Resources/...`，一个资源都命中不了。要发根前缀就传空串。
 
@@ -159,11 +159,15 @@ var token = await CloverAuth.LoginAsync("alice", "123456");
 var reply = await Game.Net.Call<ELoginReply>(EMsg.Login, new ELoginRequest { token = token });
 Debug.Log($"登录成功: owner={reply.owner}");
 
-// 3. 收推送（requestID == 0 的帧按 msgID 路由到这里）
-Game.OnMsg(EPushPlayerFullSync, ctx =>
+// 3. 收推送
+// ⛔ 别用 Game.OnMsg 注册推送：4001+ 是**引擎保留段**，Game.OnMsg 有守卫（打 Error 后直接 return），
+//    推送永远收不到；而且 `EPushPlayerFullSync` 这个类型名在引擎里**不存在**（推送载体真名是
+//    `EPlayerFullSyncNotify`）。全量同步走专用回调：
+// ⛔ 签名是**两个参数**：Action<Dictionary<string,Dictionary<string,object>>, Dictionary<string,object>>
+//    （回调给的是已解析的 kind→type→值 / accountData，**不是** notify 对象本身）
+Game.Sync.OnFullSync((data, accountData) =>
 {
-    var full = ctx.Bind<EPushPlayerFullSync>();
-    Debug.Log($"收到全量同步: player={full.player_id}");
+    Debug.Log($"收到全量同步: {data.Count} 类 / 账号数据 {accountData.Count} 项");
 });
 
 // 4. 发业务消息（消息号在你的 Def/ 里定义，必须 >= 10001）
