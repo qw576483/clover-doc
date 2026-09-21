@@ -649,8 +649,8 @@ public class AIController : MonoBehaviour
 | `Game.Res.Preload(paths, onDone, progress)` | `List<string>, Action, Action<float>` | `void` | 批量预加载 | 场景切换前预加载 |
 | `Game.Res.UnloadAll()` | - | `void` | 卸载所有资源 | 清理所有缓存 |
 | `Game.Res.TryGet<T>(path)` | `string` | `T` | **同步**取已驻留资源（不触发加载、不阻塞） | 配合 `Preload` 拿"必须立刻要"的资源 |
-| `Game.Res.Exists(path)` | `string` | `bool` | **同步**回答"这条路径在不在"（不驻留、不动引用计数；Resources 后端探测一次并按路径缓存） | 决定"占位色 / 缺失分支"，避免 `Image` 停在初始白（E-core-09） |
-| `Game.Res.LoadAll<T>(path)` | `string` | `T[]` | **同步批量取**该路径下全部资源（**会加载**；不进缓存/引用计数，⛔ 不要 `Release`） | 条带 / 图集**整条取**（子 sprite 按名取不到时）；后端不支持 ⇒ 空数组 + Warn（E-core-10） |
+| `Game.Res.Exists(path)` | `string` | `bool` | **同步**回答"这条路径在不在"（不驻留、不动引用计数；Resources 后端探测一次并按路径缓存） | 决定"占位色 / 缺失分支"，避免 `Image` 停在初始白 |
+| `Game.Res.LoadAll<T>(path)` | `string` | `T[]` | **同步批量取**该路径下全部资源（**会加载**；不进缓存/引用计数，⛔ 不要 `Release`） | 条带 / 图集**整条取**（子 sprite 按名取不到时）；后端不支持 ⇒ 空数组 + Warn |
 
 
 ### 参数说明
@@ -844,10 +844,10 @@ public class PooledObject : MonoBehaviour
 
 ## 数据与通用件（配表 / 存档 / 随机 / 寻路 / 等距 / 日志降频）
 
-> 这一节全是**引擎已下沉的通用能力**（E-core-05~13）。业务侧遇到对应需求**直接用**，
+> 这一节全是**引擎已下沉的通用能力**。业务侧遇到对应需求**直接用**，
 > ⛔ 不要再在 `Assets/Scripts/Core/` 里自己重写一份（那是每个项目都重写一遍的浪费）。
 
-### CloverTable —— 读自家打表工具的产物（E-core-11）
+### CloverTable —— 读自家打表工具的产物
 
 | API | 入参 | 返回 | 说明 | 典型场景 |
 | --- | --- | --- | --- | --- |
@@ -858,7 +858,7 @@ public class PooledObject : MonoBehaviour
 > ⚠️ 引擎旧入口 `CloverData.InitDataTable` 要求行类实现 `IDataRow`、**读不了打表产物** ⇒ 工程侧一律用 `CloverTable`。
 > 打表生成的 `Tables.Default.*` 强类型壳（`Get(id)` / `All()`）是**便捷访问层**，可以继续用。
 
-### FileSlotStore —— 「一槽一文件」的存档 / 回放 / 草稿（E-core-13）
+### FileSlotStore —— 「一槽一文件」的存档 / 回放 / 草稿
 
 | API | 入参 | 返回 | 说明 | 典型场景 |
 | --- | --- | --- | --- | --- |
@@ -872,7 +872,7 @@ public class PooledObject : MonoBehaviour
 > ⚠️ `Write` / `Read` **都不抛异常**；key 非法（空 / 含 `/` `\`）⇒ 失败 + 错误串，⛔ 也不允许 `../` 逃出槽目录。
 > 与 `Game.Setting` **互补**：那个是**单文件 KV**（内存里攒、`Save()` 一次写全），这个**一槽一文件、每次 `Write` 独立落盘、可枚举**。
 
-### Rng —— 注入式可复现随机（E-core-05）
+### Rng —— 注入式可复现随机
 
 | API | 入参 | 返回 | 说明 | 典型场景 |
 | --- | --- | --- | --- | --- |
@@ -883,7 +883,7 @@ public class PooledObject : MonoBehaviour
 
 > ⛔ **禁止 `UnityEngine.Random`**（全局静态状态 ⇒ 序列不可复现）；由调用方持有实例并**显式传参**。
 
-### AStar / IsoLayout —— 运行时寻路与等距几何（E-core-07 / 08）
+### AStar / IsoLayout —— 运行时寻路与等距几何
 
 | API | 入参 | 返回 | 说明 | 典型场景 |
 | --- | --- | --- | --- | --- |
@@ -894,7 +894,7 @@ public class PooledObject : MonoBehaviour
 
 > ⚠️ 引擎 `MapBake` 是**静态烘焙**（不解决"每局随机生成"）⇒ 运行时格子寻路用 `AStar`。
 
-### LogThrottle —— 日志防刷屏（E-core-06）
+### LogThrottle —— 日志防刷屏
 
 | API | 入参 | 返回 | 说明 | 典型场景 |
 | --- | --- | --- | --- | --- |
@@ -921,7 +921,7 @@ public class PooledObject : MonoBehaviour
 | `UIFactory.CreateText(name, parent, content, fontSize, alignment, color, raycastTarget)` | `string, Transform, string, int, TextAnchor, Color, bool` | `Text` | 文本节点（**引擎内置字体**） | 普通文字 |
 | `UIFactory.CreateButton(name, parent, label, size, pos, bg, onClick)` | `string, Transform, string, Vector2, Vector2, Color, Action` | `Image` | 底板 + 居中标签（`Button` 已挂好） | 通用按钮 |
 | `UIFactory.DefaultFont()` | - | `Font` | 引擎内置字体（取不到时回退系统字体） | 字体回落 |
-| `TextHooks.Current` | `ITextHook` | - | **文字渲染挂钩**（E-core-12）：引擎通用件每建一个 `Text` 都会问它；`null` = 用引擎内置字体（现状） | 像素风项目要把引擎自带提示（Toast / Loading / Confirm / Guide / 飘字）也换成自己的字模 |
+| `TextHooks.Current` | `ITextHook` | - | **文字渲染挂钩**：引擎通用件每建一个 `Text` 都会问它；`null` = 用引擎内置字体（现状） | 像素风项目要把引擎自带提示（Toast / Loading / Confirm / Guide / 飘字）也换成自己的字模 |
 | `ITextHook.OnTextCreated(text)` | `UI.Text` | `void` | 引擎刚创建 `Text` 时回调（业务可把 `Text` 降级成数据持有者 + 挂自己的字模渲染器）。⛔ 不许抛异常（引擎吞掉并只 Warn 一次）；⛔ 不许在回调里再调 `UIFactory.CreateText` 造成递归 | 接入原版中文位图字体 |
 | `UIFactory.UICamera()` | - | `Camera` | 世界坐标 → 屏幕坐标换算用 | 飘字 / 定位 |
 

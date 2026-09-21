@@ -79,7 +79,7 @@ Game.Launch(config);
 | **本地化** | `Game.Localization` | 本地化管理 |
 | **主线程派发** | `Game.Dispatcher` | 主线程消息派发器 |
 | **设置** | `Game.Setting` | 本地设置（**单文件 KV**） |
-| **本地存档 / 槽位存储** | `CloverEngine.FileSlotStore` | **一槽一文件**的原子写 + 损坏留档 + 枚举（E-core-13）—— "一只角色一个文件 / 一局回放一个文件 / 一章关卡草稿一个文件"用它，⛔ 别再自己写「`.tmp` + `File.Replace` + 坏文件留档 + 目录枚举」；与 `Game.Setting` **互补** |
+| **本地存档 / 槽位存储** | `CloverEngine.FileSlotStore` | **一槽一文件**的原子写 + 损坏留档 + 枚举—— "一只角色一个文件 / 一局回放一个文件 / 一章关卡草稿一个文件"用它，⛔ 别再自己写「`.tmp` + `File.Replace` + 坏文件留档 + 目录枚举」；与 `Game.Setting` **互补** |
 | **日志** | `Game.Logger` | 日志 |
 
 ### 使用示例

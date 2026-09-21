@@ -204,7 +204,7 @@ if (Game.Net.IsQueued) Debug.Log($"{Game.Net.QueueAhead}/{Game.Net.QueueTotal}")
 | 载体 | `EQueuePositionNotify{ ahead, total, ticket }`（`ahead`=前面还有多少人，0=队首；`ticket`=排队编号，仅展示） |
 | 时机 | 入队时下发一次；队列前进后按固定间隔（3s）**只在位置变化时**续发 |
 | 放行判据 | 收到**任意回包**即表示已放行（排队中服务端丢弃后续帧、不会有回包）——引擎此时清 `IsQueued` |
-| 超时 | 排队期间引擎会顺延未决请求（如登录 `Call`）的超时：服务端还在刷新位置就说明仍在正常排队；**但顺延有总期限**——`MinPendingHardTimeoutSeconds = 60`（实际取 `max(60, CallTimeoutSeconds)`），到点即判超时失败（队列停滞期不下发位置帧时也不会无限挂起，代码自标 E-net-01） |
+| 超时 | 排队期间引擎会顺延未决请求（如登录 `Call`）的超时：服务端还在刷新位置就说明仍在正常排队；**但顺延有总期限**——`MinPendingHardTimeoutSeconds = 60`（实际取 `max(60, CallTimeoutSeconds)`），到点即判超时失败（队列停滞期不下发位置帧时也不会无限挂起） |
 | 未启用 | 服务端 `gateway.queue_cap=0`（默认不排队）时**不会出现**该帧：超限直接拒绝并断连 |
 
 ## 会话通道加密（AES-256-GCM）
