@@ -12,7 +12,7 @@ Clover 服务端引擎是一套面向中重度游戏的 Go 分布式架构，支
 
 ## 快速开始
 
-```go package main
+```go
 package main
 
 import (
@@ -34,7 +34,7 @@ func main() {
 
 <Columns cols={2}>
   <Card title="快速上手" icon="rocket" href="/server/quickstart">
-    5 分钟跑通 Demo，体验完整的消息收发流程
+    从起依赖环境到登录进游戏，全流程走一遍
   </Card>
   <Card title="核心概念" icon="lightbulb" href="/server/concepts/app-game">
     了解 Gateway / Game / Master 三角色架构
@@ -59,4 +59,4 @@ graph LR
 
 ## 下一步
 
-准备好了？从 [快速上手](quickstart.md) 开始，5 分钟内跑通第一个 Demo。
+准备好了？从 [快速上手](quickstart.md) 开始：起依赖环境 → 写配置 → 启动 → 用调试客户端登录进游戏。

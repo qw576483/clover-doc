@@ -39,7 +39,7 @@ Concepts → Build → Tutorials → Tools → API → Examples
 ```markdown
 ## 浏览文档
 
-<卡片标题="快速上手" description="5 分钟跑通 Demo" link="/server/quickstart" />
+<卡片标题="快速上手" description="从依赖环境到登录进游戏" link="/server/quickstart" />
 <卡片标题="核心概念" description="架构、数据流、事件系统" link="/server/concepts" />
 <卡片标题="开发指南" description="Handler、配置、调试" link="/server/development" />
 <卡片标题="部署运维" description="Kubernetes、监控、性能" link="/server/operations" />
@@ -55,7 +55,7 @@ Concepts → Build → Tutorials → Tools → API → Examples
 ├── docs.json             # 配置（导航、主题、颜色）
 ├── server/
 │   ├── index.md          # 服务端概览
-│   ├── quickstart.md     # 快速开始（5分钟上手）
+│   ├── quickstart.md     # 快速开始（从依赖环境到登录）
 │   ├── install.md        # 环境安装
 │   ├── concepts/         # 核心概念（理论）
 │   ├── development/      # 开发指南（实践）

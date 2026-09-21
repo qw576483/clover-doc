@@ -68,7 +68,7 @@ Package Manager → Add package from git URL → 输入 `https://github.com/qw57
 
 <Columns cols={2}>
   <Card title="快速上手" icon="rocket" href="/server/quickstart">
-    5 分钟跑通 Demo，体验完整的消息收发流程
+    从起依赖环境到登录进游戏，全流程走一遍
   </Card>
   <Card title="客户端" icon="gamepad" href="/client">
     Unity UPM 包集成、网络接入、WorldSync 世界同步

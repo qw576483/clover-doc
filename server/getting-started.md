@@ -87,7 +87,7 @@ npx mintlify dev
 
 **相关链接：**
 
-- [快速上手](quickstart.md) - 5 分钟跑通完整流程
+- [快速上手](quickstart.md) - 从依赖环境到登录进游戏，全流程跑通
 
 - [Handler 开发](development/handler.md) - 开始编写你的第一个 Handler
 

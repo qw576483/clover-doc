@@ -74,7 +74,7 @@ public class GameMain : MonoBehaviour
 
 <Columns cols={2}>
   <Card title="快速开始" icon="rocket" href="/client/development/quick-start">
-    5 分钟集成到 Unity 项目，体验完整的消息收发流程
+    从新建 Unity 工程到连上服务端登录成功，全流程走一遍
   </Card>
   <Card title="核心概念" icon="lightbulb" href="/client/concepts/architecture">
     架构总览、设计原则、模块依赖规则
