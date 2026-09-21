@@ -8,7 +8,40 @@ Clover 框架的官方文档站，用 [Mintlify](https://mintlify.com) 构建，
 
 照着 **[新手指南：用 AI 从零做一个 Clover 游戏](https://github.com/qw576483/clover-doc/blob/main/ai/ai-quick-start.md)** 走一遍即可 —— 从装 Unity 6 到让 AI 开出第一个工程，全程不用自己写代码。
 
-## 内容结构
+## 开始读
+
+| 你想做的事 | 从这页开始 |
+|---|---|
+| 装好引擎、跑通第一个客户端 | [客户端快速开始](client/quickstart.md) |
+| 起一个能登录的服务端 | [服务端快速开始](server/quickstart.md) |
+| 先看整体架构再动手 | [客户端引擎总览](client/index.md) · [服务端引擎总览](server/index.md) |
+| 用 AI 从零做一个游戏 | [新手指南](ai/ai-quick-start.md) · [AI skill 体系](ai/skill.md) |
+
+## 本地预览
+
+```bash
+npm i -g mintlify
+mintlify dev
+```
+
+默认地址 `http://localhost:3000`。
+
+## 部署
+
+由 Mintlify 关联本仓库自动部署，站点配置读取仓库根目录的 `docs.json`。
+
+## 相关仓库
+
+| 仓库 | 说明 |
+|---|---|
+| [clover-server-engine](https://github.com/qw576483/clover-server-engine) | Go 服务端引擎（`server/` 的描述对象） |
+| [clover-client-unity-engine](https://github.com/qw576483/clover-client-unity-engine) | Unity 客户端引擎 UPM 包（`client/` 的描述对象） |
+| [clover-ai-skill](https://github.com/qw576483/clover-ai-skill) | AI 交付 skill（规则 / 范式 / 脚手架） |
+| [clover-official-website](https://github.com/qw576483/clover-official-website) | 官网落地页（与本站相互独立，各自部署） |
+
+## 仓库结构（维护者视角）
+
+> 新增 / 移动文档前先读 [`STANDARDS.md`](STANDARDS.md)。
 
 ### AI `ai/`
 
@@ -45,30 +78,8 @@ Clover 框架的官方文档站，用 [Mintlify](https://mintlify.com) 构建，
 |---|---|
 | `index.md` | 站点首页（框架定位、快速上手代码片段、选型理由） |
 | `logo/`、`favicon.svg`、`styles.css` | 站点资源与样式 |
-| `STANDARDS.md` | 文档编写规范（分层组织、导航结构、术语与示例口径）——**新增文档前先读** |
+| `STANDARDS.md` | 文档编写规范（分层组织、导航结构、术语与示例口径） |
 | `docs.json` | Mintlify 站点配置（主题、颜色、导航树） |
-
-## 本地预览
-
-```bash
-npm i -g mintlify
-mintlify dev
-```
-
-默认地址 `http://localhost:3000`。
-
-## 部署
-
-由 Mintlify 关联本仓库自动部署，站点配置读取仓库根目录的 `docs.json`。
-
-## 相关仓库
-
-| 仓库 | 说明 |
-|---|---|
-| [clover-server-engine](https://github.com/qw576483/clover-server-engine) | Go 服务端引擎（`server/` 的描述对象） |
-| [clover-client-unity-engine](https://github.com/qw576483/clover-client-unity-engine) | Unity 客户端引擎 UPM 包（`client/` 的描述对象） |
-| [clover-ai-skill](https://github.com/qw576483/clover-ai-skill) | AI 交付 skill（规则 / 范式 / 脚手架） |
-| [clover-official-website](https://github.com/qw576483/clover-official-website) | 官网落地页（与本站相互独立，各自部署） |
 
 ## 许可证
 
