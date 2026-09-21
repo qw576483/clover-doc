@@ -30,7 +30,7 @@ Game.Launch(config);
 CloverNet.Init("127.0.0.1:8002", "127.0.0.1:8003");
 ```
 
-> **注意：** 需要 Go 1.25+ 和 **Unity 6（6000.x）**。详见 [环境安装](server/install.md)。
+> **注意：** 需要 Go 1.25+ 和 **Unity 6（6000.x）**。详见 [环境安装](server/development/environment.md)。
 
 ### 获取引擎
 

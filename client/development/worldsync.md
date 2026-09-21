@@ -8,7 +8,7 @@
 
 ## 前置条件
 
-- 已完成 [快速开始](./quick-start.md)
+- 已完成 [快速开始](../quickstart.md)
 - 了解 [网络与会话](./network.md)
 - 了解 [Entity 与 View](./entity-view.md)
 

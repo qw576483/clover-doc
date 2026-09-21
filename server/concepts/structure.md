@@ -123,7 +123,7 @@ your-server/server/
 │   ├── examples/            # 实战示例
 │   └── reference/           # 速查（emsg / frame-format / constraints / api-cheatsheet）
 └── server/                  # 服务端文档
-    ├── index.md / getting-started.md / install.md / quickstart.md
+    ├── index.md / quickstart.md
     ├── concepts/            # 核心概念
     ├── development/         # 开发指南
     ├── examples/            # 实战示例

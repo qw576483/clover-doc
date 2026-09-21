@@ -68,7 +68,7 @@ core\env.exe stop all
 
 **相关链接：**
 
-- [环境安装](../install.md) - 完整的环境安装指南
+- [环境安装](../development/environment.md) - 完整的环境安装指南
 
 - [快速上手](../quickstart.md) - 运行完整 demo
 

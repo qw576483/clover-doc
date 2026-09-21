@@ -9,7 +9,7 @@
 
 ## 前置条件
 
-- 已完成 [快速开始](./quick-start.md)
+- 已完成 [快速开始](../quickstart.md)
 - 了解 [Game 门面](./game-facade.md) 与 [UI 系统](./ui-system.md)
 
 ## 共同约定

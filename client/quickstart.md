@@ -223,8 +223,8 @@ BuildUi();
 
 **相关链接：**
 
-- [Game 门面](./game-facade.md) — `Game.*` 各入口
-- [网络模块](./network.md) — 连接、重连、会话、推送
-- [资源模块](./resource.md) — 加载、池化、热更
-- [输入](./input.md) — `CloverInput` 与输入后端
-- [客户端引擎总览](../index.md) — 能力域与模块全貌
+- [Game 门面](development/game-facade.md) — `Game.*` 各入口
+- [网络模块](development/network.md) — 连接、重连、会话、推送
+- [资源模块](development/resource.md) — 加载、池化、热更
+- [输入](development/input.md) — `CloverInput` 与输入后端
+- [客户端引擎总览](index.md) — 能力域与模块全貌

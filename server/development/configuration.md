@@ -734,7 +734,7 @@ auth:
 
 ## 相关文档
 
-- [快速开始](../getting-started.md)
+- [快速开始](../quickstart.md)
 - [网络拓扑](../concepts/network-topology.md)
 - [应用游戏架构](../concepts/app-game.md)
 - [数据持久化](persistence.md)

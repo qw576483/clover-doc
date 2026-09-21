@@ -16,7 +16,8 @@
           {
             "group": "开始",
             "pages": [
-              "ai/ai-quick-start"
+              "ai/ai-quick-start",
+              "ai/skill"
             ]
           }
         ]
@@ -29,8 +30,6 @@
             "pages": [
               "server/index",
               "server/quickstart",
-              "server/install",
-              "server/getting-started",
               {
                 "group": "核心概念",
                 "pages": [
@@ -113,8 +112,7 @@
                   "server/tools/manager",
                   "server/tools/robot",
                   "server/tools/table-tools",
-                  "server/tools/windows-env",
-                  "server/tools/ai-skill"
+                  "server/tools/windows-env"
                 ]
               }
             ]
@@ -128,7 +126,7 @@
             "group": "客户端",
             "pages": [
               "client/index",
-              "client/development/quick-start",
+              "client/quickstart",
               {
                 "group": "核心概念",
                 "pages": [

@@ -11,7 +11,7 @@
 
 ## 前置条件
 
-- 已完成 [快速开始](./quick-start.md)
+- 已完成 [快速开始](../quickstart.md)
 - 了解 [Game 门面](./game-facade.md)
 
 ## Event（事件总线）

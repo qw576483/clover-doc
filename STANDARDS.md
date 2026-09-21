@@ -53,18 +53,21 @@ Concepts → Build → Tutorials → Tools → API → Examples
 
 ├── index.md              # 首页（概览 + 卡片导航）
 ├── docs.json             # 配置（导航、主题、颜色）
+├── ai/                   # AI 相关
+│   ├── ai-quick-start.md # 新手指南：用 AI 从零做一个 Clover 游戏
+│   └── skill.md          # AI skill 体系（两层 skill / 目录结构 / 关键约束）
 ├── server/
 │   ├── index.md          # 服务端概览
-│   ├── quickstart.md     # 快速开始（从依赖环境到登录）
-│   ├── install.md        # 环境安装
+│   ├── quickstart.md     # 快速开始（依赖环境 → 配置 → 启动 → 调试客户端登录）
 │   ├── concepts/         # 核心概念（理论）
-│   ├── development/      # 开发指南（实践）
+│   ├── development/      # 开发指南（实践；environment.md = 按 OS 的详细安装）
 │   ├── examples/         # 示例代码
 │   ├── operations/       # 运维部署
 │   ├── security/         # 安全相关
 │   └── tools/            # 工具文档
 └── client/
     ├── index.md          # 客户端概览
+    ├── quickstart.md     # 快速开始（从新建工程到连上服务端登录）
     ├── concepts/         # 核心概念
     ├── development/      # 开发指南
     ├── examples/         # 示例

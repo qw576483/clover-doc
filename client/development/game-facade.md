@@ -8,7 +8,7 @@
 
 ## 前置条件
 
-- 已完成 [快速开始](./quick-start.md)
+- 已完成 [快速开始](../quickstart.md)
 - 了解 Unity 基础开发
 
 ## 初始化

@@ -569,5 +569,5 @@ http GET http://localhost:8041/ping
 ## 相关文档
 
 - [配置管理](configuration.md)
-- [快速开始](../getting-started.md)
+- [快速开始](../quickstart.md)
 - [故障排除](../operations/troubleshooting.md)

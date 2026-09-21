@@ -1,3 +1,5 @@
+# AI 交付 skill
+
 ## 这篇文档讲什么？
 
 Clover 的 **AI 开发规范（skill）体系**：两层 skill 的分工与目录结构，以及写 Clover 业务代码时必须遵守的约束。
@@ -98,16 +100,16 @@ type gameLogic struct{ g *app.Game }
 
 **服务端相关链接：**
 
-- [Handler 开发](../development/handler.md) - Handler 开发详解
+- [Handler 开发](../server/development/handler.md) - Handler 开发详解
 
-- [消息号与协议](../concepts/proto.md) - 消息号分配规则
+- [消息号与协议](../server/concepts/proto.md) - 消息号分配规则
 
-- [示例](../examples/login.md) - 完整示例参考
+- [示例](../server/examples/login.md) - 完整示例参考
 
 **客户端相关链接：**
 
-- [客户端架构](../../client/concepts/architecture.md) - 客户端模块架构
+- [客户端架构](../client/concepts/architecture.md) - 客户端模块架构
 
-- [网络与会话](../../client/development/network.md) - 网络模块用法
+- [网络与会话](../client/development/network.md) - 网络模块用法
 
-- [Game 门面](../../client/development/game-facade.md) - Game 门面 API
+- [Game 门面](../client/development/game-facade.md) - Game 门面 API

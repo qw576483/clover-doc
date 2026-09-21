@@ -128,4 +128,4 @@ proto:
 
 - [打表工具](table-tools.md) - 策划表转换与代码生成
 - [本地环境](windows-env.md) - etcd / nats / redis / mysql 一键起停
-- [AI Skill](ai-skill.md) - 开发范式与模板
+- [AI Skill](../../ai/skill.md) - 开发范式与模板

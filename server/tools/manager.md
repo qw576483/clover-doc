@@ -193,4 +193,4 @@ manager rollout --nodes 10.0.0.11:8011 --target 10.0.0.11:8012 \
 - [Kubernetes 部署](../operations/kubernetes.md) - K8s 部署详解
 - [扩缩容](../operations/scaling.md) - 扩容 / 缩容步骤
 - [本地环境](windows-env.md) - etcd / nats / redis / mysql 一键起停
-- [AI Skill](ai-skill.md) - 开发范式与模板
+- [AI Skill](../../ai/skill.md) - 开发范式与模板

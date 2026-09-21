@@ -28,7 +28,7 @@ func main() {
 }
 ```
 
-> **注意：**   需要 Go 1.25+。完整环境配置见 [环境安装](install.md)。
+> **注意：**   需要 Go 1.25+。完整环境配置见 [环境安装](development/environment.md)。
 
 ## 浏览文档
 

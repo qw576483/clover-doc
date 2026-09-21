@@ -15,25 +15,27 @@ Clover 框架的官方文档站，用 [Mintlify](https://mintlify.com) 构建，
 | 路径 | 内容 |
 |---|---|
 | `ai-quick-start.md` | 新手指南：用 AI 从零做一个 Clover 游戏（装 Unity 6 → 克隆 skill → 导入 agent → 开工） |
+| `skill.md` | AI skill 体系：两层 skill（全局 / 项目级）、目录结构、关键约束 |
 
 ### 服务端 `server/`
 
 | 路径 | 内容 |
 |---|---|
-| `index.md`、`quickstart.md`、`install.md`、`getting-started.md` | 环境安装与全流程跑通（`quickstart.md` = 依赖环境 → 配置 → 启动 → 调试客户端登录） |
+| `index.md`、`quickstart.md` | 入口与全流程跑通（`quickstart.md` = 依赖环境 → 配置 → 启动 → 调试客户端登录）；按 OS 的详细安装见 `development/environment.md` |
 | `concepts/` | 核心概念（16 篇）：app-game、structure、data、data-flow、event、timer、proto、push、request-lifecycle、network-topology、cluster、heartbeat、lifecycle、entity-object、mmo-world、mmo-worldsync |
 | `development/` | 开发指南（14 篇）：handler、network、persistence、logging、configuration、debugging、error-handling、state-machine、testing、performance、protocol-design、table-design、data-migration、environment |
 | `examples/` | 示例（7 篇）：login、chat、room、data、inventory、timer、heartbeat |
 | `operations/` | 部署运维（8 篇）：deployment、kubernetes、scaling、monitoring、logging、backup-recovery、performance、troubleshooting |
 | `security/` | 安全（5 篇）：auth、auth-server、anti-cheat、input-validation、security-guide |
-| `tools/` | 工具说明（6 篇）：windows-env、manager、msg-client、robot、table-tools、ai-skill |
+| `tools/` | 工具说明（5 篇）：windows-env、manager、msg-client、robot、table-tools |
 
 ### 客户端 `client/`
 
 | 路径 | 内容 |
 |---|---|
+| `index.md`、`quickstart.md` | 入口与全流程跑通（新建 Unity 工程 → 装 UPM 包 → 组装点 → 连上服务端登录） |
 | `concepts/` | 架构、设计原则、模块依赖、概念命名 |
-| `development/` | network、ui-system、resource、serialization、entity-view、worldsync、event-timer-fsm、object-pool、input、auth、game-facade、presentation-modules、quick-start |
+| `development/` | network、ui-system、resource、serialization、entity-view、worldsync、event-timer-fsm、object-pool、input、auth、game-facade、presentation-modules |
 | `examples/login-flow.md` | 注册 / 登录 / 会话建立 / 全量同步 / 断线恢复的完整接入示例 |
 | `reference/` | constraints（硬约束）、emsg（消息号）、frame-format（帧格式）、api-cheatsheet（API 速查） |
 

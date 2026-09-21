@@ -339,7 +339,7 @@ send MsgGetPlayerList      # 按字段名自动组包，发一条业务消息
 
 **相关链接：**
 
-- [安装与环境](install.md) — 各依赖的手工安装方式（Linux / macOS）
+- [安装与环境](development/environment.md) — 各依赖的手工安装方式（Linux / macOS）
 - [配置说明](development/configuration.md) — 全部配置字段
 - [Handler 开发](development/handler.md) — 开始写业务逻辑
 - [本地环境工具](tools/windows-env.md) — windows-env 详解

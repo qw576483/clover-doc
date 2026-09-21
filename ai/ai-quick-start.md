@@ -124,6 +124,6 @@ cd clover-server-tools/windows-env/core
 
 | 想干什么 | 去哪 |
 |---|---|
-| 直接用引擎 | [客户端快速开始](../client/development/quick-start.md) · [服务端快速开始](../server/quickstart.md) |
+| 直接用引擎 | [客户端快速开始](../client/quickstart.md) · [服务端快速开始](../server/quickstart.md) |
 | 看引擎能干什么 | [客户端引擎总览](../client/index.md) · [服务端引擎总览](../server/index.md) |
 | 让 AI 交付得更稳 | `clover-ai-skill` 的 `SKILL.md`（入口）与 `patterns/`（可复制范式） |

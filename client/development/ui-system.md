@@ -8,7 +8,7 @@
 
 ## 前置条件
 
-- 已完成 [快速开始](./quick-start.md)
+- 已完成 [快速开始](../quickstart.md)
 - 了解基本的 Unity UI 开发
 - 了解 [Game 门面](./game-facade.md)
 
