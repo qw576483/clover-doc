@@ -11,6 +11,17 @@
   "navigation": {
     "tabs": [
       {
+        "tab": "AI",
+        "groups": [
+          {
+            "group": "开始",
+            "pages": [
+              "ai/ai-quick-start"
+            ]
+          }
+        ]
+      },
+      {
         "tab": "服务端",
         "groups": [
           {
