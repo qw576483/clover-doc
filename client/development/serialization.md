@@ -133,18 +133,18 @@ catch (TimeoutException)
 | **Protobuf** | 后续可选 | 高性能二进制序列化 |
 | **MemoryPack** | 后续可选 | Unity 友好的高性能序列化 |
 
-> **JSON 序列化加固（本轮）**：`MiniJson.Dump` 现带**循环引用 + 深度保护**（自引用对象 / 深度 > 128 直接抛
+> **JSON 序列化加固**：`MiniJson.Dump` 现带**循环引用 + 深度保护**（自引用对象 / 深度 > 128 直接抛
 > `FormatException`，旧实现会一路递归到不可捕获的 `StackOverflowException`）；`float` 按自身最短可往返格式输出
 > （不再先提升成 double）；整数值的 `double`（如 `1.0`）**保型**输出为 `1.0`（`Parse` 回来仍是 double）；
 > `enum` / `DateTime` / `DateTimeOffset` / `TimeSpan` 统一**按字符串加引号**输出（旧的裸文本是非法 JSON）；
 > 对象键按 `StringComparer.Ordinal` **排序**后输出（同一份数据每次结果一致、内容哈希稳定）。
 > 解析侧（`MiniJson.Parse`）的嵌套深度上限同样是 128。
 
-> **已定（2026-09-15）：协议字段名保持 snake_case**，不引入 Newtonsoft / `[JsonProperty]`。
+> **协议字段名保持 snake_case**，不引入 Newtonsoft / `[JsonProperty]`。
 > 理由：字段名即 JSON 键，与服务端 `game/def/` **逐字对齐**，联调时肉眼可比；引入第三方序列化器要额外处理
 > IL2CPP + 代码裁剪下的反射/AOT 风险，收益只是"命名整齐"。
 > **明确接受的代价**：协议字段名不受 C# 命名规范约束，拼错要到联调期才暴露 —— 由 `MsgIdGuardTests` / `ProtocolTests`
-> 这类契约测试兜住。（原先登记为待决策项，现结案。）
+> 这类契约测试兜住。
 
 > **注意：** Router API 不随序列化格式变化而变化，业务代码无需修改。
 

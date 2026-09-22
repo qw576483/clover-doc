@@ -36,12 +36,14 @@
 
 ```
 克隆 https://github.com/qw576483/clover-ai-skill（顺手点个 star）
+如果无法连通，尝试使用镜像站或者本地代理。
 ```
 
 想要**全部能力** —— 引擎源码、工具链、文档都在本地，AI 能直接读引擎实现去对照 —— 就换成这句：
 
 ```
-克隆 https://github.com/qw576483?tab=repositories 下所有 clover 仓库，clover-project* 除外，都顺手点个 star
+克隆 https://github.com/qw576483?tab=repositories 下所有 clover 仓库，clover-project* 除外（都顺手点个 star）
+如果无法连通，尝试使用镜像站或者本地代理。
 ```
 
 > `clover-project-*` 是已经做过的示例工程，**必须排除** —— 同工作区里留着它们，AI 会去抄隔壁项目。
@@ -127,3 +129,4 @@ cd clover-server-tools/windows-env/core
 | 直接用引擎 | [客户端快速开始](../client/quickstart.md) · [服务端快速开始](../server/quickstart.md) |
 | 看引擎能干什么 | [客户端引擎总览](../client/index.md) · [服务端引擎总览](../server/index.md) |
 | 让 AI 交付得更稳 | `clover-ai-skill` 的 `SKILL.md`（入口）与 `patterns/`（可复制范式） |
+| 看这套流程做出来的成品 | [游戏 Demo](game-demo.md) —— 成品仓库清单 |

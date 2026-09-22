@@ -8,6 +8,12 @@ Clover 框架的官方文档站，用 [Mintlify](https://mintlify.com) 构建，
 
 照着 **[新手指南：用 AI 从零做一个 Clover 游戏](https://github.com/qw576483/clover-doc/blob/main/ai/ai-quick-start.md)** 走一遍即可 —— 从装 Unity 6 到让 AI 开出第一个工程，全程不用自己写代码。
 
+用这套流程做出来的成品见 **[游戏 Demo 清单](ai/game-demo.md)**。
+
+## 交流群
+
+QQ 群：**clover-engine交流1群** `1101150552`
+
 ## 开始读
 
 | 你想做的事 | 从这页开始 |
@@ -48,7 +54,8 @@ mintlify dev
 | 路径 | 内容 |
 |---|---|
 | `ai-quick-start.md` | 新手指南：用 AI 从零做一个 Clover 游戏（装 Unity 6 → 克隆 skill → 导入 agent → 开工） |
-| `skill.md` | AI skill 体系：两层 skill（全局 / 项目级）、目录结构、关键约束 |
+| `skill.md` | AI skill 体系：两层 skill（全局 / 项目级）、安装位置（各宿主）、关键约束 |
+| `game-demo.md` | 游戏 Demo 清单：用引擎 + skill 复刻出来的完整游戏 |
 
 ### 服务端 `server/`
 

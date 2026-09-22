@@ -79,5 +79,11 @@ Package Manager → Add package from git URL → 输入 `https://github.com/qw57
   <Card title="部署运维" icon="server" href="/server/operations/deployment">
     Kubernetes 部署、监控告警、性能调优
   </Card>
+  <Card title="用 AI 做一个游戏" icon="robot" href="/ai/ai-quick-start">
+    装 Unity 6 → 克隆 skill → 导入 agent → 开工，全程不用自己写代码
+  </Card>
+  <Card title="游戏 Demo" icon="trophy" href="/ai/game-demo">
+    用引擎 + AI skill 复刻出来的完整游戏
+  </Card>
 </Columns>
 

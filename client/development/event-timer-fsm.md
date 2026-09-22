@@ -90,7 +90,7 @@ API 与服务端 `timer.Scheduler` **完全同名**，实现为主线程 `List<T
 > 暂停菜单、结算屏、GameOver 这类**画面冻结但仍要"几秒后做点什么"**的场景，**一律用 `*Unscaled`** ——
 > 否则表现为那张屏永久卡住，**且不报错、不打日志**（详见下方「常见问题」）。
 >
-> **精度边界**：`*Unscaled` 按 `Time.unscaledDeltaTime` 累加，**编辑器失焦时会明显不准**（实测偏慢/偏快都出现过）。
+> **精度边界**：`*Unscaled` 按 `Time.unscaledDeltaTime` 累加，**编辑器失焦时会明显不准**。
 > 玩家体验不受影响，但**别拿它当秒表**；需要严格墙钟时间请自行用 `Time.realtimeSinceStartup`。
 
 ### 使用示例

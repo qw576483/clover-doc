@@ -16,8 +16,19 @@
           {
             "group": "开始",
             "pages": [
-              "ai/ai-quick-start",
+              "ai/ai-quick-start"
+            ]
+          },
+          {
+            "group": "交付规范",
+            "pages": [
               "ai/skill"
+            ]
+          },
+          {
+            "group": "游戏 Demo",
+            "pages": [
+              "ai/game-demo"
             ]
           }
         ]

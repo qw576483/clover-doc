@@ -240,7 +240,7 @@ etcd:
 
 | 字段 | 写错的后果 | 真相 |
 |---|---|---|
-| `nats.addr` | **所有 `Push*` 静默返回 `nil`** —— 不报错、不打日志。现象是"客户端连上了、但收不到任何推送，进对局黑屏" | 引擎 `Core.PushToPlayer` 第一行是 `if co.notifyPub == nil \|\| co.notifySubject == "" { return nil }` —— **两个条件都能让它静默丢推送**：`notifyPub` 为空**或** `nats_subject` 为空（默认 `clover.notify`，被显式清空同样中招）。空值不是"不启用"，是**推送全部丢掉**。实测出处：补上后 35 条端到端断言全 PASS，不补则收到 0 条推送 |
+| `nats.addr` | **所有 `Push*` 静默返回 `nil`** —— 不报错、不打日志。现象是"客户端连上了、但收不到任何推送，进对局黑屏" | 引擎 `Core.PushToPlayer` 第一行是 `if co.notifyPub == nil \|\| co.notifySubject == "" { return nil }` —— **两个条件都能让它静默丢推送**：`notifyPub` 为空**或** `nats_subject` 为空（默认 `clover.notify`，被显式清空同样中招）。空值不是"不启用"，是**推送全部丢掉** |
 | `logic.listen_addr`、`gateway.listen_*` | 对应线路**静默不启用** | 监听地址缺失**不报错**，所以每个口都必须显式写 |
 | `data.tier` | 写 `TierMemory` 会被 `loadConfig` **拒绝**（启动失败） | 本地联调也用 `TierRedisMySQL` —— 反正 windows-env 已经把 mysql/redis 起好了 |
 | `auth.insecure_plaintext` | 不给就直接启动失败 | 账号服 HTTP 默认要求 TLS；本机联调显式声明明文，生产必须配证书 |

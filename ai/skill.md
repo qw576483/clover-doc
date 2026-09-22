@@ -25,8 +25,7 @@ Clover 的 **AI 开发规范（skill）体系**：两层 skill 的分工与目�
 | 优先级 | **规则层（`SKILL.md` 的 §0~§7）不可被项目级覆盖**：项目文档**只能加严** | 本项目**特有的事实**（消息号段、命名、目录边界、目录内既有写法）优先 |
 
 > ⚠️ **优先级那行最容易读反**：项目级 skill 管的是"本项目特有的事实"，**不是**"可以把全局规则放宽"。
-> 两者冲突 ⇒ **照全局做，并把项目文档里冲突的那行改掉**（实测代价：这句曾被读成"冲突时以项目为准"，
-> 于是子 agent 照项目文档把探针堆进 `client/_dev/`，堆了上百个文件）。
+> 两者冲突 ⇒ **照全局做，并把项目文档里冲突的那行改掉**。
 >
 > **skill 的名字 ≠ 目录名**：宿主里显示的 skill 名（`clover-engine`）来自 `SKILL.md` front matter 的 `name:` 字段，
 > 目录名是 `ai-skill` —— 两者不一致是正常的。
@@ -111,4 +110,5 @@ type gameLogic struct{ g *app.Game }
 4. [网络与会话](../client/development/network.md) —— 网络模块用法
 5. [Game 门面](../client/development/game-facade.md) —— Game 门面 API
 6. [示例](../server/examples/login.md) —— 完整示例参考
+7. [游戏 Demo](game-demo.md) —— 这套规范交付出来的成品长什么样
 
