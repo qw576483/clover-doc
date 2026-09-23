@@ -4,7 +4,7 @@
 |---|---|---|---|---|---|---|
 | [clover-project-super-mario](https://github.com/qw576483/clover-project-super-mario) | 《Super Mario Bros.》(Nintendo, 1985) | World 1-1 / 1-2 | 小 | 2D横版平台跳跃（单机） | **已完成** | [qw576483](https://github.com/qw576483) |
 | [clover-project-diablo2](https://github.com/qw576483/clover-project-diablo2) | 《暗黑破坏神 II》(Blizzard, 2000) | Act I 起始两张地图 + 主线任务 | 小 | 2D横版ARPG（单机） | 进行中 | [qw576483](https://github.com/qw576483) |
-| `clover-project-cr`（尚未发布） | 《皇室战争》(Supercell, 2016) | 1v1 联机对战 | 小 | 2D竖版即时对战（联机） | 进行中 | [qw576483](https://github.com/qw576483) |
+| [clover-project-cr](https://github.com/qw576483/clover-project-cr) | 《皇室战争》(Supercell, 2016) | 1v1 联机对战 | 小 | 2D竖版即时对战（联机） | 进行中 | [qw576483](https://github.com/qw576483) |
 | [clover-project-cs16](https://github.com/qw576483/clover-project-cs16) | 《Counter-Strike 1.6》(Valve, 2003) | 本地开图 + 机器人 / 局域网寻服加入 | 小 | 3D横版FPS（单机-内网联机） | 进行中 | [qw576483](https://github.com/qw576483) |
 
 ## 我们需要你的 demo 来引领后人
