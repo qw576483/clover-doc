@@ -131,6 +131,7 @@ Game.Timer.StopAll();
 | `fsm.Tick(dt)` | `float` | `void` | 每帧驱动 |
 | `fsm.OnChange(handler)` | `Action<string, string>` | `void` | 注册状态变化回调 |
 | `fsm.OffChange(handler)` | `Action<string, string>` | `void` | 移除状态变化回调 |
+| `fsm.Reset()` | - | `void` | 把状态机恢复到「未初始化」：清空已注册状态 / 触发器映射 / 当前状态（**不销毁实例**）；**不触发** OnExit / OnEnter / OnChange；可重复调用（第二次起空操作）；**保留** `OnChange` 订阅表（要解绑请显式 `OffChange`） |
 | `fsm.Current` | - | `string` | 获取当前状态名称 |
 
 ### 使用示例
@@ -161,6 +162,32 @@ fsm.Tick(Time.deltaTime);
 // 状态变化监听
 fsm.OnChange((from, to) => { });
 ```
+
+### 多实例状态机（`Game.NewFsm()`）
+
+`Game.Fsm` 是**应用级单例**：`Game.Tick` 只驱动它一份，注册的是「启动 → 登录 → 主城 → 战斗」这类**流程**状态。
+需要「每个 Bot / 每个单位各自一棵」的局部状态机时，用 `Game.NewFsm()` 拿**独立实例**：
+
+| API | 返回值 | 说明 |
+|-----|--------|------|
+| `Game.NewFsm()` | `IFsm` | 每次调用返回**新**实例（绝不返回 `Game.Fsm`）；不依赖 `Game.Launch`（未启动也可创建）；初始 `Current` 为 `null`，先 `RegisterState` 再 `Transition` |
+| `botFsm.Tick(dt)` | `void` | **`Game.Tick` 不会驱动新实例** —— 谁创建谁负责按帧调 `Tick` |
+
+```csharp
+var botFsm = Game.NewFsm();          // 新实例：与 Game.Fsm 完全独立（自己的状态表 / 触发器表 / Current）
+botFsm.RegisterState("idle", onEnter: () => { }, onTick: dt => { });
+botFsm.Force("idle");
+// 由持有者按帧驱动（Game.Tick 不管它）
+botFsm.Tick(Time.deltaTime);
+
+// 每回合重开 / 从对象池取回复用：清干净，实例本身继续用
+botFsm.Reset();                      // 清状态表 / 触发器表 / Current；不触发任何回调
+botFsm.RegisterState("idle", onEnter: () => { });
+botFsm.Force("idle");
+```
+
+> ⚠️ 把每个实体的状态都注册到 `Game.Fsm` 上，会让多个实体**共用同一个 `Current`**、互相覆盖
+> （同名状态重复注册还会告警并整体替换存活期回调）—— `Game.NewFsm()` 就是为这件事提供的入口，⛔ 不要自己抄一份状态机实现。
 
 ## 与服务端对齐点
 
@@ -222,6 +249,15 @@ Game.Timer.AfterUnscaled(4f, () => Game.Fsm.Transition("Menu"));
 **解决**：
 1. 确认状态已注册
 2. 检查转换条件
+
+### `Reset()` 之后转换到旧状态名报 `State not registered`
+
+**症状**：调 `fsm.Reset()` 之后 `fsm.Transition("battle")` 不生效，日志出现 `State not registered: battle`。
+
+**原因**：`Reset()` 清空了状态表（`Current` 变回 `null`、`Tick` 空转），转换到**未注册**状态会走 Error 分支 —— 这是刻意保留的可见行为（重置不是"卸载后重建"，只是清内容）。
+
+**解决**：`Reset()` 之后必须**重新** `RegisterState(...)`（按需再 `AddTransition`）再 `Force` / `Transition`；
+若只是想让某个订阅解绑，用显式 `OffChange(handler)`（`Reset()` 刻意**保留** `OnChange` 订阅表）。
 
 ## 下一步
 

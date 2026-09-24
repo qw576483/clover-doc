@@ -82,6 +82,9 @@ Game.Event.On<EResumeSessionReply>("Net.OnResumed", data =>
 | **G11** | UI 数据流 | UI 只订阅数据事件，不直连网络、不改数据 | 数据流混乱，难以维护 |
 | **G12** | 冻结画面的定时器 | `Time.timeScale = 0` 期间要触发的延时**必须**用 `Game.Timer.AfterUnscaled` / `EveryUnscaled`；普通 `After` / `Every` 一律不触发 | **界面永久卡死，且零报错零日志**（暂停菜单/结算屏/GameOver 常见） |
 | **G13** | 资源一律经 `Game.Res` | 不许用 `Resources.Load` / `AssetBundle.*` 等**绕开资源模块**自己取资源；需要"立刻拿到"就**先 `Preload`、后 `TryGet<T>`** | 缓存 / LRU / 根前缀 / 热更后端**全部失效**，换后端时**静默不跟着变** |
+| **G14** | 地图标记点段 | 标记点由导出端产（`MapBakeOptions.MarkerRootName` 指定根对象，子物体「对象名 = 标记名」）；**留空 ⇒ 不导该段**。**旧 `.bytes` 不含该段（bit2）⇒ 必须用支持标记段的导出端重新烘焙** —— 客户端不会"补"出来，也不会从别处推断 | `Game.Map.GetPoints` / `TryGetPoint` **全部落空**：出生点取不到、AI 路线锚点为空，现象是"AI 集体不动"，而文件能读、游戏能起 |
+| **G15** | 多层地图的层过滤 | `MapBakeOptions.LayerFilterEnabled` **默认 `false` = 现状行为**（所有非地面碰撞体参与烘焙）。多层地图（上下楼板 / 楼梯高台）开它并**逐层各烘一份单层位图**（`LayerMin` / `LayerMax` 按 Unity Layer、`LayerMinY` / `LayerMaxY` 按世界 Y 相交判定） | 把多层塞进单层位图 ⇒ 上层楼板整片算成阻挡、连通性当场断掉，**且不报错** |
+| **G16** | `Fsm.Reset()` 之后须重新注册 | `Reset()` 清空状态表 / 触发器表 / `Current`（不销毁实例、不触发任何回调、**保留** `OnChange` 订阅表）；调用后必须**重新** `RegisterState(...)` 再 `Force` / `Transition` | 重置后 `Transition` 到旧状态名会打 `State not registered` 并**静默不转换**（表现为"状态机点不动"，其实状态表已空） |
 
 ### 通用约束详解
 

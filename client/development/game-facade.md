@@ -54,13 +54,14 @@ Game.Launch(config);
 | 模块 | API | 说明 |
 |------|-----|------|
 | **网络** | `Game.Net` / `Game.Http` | 网络域入口（连接/收发/请求-回包）；消息路由唯一入口：`Game.OnMsg(msgID, handler)` / `Game.OffMsg` |
+| **局域网寻服** | `Game.LanBrowser` / `CloverLan.CreateResponder()` | 发现端 `Game.LanBrowser`（`Scan` / `Hosts` / `OnHostFound` / `OnScanFinished`，随 `Launch` 自动挂接）；应答端 `CloverLan.CreateResponder()` → `ILanResponder`（`Start` / `Stop` / `Dispose`，**不经 `Game` 门面**）。旁路 UDP、不占消息号；用法见 [网络与会话](./network.md) 的「局域网寻服」 |
 | **世界同步** | `Game.Sync` | 世界镜像入口（原始事件流） |
 | **数据 Schema** | `Game.Schema` | Schema 声明表（登记字段结构，`ISchemaRegistry`）；**数据订阅走 `Game.Sync`** |
 | **公告推送** | `Game.Alert` | 消费 `EMsg.PushAlert`，把服务端公告分发给业务（`IAlert`） |
 | **服务端场景** | `Game.CloverScene` | 服务端场景投影（逻辑地图 + 分线），与 `Game.Scene` 不同义 |
 | **帧同步房间** | `Game.FrameRoom` | 帧同步房间生命周期；消息号由业务 `Configure()` 注入 |
 | **场景** | `Game.Scene` | Unity 关卡管理（异步加载/卸载 + 加载门控） |
-| **逻辑地图** | `Game.Map` | 服务端权威地图在客户端的**只读投影**（本地碰撞 / 寻路查询）：`Load(byte[] data, out string error)` / `LoadFromResource(path)` / `WalkableAt(x,z)` / `Clear()`。数据是服务端加载的**同一份字节**（CloverMap 二进制，契约见 [`clover-server-engine/pkg/domain/mmo/mapdata/README.md`](https://github.com/qw576483/clover-server-engine/blob/main/pkg/domain/mmo/mapdata/README.md)）。⚠️ 与 `Game.Scene`（Unity 关卡）、`Game.CloverScene`（服务端场景）三者语义不同 |
+| **逻辑地图** | `Game.Map` | 服务端权威地图在客户端的**只读投影**（本地碰撞 / 寻路查询）：`Load(byte[] data, out string error)` / `LoadFromResource(path)` / `WalkableAt(x,z)` / `Clear()`；命名标记点 `Points` / `GetPoints(name)`（同名多点按文件顺序）/ `TryGetPoint(name, out pos)`。数据是服务端加载的**同一份字节**（CloverMap 二进制，契约见 [`clover-server-engine/pkg/domain/mmo/mapdata/README.md`](https://github.com/qw576483/clover-server-engine/blob/main/pkg/domain/mmo/mapdata/README.md)）。⚠️ 与 `Game.Scene`（Unity 关卡）、`Game.CloverScene`（服务端场景）三者语义不同 |
 | **实体** | `Game.Entity` | 实体管理 |
 | **资源** | `Game.Res` | 资源管理 |
 | **对象池** | `Game.Pool` | 对象池 |

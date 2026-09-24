@@ -132,6 +132,70 @@ Game.Camera.SetBounds(new Bounds(Vector3.zero, new Vector3(100, 100, 0)));
 
 > 相机跟随作用于 `Camera.main`。
 
+### 第一人称 rig（`CloverFirstPersonCamera`）
+
+**纯逻辑类**（不是 `MonoBehaviour`）：帧步长由调用方经 `Tick(dt)` 注入（不读 `Time.deltaTime`），
+可离线断言、可被任意持有者驱动；**不经 `Game.Camera` 门面**，业务自持实例 + 自己填手感参数。
+
+| API | 参数 | 返回值 | 说明 |
+|-----|------|--------|------|
+| `rig.Bind()` | - | `bool` | 用引擎相机管理器（`Game.Camera.Main`）绑定当前主相机 —— **推荐入口** |
+| `rig.Bind(camera)` | `Camera` | `bool` | 显式绑定指定相机（传 `null` ⇒ `false` + 限频留痕） |
+| `rig.Unbind()` | - | `void` | 解绑；解绑后 `Tick` 不再写任何 Transform |
+| `rig.Tick(dt)` | `float` | `void` | 推进一帧：读鼠标 → 累加视角 → 跟随后坐力 → 衰减摇晃 → 算眼位与朝向 → 写相机位姿与 FOV。`dt <= 0` ⇒ 本帧不推进任何状态 |
+| `rig.ApplyLookDelta(dx, dy)` | `float, float` | `void` | 把一次**原始鼠标位移**按灵敏度 / 反转 / 限位累加进视角（设备无关的公开缝：回放 / 演示 / 观战接管 / 离线段言都走它） |
+| `rig.SetRecoil(pitch, yaw)` | `float, float` | `void` | 喂入**权威**后坐力（度），本类只做表现跟随，⛔ 不累加第二份 |
+| `rig.AddShake(amplitude, duration)` | `float, float` | `bool` | 注入一次摇晃（受击 / 爆炸 / 落地），期间幅度**线性**衰减；参数非正或未注入随机器 ⇒ `false` + 留痕 |
+| `rig.SetView(yaw, pitch)` | `float, float` | `void` | 直接对齐视角（出生 / 接管 / 观战切换，不做平滑），yaw 走 360° 规范化、pitch 按 `PitchLimit` 夹紧 |
+| `rig.Look` | - | `LookAccumulator` | 引擎件；读它的 `Yaw` / `Pitch` 得到**不含**后坐力 / 摇晃的「输入视角」（例如喂给移动方向解算） |
+| `rig.Yaw` / `rig.Pitch` | - | `float` | 当前朝向**合量** = `Look` + 后坐力 + 摇晃（`Pitch` 已夹在 `±PitchLimit`） |
+| `rig.AimDirection` | - | `Vector3` | 本帧视线方向（含后坐力 / 摇晃，与相机朝向一致）—— 射线 / 命中判定用它 |
+| `rig.EyePosition` | - | `Vector3` | 本帧射线起点（眼位，**不含** `ViewOffset` 与摇晃） |
+| `rig.ViewOffset` / `rig.ViewRoll` | `Vector3` / `float` | - | 业务每帧塞进来的视点晃动（典型 = `ViewBob` 的输出缝） |
+| `rig.FovX` / `rig.VerticalFieldOfView` | `float` | - | 水平 FOV（开镜改它）/ 本帧实际下发的**垂直** FOV（未绑定时为 0） |
+| `rig.SensitivityX` / `rig.SensitivityY` / `rig.SeparateAxes` / `rig.InvertY` / `rig.PitchLimit` | `float` / `bool` | - | 灵敏度（**度/count**，不是倍率）、分轴开关、Y 轴反转、俯仰限位（默认 `89`，引擎只保证不翻面） |
+| `rig.EyeAnchor` / `rig.EyeOffset` / `rig.EyeSmoothTau` | `Transform` / `Vector3` / `float` | - | 眼位来源 / 相对锚点的局部偏移 / 眼位一阶平滑时间常数（`<= 0` = 吸附） |
+| `rig.RecoilRiseTau` / `rig.RecoilFallTau` / `rig.ShakeRng` / `rig.ShakeRollScale` | `float` / `Rng` / `float` | - | 后坐力上跳 / 回正常数、摇晃随机器（⛔ 用注入的 `Rng`，不用全局随机）、摇晃横滚比例 |
+| `rig.SetControlEnabled(on)` / `rig.LockInput()` / `rig.UnlockInput()` | `bool` | `void` / `bool` | 开关本 rig 的鼠标读取 / 加锁 / 解锁（只解**自己加的**那把锁） |
+
+```csharp
+var rig = new CloverFirstPersonCamera { EyeAnchor = playerRoot, EyeOffset = new Vector3(0f, 1.62f, 0f) };
+rig.SensitivityX = settings.MouseSensitivity * DegPerCount;   // 每 count 多少度（业务换算）
+rig.PitchLimit = tuning.PitchLimit;                           // 玩法口径（引擎不替业务定手感值）
+rig.ShakeRng = new Rng(matchSeed);                            // 注入随机器
+rig.Bind();                                                   // 用 Game.Camera.Main
+
+void Update()
+{
+    rig.Tick(Time.deltaTime);                                 // 帧步长注入
+    rig.SetRecoil(sim.RecoilPitch, sim.RecoilYaw);            // 只喂权威值，表现由本类跟随
+    rig.ViewOffset = bob.Offset; rig.ViewRoll = bob.Roll;     // ViewBob 的输出缝
+}
+```
+
+> 边界：非线程安全（主线程使用）；`Tick` **每帧只许调用一次**（鼠标位移是"读时结算"的增量，一帧调两次会把同一帧的位移按两次算）；
+> 未绑定相机 / 相机被销毁 / 相机被禁用时**只跳过"下发位姿"这一步**（视角 / 后坐力 / 摇晃状态照常推进，复绑后立刻可用）+ 限频留痕。
+
+## Separation2D（角色间水平推开）
+
+与 `Game.Camera` 无关：它是 `Runtime/Core/Separation2D.cs` 的**纯函数静态工具**，防"两个角色站进同一格"。
+**不是物理引擎**：不做路径规划（那是 `AStar`）/ 不做碰撞检测（墙体与视线由位图与射线各管一层）/ 不做时间积分 / 不处理竖直分层（同层筛选由调用方先做完再传进来）。
+只保证一条几何约束：任意两圆**圆心距 ≥ 两半径之和**（外加 `Skin = 0.001f` 缝隙）。
+
+| API | 参数 | 返回值 | 说明 |
+|-----|------|--------|------|
+| `Separation2D.TryResolve(circles, count, result)` | `Circle[], int, Vector2[]` | `bool` | 一次解开**一整组**（所有人一起挪，各退一半），结果**写进** `result`（不改输入、热路径零分配）。`true` = 已推出；`false` = 迭代上限内仍有重叠（挤成一堆）或缓冲长度不够，**不抛** |
+| `Separation2D.TryResolveOne(position, radius, others, count, out result)` | `Vector2, float, Circle[], int, out Vector2` | `bool` | 只推**一个**申请位置（`others` 视作不动的障碍，退全部）—— 每帧角色推进的形态 |
+| `Separation2D.Circle` | `Vector2 Position` / `float Radius` | - | 参与推开的水平圆（`Radius <= 0` 按 0 处理） |
+| `Separation2D.MaxIterations` / `Separation2D.Skin` | - | `int` / `float` | 迭代轮数上限（`8`）/ 推开后额外缝隙（`0.001f`，与 cs16 侧同值） |
+
+**确定性契约**：同输入 ⇒ 逐位相同的输出 —— 不调 `UnityEngine.Random`、不读时钟 / 帧号，遍历顺序 = 调用方给的数组下标顺序；
+"完全重合"（无几何方向可言）时按**下标**取确定方向（黄金角 × (下标+1)）。
+
+> ⚠️ 推开结果**不许直接采用**：调用方要再喂回自己的墙体判定钳一次（⛔ 别把人推进墙里）。
+> 边界：`count <= 0` / 空数组 ⇒ 成功返回且什么都不写；半径全 0 ⇒ 位置原样返回；坐标非有限（NaN / ±Inf）⇒ 该圆不动也不推别人；统统**不抛异常**（失败留降频日志）。
+> 性能口径：`O(n² × MaxIterations)`、热路径零分配，`n` = 同屏参与推开的角色数（个位数 ~ 几十）；⛔ 不要每帧对上千个单位调用。
+
 ## Quality（画质与性能）
 
 > **命名说明**：本模块历史上叫 `Device`（`Game.Device` / `DeviceLevel` / `IDeviceManager`），
@@ -198,6 +262,27 @@ await Game.Net.Call<ELoginReply>(EMsg.Login, new ELoginRequest { token = token }
 ### 相机跟随抖动
 
 `Follow` 的 `smoothTime` 越小跟随越紧、越容易抖；震屏期间不要同时改边界。
+
+### 第一人称视角不动 / 鼠标没反应
+
+**症状**：`rig.Tick(dt)` 调了，但画面朝向不动，或一动就飘。
+
+**原因 / 解决**：
+1. **没绑定相机**（`rig.IsBound == false`）：`Bind()` 要等场景里有 `tag=MainCamera` 且启用的相机；进关卡前的空窗期取不到，稍后重试或 `Bind(camera)` 显式绑定。
+2. **没设置眼位来源**：`EyeAnchor == null` ⇒ 只更新朝向、机位不动。
+3. **灵敏度为 0**：`SensitivityX <= 0` ⇒ 该轴位移被忽略（限频 Warn）。
+4. **一帧调了两次 `Tick`**：鼠标位移是"读时结算"的增量，一帧两次会把同一帧位移按两次算（表现为灵敏度翻倍 / 飘）。
+5. **`timeScale = 0`**：业务传进来的 `dt` 为 0 ⇒ 本帧不推进任何状态（这是刻意的，不是 bug）。
+
+### 两个角色站进同一格 / 重叠
+
+**症状**：角色之间可以互相穿过去、站在同一处。
+
+**原因**：位移解算里**没做角色间推开** —— 只判墙体不判"另一个角色挡不挡"。
+
+**解决**：位移解算末尾调 `Separation2D.TryResolveOne(申请位置, 半径, 周围角色圆, count, out var fixedPos)`（或整组用 `TryResolve`），
+再把 `fixedPos` **喂回墙体判定钳一次**（⛔ 别直接采用，否则会把人推进墙里）；
+返回 `false` 表示迭代上限内仍有重叠（挤成一堆），按"挤住"处理（原地不动 / 交给寻路绕开）。
 
 ## 下一步
 

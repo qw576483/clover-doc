@@ -297,6 +297,74 @@ Game.Http.Post("https://api.example.com/login", body, response =>
 });
 ```
 
+## 局域网寻服（LanBrowser / LanResponder）
+
+找同网段里「谁开了服、能不能进」—— **旁路能力**：走 UDP 广播 / 单播，**不占 EMsg 消息号、不进 Router、不走线路族**（N13），
+与服务器端 etcd 服务发现（`internal/app/discovery.go`）无关（不共享协议 / 端口 / 代码）。
+仅原生平台可用；WebGL 无 BSD socket ⇒ `IsSupported=false`，`Scan()` 打 Error + 立即 `OnScanFinished`（**禁止静默失败**）。
+
+### 用法三段式
+
+```csharp
+Game.Launch(config);                        // 1. 起引擎（CloverLan 随 Launch 自动挂接）
+Game.LanBrowser.Scan();                     // 2. 找主机（结果经事件出；Hosts 是最近一轮的只读快照）
+// 3. 玩家选一台
+CloverNet.Init(host.Address, host.UdpAddress);   // host 来自 OnHostFound
+```
+
+> **寻服必须早于 `CloverNet.Init`**：先寻服、选主机，再连；引擎**不提供运行中切服**（`CloverNet.Init` 幂等、只生效一次，见 N1）。
+
+### 发现端（`Game.LanBrowser`，`ILanBrowser`）
+
+| API | 参数 | 返回值 | 说明 |
+|-----|------|--------|------|
+| `Game.LanBrowser.Scan(options)` | `LanScanOptions` | `void` | 开始新一轮（`null` = 全默认）。扫描中重复调用 = 停旧的、开新的；窗口到点或提前结束都**收尾一次**，调用方不会卡在 `Scanning` |
+| `Game.LanBrowser.Stop()` | - | `void` | 提前结束本轮（保留已发现结果）；未在扫描时是幂等空操作 |
+| `Game.LanBrowser.Hosts` | - | `IReadOnlyList<LanHostInfo>` | 最近一轮结果（**只读快照**，上限 64 台，同 `gateway` 去重）；新一轮开始时清空 |
+| `Game.LanBrowser.State` | - | `LanBrowserState` | `Idle` / `Scanning` |
+| `Game.LanBrowser.IsSupported` / `UnsupportedReason` | - | `bool` / `string` | 当前平台能否寻服；不能时给可直接显示给玩家的原因 |
+| `Game.LanBrowser.OnHostFound` | `Action<LanHostInfo>` | - | 每发现一台触发一次（主线程；同 gateway 的重复应答只覆盖数据、不重复触发） |
+| `Game.LanBrowser.OnScanFinished` | `Action` | - | 一轮结束触发一次（主线程；无论有无结果、任何提前结束路径也一定触发） |
+
+`LanScanOptions`：`Port`（0 = 默认 `47777`）/ `DurationMs`（默认 1500）/ `IncludeBroadcast` / `IncludeSubnetBroadcast` / `IncludeLoopback` / `ExtraTargets`（额外单播目标）。
+`LanHostInfo`（只读快照）：`Host` / `GatewayPort` / `UdpPort` / `AuthAddr` / `Name` / `Players` / `MaxPlayers` / `Version` / `Extra`，以及 `Address`（`host:gatewayPort`）/ `UdpAddress`（`UdpPort <= 0` 时为空串）。
+
+### 应答端（`CloverLan.CreateResponder()` → `ILanResponder`）
+
+「我开的主机要被别人扫到」—— `ILanBrowser` 的**对侧**。只有一半时工程里 `Find Servers` 恒为 0 台**不是"没扫到"、是"没人应答"**（现象上与"没有发现能力"无法区分）。
+**不经 `Game` 门面、也不要求 `Game.Launch`**：是不是主机是业务决策，不是引擎生命周期的一部分。
+
+| API | 参数 | 返回值 | 说明 |
+|-----|------|--------|------|
+| `CloverLan.CreateResponder()` | - | `ILanResponder` | 每次返回新实例；**由调用方持有并负责 `Dispose()`**（引擎不代管） |
+| `responder.Start(self, options)` | `LanHostInfo, LanRespondOptions` | `bool` | 开始应答（幂等）。已在跑时**只更新广播参数**并返回 `true`（端口不可在运行中更换，打 Warn）；`self.Host` 留空 = 自动取本机一个 IPv4 |
+| `responder.Stop()` | - | `void` | 停止（幂等；未启动时空操作） |
+| `responder.Describe()` | - | `string` | 一行状态（日志 / 调试面板 / 探针共用） |
+| `responder.IsSupported` / `UnsupportedReason` / `IsRunning` / `ListeningPort` / `LastError` | - | `bool` / `string` / `int` | 状态与失败原因（成功后清空） |
+| `responder.Self` | - | `LanHostInfo` | 当前对外广播的主机快照（`Start` 后非 null） |
+| `responder.QueryCount` / `ReplyCount` / `DroppedCount` | - | `long` | 收到的合法查询数 / 回出的应答数 / 丢弃的非法包数（判据用：`QueryCount > 0` = 确实有人在找服） |
+| `responder.OnQuery` | `Action<string>` | - | 每收到一次合法查询触发（主线程；参数 = 来源 `ip:port`），高频查询由实现限频日志 |
+
+```csharp
+var responder = CloverLan.CreateResponder();
+var self = LanHostInfo.Create("", 8002, 8003, null, "我的服", 1, 10, "1.0.0", null); // Host 留空 = 自动取本机 IPv4
+if (!responder.Start(self))
+    Game.Logger?.Warn("Lan", $"局域网应答端启动失败：{responder.LastError}");
+// ... 主人退出时
+responder.Dispose();
+```
+
+> 应答端**只管「能被发现」**：应答里广播的 `gateway` 端口是**参数**（调用方给的那台真网关的端口），不是它自己起的服务 ——
+> 「列表里看得到、点加入却接不上」= 网关没起来，与本能力无关。
+> 四条边界都**不抛**：平台不支持 / 端口被占用 ⇒ `Start` 返回 `false` + `LastError`；重复 `Start` ⇒ 幂等；`Stop` 未启动 ⇒ 空操作。
+
+### 协议与线程模型
+
+- 协议（沿用 `LanProtocol`）：查询 `CLOVER-LAN-QUERY/1|<nonce>` 广播 / 单播到默认端口 **`47777`** → 主机**单播**回应答 `CLOVER-LAN-REPLY/1|{json}`；单包 ≤ **512** 字节；每轮一个 32 字符 hex `nonce`，应答必须回显（防上一轮包串味）；主机地址取报文里的 `gateway`，**不信任来源 IP**。
+- 应答端固定监听 `47777`（与发现端的临时端口不同）、**只回给查询来源端点**（不做广播回包，否则 N 台主机互相扫描会变成广播风暴）。
+- 线程模型：收包在后台线程（`CloverLan-Udp`）；`State` / `Hosts` / `OnHostFound` / `OnScanFinished` / `OnQuery` 一律经 `Game.Dispatcher.Post` 收敛到主线程（`Game.Dispatcher` 为 null 时直接执行）。公开方法仅主线程可调。
+- 事件（经 `Game.Event` 发布，与 C# 事件互为等价入口）：`Net.LanHostFound`（参数 `LanHostInfo`）/ `Net.LanScanFinished`。
+
 ## 网络事件
 
 | 事件名 | 说明 |
@@ -343,6 +411,7 @@ Game.Event.On("Net.OnKicked", () =>
 | **N10** | 平台线路：Standalone = QUIC → TCP + RawUDP；GL（WebGL）= **当前无可用线路**（WebSocket 与 WebTransport 均需浏览器 jslib 桥接、尚未落地，待办由客户端引擎仓库维护；浏览器无 BSD socket，原生家族线路也不可用） |
 | **N11** | 线路 TLS 开关与服务端 `gateway.tcp_tls_disabled` **必须相反**；证书只走系统信任链（无跳过开关） |
 | **N12** | 会话通道加密由引擎协商（登录时自动填 `ELoginRequest.encrypt`）；业务不得手填该字段，也不得自行加解密帧 |
+| **N13** | 局域网寻服（`LanBrowser` / `LanResponder`）是**旁路协议**：不占 EMsg 消息号、不进 Router、不走线路族，与服务器端 etcd 服务发现无关。仅原生平台可用（WebGL 无 BSD socket ⇒ `IsSupported=false`，禁止静默失败）。使用顺序固定为「`Game.Launch` → `Game.LanBrowser.Scan` → 选主机 → `CloverNet.Init(主机 Address)`」；引擎不提供运行中切服（`CloverNet.Init` 幂等，见 N1）。应答端经 `CloverLan.CreateResponder()` 取得，固定监听 UDP `47777`、只单播回查询来源、`Start`/`Stop` 幂等且四条边界都不抛 |
 
 ## 常见问题
 
@@ -355,6 +424,21 @@ Game.Event.On("Net.OnKicked", () =>
 **解决**：
 1. 检查网络连接
 2. 增加 `CallTimeoutSeconds` 配置
+
+### 局域网扫描 0 台结果
+
+**症状**：`Game.LanBrowser.Scan()` 收尾了，`Hosts` 是空的，也没有任何报错。
+
+**原因**（按可能性排序）：
+1. 同网段里**没有主机在应答** —— 只有"问"的一半时（没人调 `CloverLan.CreateResponder().Start(...)`），
+   0 台**不是"没扫到"、是"没人应答"**，与"没有发现能力"在现象上无法区分；
+2. 系统防火墙拦下了 UDP `47777` 的入站（主机侧收不到查询）；
+3. 当前平台不支持（WebGL 无 BSD socket）—— 但这条会打 Error 日志 + `IsSupported=false`，可据此排除。
+
+**解决**：
+1. 在主机侧起应答端并**用它的计数当判据**：`responder.QueryCount > 0` = 确实有人在找服（若 `QueryCount` 在涨而 `ReplyCount` 不涨，看 `LastError` 与 `DroppedCount`）；
+2. 在目标机放行入站 UDP `47777`；
+3. 真机（非编辑器）复测：编辑器里子网广播在部分 VPN / 虚拟网卡环境下会被路由吞掉，用 `LanScanOptions.ExtraTargets` 指定主机 IP 单播可先验证链路。
 
 ### 会话恢复失败
 

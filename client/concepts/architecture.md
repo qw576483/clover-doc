@@ -214,12 +214,15 @@ Game.Quality.AutoDetect();
 ```
 com.clover.unity-engine/
 ├── Runtime/
-│   ├── Core/         Game / Event / Timer / Fsm / Dispatcher / Logger / Setting / Json / DeviceId
+│   ├── Core/         Game / Event / Timer / Fsm（含 Game.NewFsm 多实例）/ Dispatcher / Logger / Setting / Json / DeviceId
+│   │                 / Separation2D（角色间水平推开：纯函数）
 │   ├── Data/         DataTable / Localization
 │   ├── Network/      Network / WebRequest / WorldSync / SchemaRegistryManager（Schema 声明表，**不承担数据订阅**；订阅走 WorldSync）
+│   │                 / Lan（局域网寻服：LanBrowser 发现端 + ILanResponder 应答端，UDP 旁路）
 │   ├── Resource/     Resource（后端抽象 / Resources / AssetBundle / 清单热更）
 │   └── Presentation/ Scene / Entity / ObjectPool(GameObject) / UI / UIWidgets / SpriteAtlas
 │                     / Animation / Sound / Input / Camera / Quality
+│                     / CloverFirstPersonCamera（第一人称 rig，纯逻辑类）
 ├── Editor/           Debugger（含 GM 控制台） / MapBake（地图烘焙）
 └── Tests/            Editor + PlayMode 测试
 ```

@@ -88,7 +88,7 @@ type EPlayerFullSyncNotify struct {
 
 > **地图数据从哪来**（Scene 的可行走位图与碰撞体不是手写的）：引擎地图管线产出 ——
 > Unity 侧烘焙（[`clover-client-unity-engine/Editor/MapBake/`](https://github.com/qw576483/clover-client-unity-engine/tree/main/Editor/MapBake)，面板 `Clover/地图烘焙`；一次写服务端 + 客户端两份同源字节）、
-> 服务端加载（`pkg/domain/mmo/mapdata`：`Load` → `ApplyTo(scene)`，位图 → `NavGrid3`、AABB → `Collider3(GroupWall)`、出生点净空校验）、
+> 服务端加载（`pkg/domain/mmo/mapdata`：`Load` → `ApplyTo(scene)`，位图 → `NavGrid3`、AABB → `Collider3(GroupWall)`、出生点净空校验；文件含**命名标记点**段（flags bit2）时一并完整解析并校验（`readMarkers` → `Map.Markers`，服务端当前只校验不消费，消费方按名字自行过滤）、
 > 客户端查询（`Game.Map.WalkableAt`）。字节契约见 `pkg/domain/mmo/mapdata/README.md`。
 
 **三级结构**：

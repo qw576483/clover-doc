@@ -474,6 +474,8 @@ public class SceneManager : MonoBehaviour
 | `fsm.Tick(dt)` | `float` | `void` | 每帧驱动 | 状态更新 |
 | `fsm.OnChange(handler)` | `Action<string, string>` | `void` | 注册状态变化回调 | 监听变化 |
 | `fsm.OffChange(handler)` | `Action<string, string>` | `void` | 移除状态变化回调 | 取消监听 |
+| `fsm.Reset()` | - | `void` | 恢复到「未初始化」：清空状态表 / 触发器表 / `Current`（**不销毁实例**、**不触发** OnExit / OnEnter / OnChange、**保留** `OnChange` 订阅表）；可重复调用 | 每回合重开 / 对象池复用 |
+| `Game.NewFsm()` | - | `IFsm` | 取一棵**独立**状态机（每次新实例，绝不返回 `Game.Fsm`）；**`Game.Tick` 不驱动它**，谁创建谁 `Tick(dt)` | 每个 Bot / 单位一棵局部状态机 |
 | `fsm.Current` | - | `string` | 获取当前状态名称 | 查询状态 |
 
 ### 参数说明
@@ -561,7 +563,11 @@ public class CharacterFSM : MonoBehaviour
 }
 ```
 
-```csharp 标题：AI 状态机示例（使用 Game.Fsm，状态名加前缀隔离）
+> ⚠️ 每个 AI / 单位一棵状态机请用 `Game.NewFsm()`（独立实例，自己按帧 `Tick`）；
+> 「注册到 `Game.Fsm` + 状态名加前缀隔离」是**旧绕法**（多实体共用同一个 `Current`，同名状态重复注册还会告警并整体替换回调）。
+> 下面这段保留作为对照。
+
+```csharp 标题：AI 状态机示例（旧绕法：Game.Fsm + 状态名加前缀隔离）
 public class AIController : MonoBehaviour
 {
     private string _prefix; // 用前缀隔离不同 AI 的状态
@@ -888,7 +894,10 @@ public class PooledObject : MonoBehaviour
 | API | 入参 | 返回 | 说明 | 典型场景 |
 | --- | --- | --- | --- | --- |
 | `AStar.Find(walkable, from, to, ...)` | `Func<Vector2Int,bool>, Vector2Int, Vector2Int` | `List<Vector2Int>` | **回调式**（零业务类型依赖）；不可达 / 入参非法 ⇒ `null` + 限频告警 | 随机地图寻路 |
-| `AStar.FindSmoothed` / `Smooth` / `HasLineOfSight` / `Describe` | - | - | 平滑路径 / 视线判定 / 文字诊断 | 怪物 AI / 点击移动 |
+| `AStar.FindSmoothed` / `Smooth` / `HasLineOfSight` / `Describe` | - | - | 平滑路径 / **视线判定（仅 2D 格网）** / 文字诊断 | 2D 寻路 / 点击移动 |
+
+> ⚠️ **`AStar.HasLineOfSight` 不是 3D 视线判定**：它是 2D 格网上的 Bresenham + 可走回调（`AStar.cs`），只看"这条格线经过的格子是否可走"。它**没有**层高（`y`）、没有受体（角色/物体）过滤、也没有烟雾/遮挡物概念 ⇒ ⛔ **不能**用来做"怪物能不能看见玩家"。
+> 需要 3D 视线（视锥 + 物理射线 + 受体层）时，客户端引擎目前**没有**等价件（`Frustum` / `ViewCone` / `CanSee` / `Perception` 全仓 0 命中）；服务端的参考口径在 `collide.Grid3.Raycast` / `NavGrid3`，客户端侧要么自己实现、要么登记为引擎缺口。
 | `new IsoLayout(halfW, halfH, sortOrderStep, sortOrderBase)` | `float, float, int, int` | `IsoLayout` | 构造收参数 ⇒ **不绑定任何项目常量**（⛔ 后两个是 **int**：写 `1f, 0f` 编译不过） | 2.5D / 等距 |
 | `IsoLayout.GridToWorld / WorldToGrid / ScreenToGrid / SortOrder / GridDistance* / DirectionTo` | - | - | 正逆投影 / 深度排序 / 距离 / 方向 | 坐标换算 |
 
@@ -905,7 +914,324 @@ public class PooledObject : MonoBehaviour
 
 > ⚠️ **两种口径语义不同、不可互相替换**：时间治"每帧刷屏"、计数治"偶发但一局出现很多次"的打点抽样。
 
+### FrameBank —— 精灵目录抓帧（整目录有序数组 / 帧号寻址 / 统一画布锚点）
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `new FrameBank(resource = null, fallbackPixelsPerUnit = 100f)` | `IResourceManager, float` | `FrameBank` | 一般传 `null`（回落 `Game.Res`）；`fallbackPixelsPerUnit <= 0.01` 按 `DefaultPixelsPerUnit`（100）处理（⛔ 不抛） | 进图前建一个 |
+| `LoadDir(path)` / `LoadDir(path, PivotMode)` | `string` / `string, PivotMode` | `Sprite[]` | **同步**取整目录全部帧 + 按帧号升序排；空路径 / 两级都取不到 ⇒ **长度 0 的数组**（⛔ 不返回 `null`、⛔ 不抛）。降级链：`LoadAll<Sprite>` ⇒ 空则 `LoadAll<Texture2D>` 现场 `Sprite.Create` | 逐帧动画取整目录 |
+| `FrameNumberMap(path, mode)` | `string, PivotMode` | `int[]` | `map[帧号]` = 该帧在数组里的**下标**（取不到 = `-1`）；表长 = 最大帧号 + 1；同帧号取首次出现的下标。**恒等 ⇒ Info；非恒等 ⇒ Warn + 前 8 项 `fN→idx` 作证据** | 按帧号寻址取帧 |
+| `UnifyCanvasAnchor(frames, cacheKey)` | `Sprite[], string` | `Sprite[]` | 用「全目录 `rect` **并集中心**」当**共用纹理锚点**重建每一帧（`PivotMode.UnifiedCanvasAnchor` 内部即调它）；前提 = 各帧**画布尺寸一致**，不满足 ⇒ **降级保原样 + 限频 Warn**（⛔ 不静默） | 多 Sprite 导入的「贴图抖动」 |
+| `ParseFrameIndex(name)` | `string` | `int` | **纯函数**（离线可断言）：帧号 = 名字里**从倒数第二段起往回**找的第一个纯数字段（`frame_000_0→0`、`frame_485_0→485`、`frame_003→3`、`gen_frame_012→12`）；解析不出 ⇒ `-1` | 排序键 / 离线断言 |
+| `Cached(path)` | `string` | `Sprite[]` | **已缓存**的帧（`AsImported` 模式；**不触发加载**）；没缓存过 ⇒ 空数组 | 诊断 |
+| `WhiteSprite()` | - | `Sprite` | 共享 1×1 白块（`pixelsPerUnit = 1` ⇒ 恰好 1 世界单位），惰性造一次 | 世界空间纯色底块 / 占位块 |
+| `Clear()` | - | `void` | 清缓存 + **只销毁名字带 `gen_` 前缀的那些**现造 Sprite（导入 / 引擎那份归资源模块，⛔ 本类不碰）；调用后同名目录会重新加载，且「只报一次」的告警**重新武装** | 出图 / 换场景 |
+| `Count` / `GeneratedSpritePrefix` / `DefaultPixelsPerUnit` / `PivotMode.AsImported` / `PivotMode.UnifiedCanvasAnchor` | - | `int` / `string` / `float` / 枚举 | 已缓存目录数 / 现造 Sprite 的名字前缀 `gen_` / 兜底 PPU `100` / 「按导入设置原样」/「全目录共用锚点」 | 诊断 / 常量 |
+
+> ⚠️ **什么时候不要用它**：① **⛔ 战斗热路径里第一次调用** —— `LoadDir` 走 `LoadAll<T>` 是**同步阻塞**（真的加载、不进缓存/引用计数），请在**进图前 / 读条阶段**调；② 只要「随用随取单张、不介意被水位淘汰」⇒ 用同节的 `SpriteSet`（两者方向相反且互补）。
+> ⚠️ 帧号 ≠ 下标发生在「一张 PNG 被切成多个子 Sprite」的目录里 ⇒ 一旦发生而无人知晓，表现是「取帧取错」这类**零报错**的静默错误，所以 `FrameNumberMap` 必须断言 + 留痕。
+> ⛔ 不要自己再写一份「抓目录 + 排序 + 定锚点」（同形状在各工程里重写过 N 遍）；⛔ `UnifyCanvasAnchor` 的 `Sprite.Create` **`pivot` 口径是相对各自 `rect` 归一化**（不是相对整张贴图）—— 这条是实测出来的，别靠回忆重推。
+
+### RuntimePanelProvider —— 运行时面板供给者（零 prefab）
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `new RuntimePanelProvider(params Assembly[] panelAssemblies)` / `new RuntimePanelProvider(timer, panelAssemblies)` | `Assembly[]` / `ITimer, Assembly[]` | `RuntimePanelProvider` | 传**面板类型所在的程序集**（`typeof(某面板).Assembly`）；引擎所在程序集里没有业务面板 ⇒ 必须至少给一个 | 纯代码搭 UI 的工程 |
+| `Install(bus)` | `IEventBus`（一般 `Game.Event`） | `bool` | 给静态槽 `CloverPresentation.PanelProvider` 装上「按类名反射造面板」的实现（`Game.UI.Open<T>` 从此**不再依赖** `Resources/UI/{类名}.prefab`）；幂等；`bus == null` ⇒ `false` + **Error**（= 调早于 `Game.Launch`）；同一条总线但槽被别人清掉 / 覆盖 ⇒ **自愈重装**并返回 `true` | 启动流程一次性调用 |
+| `Uninstall()` | - | `void` | 把槽置回 `null`（= 回到 prefab 路线）+ 清掉兜底残留模板；⛔ 只影响**之后**打开的面板（已开着的归 `UIManager`） | 退出流程 |
+| `AddAssembly(assembly)` / `Invalidate()` | `Assembly` | `void` | 追加要扫描的程序集（⛔ 第一次 `Install` 之前加齐）/ 丢掉类型表（改完程序集集合后调） | 模块化工程 |
+| `IsInstalled` / `InstalledBus` / `PanelTypeCount` / `PanelTypes` | - | `bool` / `IEventBus` / `int` / `IReadOnlyDictionary<string, Type>` | 是否装着本实例（且总线仍是安装时那条）/ 安装那一刻的总线 / 已登记面板类型数（**会触发扫描**）/ 类型只读快照 | 自检 / 诊断 |
+
+> ⚠️ **什么时候不要用它**：需要在编辑器里调版面 / 面板里挂引用 / 美术要看 prefab ⇒ 保持 `PanelProvider == null` 走 **prefab 路线**（`Editor/PanelPrefabBuilder` 能按 `IUIPanel` 实现批量生成壳 prefab）。两条路线是**同一个函数槽** ⇒ 天然互斥，⛔ 不会两套同时生效。
+> ⚠️ **时机**：必须在 `Game.Launch` **之后**、**第一次 `Game.UI.Open` 之前** `Install`（晚装只影响之后打开的面板）。
+> ⚠️ **面板必须在 `OnOpen` 里建视觉树**，⛔ 不要放 `Awake` / `Start` —— 模板对象也会走一遍 `Awake`（`AddComponent` 当场触发），在 `Awake` 里建树会让**模板也建一份**（白做 + 多一次加载）。这条引擎挡不住 ⇒ 靠本行约束。
+> ⚠️ **IL2CPP 裁剪**：反射扫程序集会被 **managed code stripping** 打掉（面板类型没有任何静态引用）⇒ 用了本件的工程**必须**在 `Assets/link.xml` 里 `preserve` 面板类型（或至少面板所在程序集），否则表现为「面板开不出来且完全静默」。
+> ⛔ 不要自己再写一份 `PanelFactory`（同形状曾在工程侧手写过一遍）。
+
+### SnapshotInterpolator —— 低频权威快照 → 高帧率插值（渲染时钟 + 窗口选择）
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `SnapshotInterpolatorOptions.Default()` | - | `SnapshotInterpolatorOptions` | 参考工程**实测收敛**的那一组：10 Hz 快照 / 6 格历史 / 落后 2 个间隔 / ±5% 速率 | 起步值 |
+| `SnapshotIntervalMs` / `ExpectedRenderFps` / `HistSlots` / `RenderLagIntervals` / `LagSteerGain` / `LagSteerMaxRate` / `CatchUpMaxRate` / `CatchUpThresholdIntervals` / `ServerNowExtrapCapIntervals` / `ClockMaxLeadIntervals` | - | `float` / `int` | **结构体 + 公开字段**（与 `ViewBobConfig` 同形）。换快照频率或渲染帧率**必须**改前两个；`HistSlots` **必须 > `1 + RenderLagIntervals`**，否则时钟一落后就掉出历史 ⇒ `t` 恒为 0（插值静默失效） | 参数化节奏 |
+| `TargetLagMs` / `CatchUpThresholdMs` / `ServerNowExtrapCapMs` / `ClockMaxLeadMs` / `HistoryCoverageMs` | - | `float` | 上面几个的**毫秒派生量**（只读） | 诊断 |
+| `new SnapshotInterpolator(options = null, clockSeconds = null)` | `SnapshotInterpolatorOptions?, Func<float>` | `SnapshotInterpolator` | `options` 传 `null` 取 `Default()`；非正 / 过小的值被**归一化 + 一条 Warn**（⛔ 不静默、⛔ 不抛）。`clockSeconds` **返回秒**、语义同 `Time.realtimeSinceStartup` ⇒ 离线单测 / 回放灌数据注入它即可完全复现 | 建插值器 |
+| `Push(serverMs, payload = null)` | `float, object` | `bool` | 推入一帧权威快照：**只入历史，⛔ 绝不重置渲染时钟、⛔ 绝不换正在渲染的窗口**。`true` = 入了历史；`false` = 被丢弃（`serverMs <= 0` ⇒ 退化按标称周期推定；时间戳没前进 / 乱序 ⇒ **整帧丢**，历史必须按时间戳单调） | 网络回调里推 |
+| `Tick()` | - | `float` | **每帧一次**：推进渲染时钟 → 有界比例速率修正 → 按渲染时钟选插值窗口 → 返回 `t ∈ [0,1]`（未就绪 = 返回 `1f`，语义「冻在最后一个已知位置」） | 业务 Tick |
+| `Reset()` | - | `void` | 复位到「还没收到任何快照」（换对局 / 重连 / 出图）；「只报一次」的告警**不重置** | 换对局 |
+| `HasWindow` / `WindowStartPayload` / `WindowEndPayload` / `InterpRatio` | - | `bool` / `object` / `object` / `float` | 窗口是否可用 / **该插值的那一对载荷**（调用方自己的 `payload`，本件只存**引用**、⛔ 不读不拷贝）/ 上次的 `t`。调用方拿 `prev` / `cur` 自己 Lerp 自己的实体字段 | 渲染实体 |
+| `RenderClockMs` / `NewestSnapshotMs` / `RenderLagMs` / `BufferLagMs` / `WindowStartMs` / `WindowEndMs` / `ClockRate` / `SnapshotCount` / `HistoryLength` / `CatchingUp` / `OutOfWindow` / `DroppedOutOfOrderCount` / `Options` | - | `float` / `int` / `bool` / 结构体 | 渲染时钟（服务端时间轴上的哪一毫秒）/ 最新快照时间戳 / 落后最新多少 ms / 缓冲多深 / 窗口两端 / 当前速率 / 计数 / 状态标志 —— **留痕与自检用** | 自检 / 诊断 |
+| `static SteerRate(lagErrorMs, options)` / `SteerRate(lagErrorMs)` | `float, SnapshotInterpolatorOptions` | `float` | **纯函数**控制律（离线可断言）：偏差 ≤ 阈值 ⇒ 在 ±`LagSteerMaxRate` 内**按比例**微调；超阈值 ⇒ 放开到 `CatchUpMaxRate` 有界追帧（超前时只放一半） | 离线断言 |
+
+> ⚠️ **三个已知坑（改之前先读）**：① ⛔ **不要把渲染时钟写成「每帧累加 `Time.deltaTime`」** —— 那个值被 Unity 夹在 `Time.maximumDeltaTime`（默认 1/3 秒），一次卡顿就让时钟**永久落后**（实测 1915~2108 ms）⇒ `t` 恒为 0、单位冻住；② ⛔ 速率修正**必须每帧都调**，不许写成 `|err| > 阈值 ? SteerRate(err) : 1f`（落后量一旦被成批到达的快照推过阈值就**再也回不来**）；③ ⛔ **换窗口必须按时钟跨过时间戳**，不许「按包到达换窗口」（那是抖动的来源：实测速度 cv 0.24~0.28，改成按时钟后 cv 0.000）。
+> ⚠️ **分工**：`WorldSync` 是 MMO/AOI 的**逐实体**镜像同步（回答「这个实体怎么平滑到下一格」）；本件只管**时间轴 / 窗口**（对快照内容一无所知，可叠加使用）。也**不是** `FramePacingPolicy` 的重复（那个管帧**交付**节奏，本件管取**哪一时刻**的状态）。
+> ⚠️ **代价（明知）**：画面比服务端晚 `RenderLagIntervals` 个间隔 —— 这是「**绝不前跳**」换来的（前跳会瞬间把单位推过头、甚至穿墙）。
+> ⛔ 不要自己再写一份「插值比例 + 快照缓冲」（三代失败模式：分母写死 + 每帧重置 ⇒ 前跳；到达驱动换窗口 ⇒ 抖动；本件是第三代）。
+
+### GridUtil —— 矩形 → 整数格遍历
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `GridUtil.TryGetTileRange(r, out xMin, out xMax, out yMin, out yMax, epsilon = EdgeEpsilon)` | `Rect, out int ×4, float` | `bool` | 矩形覆盖到的格**范围**（`xMin/xMax/yMin/yMax` 都**含**端点）；空 / 反向矩形 ⇒ `false`（**静默**，不打日志）；非有限坐标（NaN / ±Inf）⇒ `false` + 限频 Error | 碰撞盒 → 格范围 |
+| `GridUtil.ForEach(r, action, epsilon = EdgeEpsilon)` | `Rect, Action<int, int>, float` | `void` | **热路径入口**：`y` 升序外层 / `x` 升序内层（**顺序是契约** —— 回调里 `break` 时「先撞到哪一格」会随顺序变）；委托已缓存时**零分配**；格数离谱 ⇒ 只留痕、**⛔ 不截断**（截断 = 静默丢格 ⇒ 碰撞漏判） | 每帧碰撞查询 |
+| `GridUtil.Enumerate(r, epsilon = EdgeEpsilon)` | `Rect, float` | `IEnumerable<Vector2Int>` | ⚠️ **每次调用都会分配**（迭代器状态机 + 装箱枚举器）⇒ 只给冷路径（建关卡 / 工具 / EditMode 测试） | 构建期遍历 |
+| `GridUtil.EdgeEpsilon` | - | `float` | `0.0001f`：右 / 上边按**开区间**收边（否则「只在一条零宽边上碰到」的格会被算进来 ⇒ 贴右墙隔空撞墙、多踩一格）；⚠️ 只对 \|坐标\| ≲ 4096 可靠（更大时 ULP > epsilon，等于没减）⇒ 世界更大**显式传更大的 epsilon** | 构造默认值 |
+
+> ⚠️ **世界 → 格必须 `Mathf.FloorToInt`**：`(int)` 强转对**负数向零截断**（x = -0.5 ⇒ 第 0 格）⇒ 表现为「站在坑里也能踩到地」且**不报错**；`RoundToInt` 会把格边界挪到 0.5，与引擎既有口径「格 (gx, gy) 覆盖 [gx, gx+1]」不符。
+> ⚠️ 热路径的 `lambda` **一旦捕获局部变量就每次调用分配一个闭包**；方法组转换在 Unity 的 C# 9 下**每次转换也分配** ⇒ 把委托**存进字段**再传。
+> ⛔ 不要自己再写一份 `Overlap(Rect)` —— 这个形状在某个工程里被**逐字复制了 4 份**（玩家 / 敌人 / 道具 / 火球），正是本类被下沉的原因。
+
+### ITileWorld / TileWorld —— 2D 瓦片世界的空间事实面
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `ITileWorld` / `new TileWorld()` | - | - | **只回答事实，不给位移解算**（口径同 `Game.Map`）；纯数据、无 MonoBehaviour / 无 GameObject（`TileWorld` = 两个哈希表 + 64 位压缩键，稀疏存储） | 平台 / 俯视关卡的格子事实 |
+| `IsSolid(tx, ty)` / `IsSolidAt(x, y)` | `int, int` / `float, float` | `bool` | 该格是否实心；**越界一律 `false`**（⛔ 不抛、不打日志）；`IsSolidAt` 内部走 `Mathf.FloorToInt` | 碰撞 / 可走判定 |
+| `SetSolid(tx, ty, solid = true)` | `int, int, bool` | `void` | 置 / 清一个实心格（⛔ 不要用 `bool[宽*高]` 全量数组） | 破坏方块 / 临时阻挡 |
+| `TryGetCarrierTop(tx, ty, out topY)` / `SetCarrierTop(tx, ty, topY)` / `ClearCarrierTop(tx, ty)` | `int, int` / `int, int, float` | `bool` / `void` | **移动托台**的小数顶高（世界 y，例如平台顶面在 `3.25`）；查不到 ⇒ `false`（**这是正常查询**，不抛、不打日志）；`SetCarrierTop` 收到非有限值 ⇒ 忽略 + Error | 升降平台 / 电梯 |
+| `SetBounds(minX, maxX, groundTopY)` | `float, float, float` | `void` | 给一次世界边界与地面顶高（关卡构建期）；非有限值 ⇒ 忽略 + Error；`minX > maxX` ⇒ 限频 Warn 后**交换**（归一化） | 建关卡 |
+| `MinX` / `MaxX` / `GroundTopY` / `HasBounds` | - | `float` / `bool` | 世界左 / 右边界、地面顶高；未 `SetBounds` 前都是 `0` 且 `HasBounds = false` ⇒ ⛔ **0 不代表世界真的到 0**，判之前先看 `HasBounds` | 相机 / 角色边界约束 |
+| `Clear()` | - | `void` | 只清**格子数据**（实心 + 托台），**不动**世界边界 / 地面顶高 —— 那是「世界事实」，重进关卡时由 `SetBounds` 重新给 | 换关卡 |
+| `SolidCount` / `CarrierCount` | - | `int` | 实心格 / 已登记托台格数量 | 诊断 / 自检 |
+
+> ⚠️ 同类能力别重复造：**格子寻路**用 `AStar`、**等距投影 / 深度排序**用 `IsoLayout`（见上一节）；本件只管「这一格是什么」这条**事实**。
+> ⛔ 不要为了「能扫整张地图」去加一个 `bool[宽*高]` 的实现（稀疏存储是接口契约里写着的实现要求）。
+
+### SpriteFrameAnimator —— 逐帧动画器（`Sprite[]` → `SpriteRenderer`）
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `new SpriteFrameAnimator(target)` | `SpriteRenderer` | `SpriteFrameAnimator` | `target` **允许为 `null`**（离线宿主 / EditMode 只推进内部状态、不写渲染器；⛔ 不会因此报错刷屏） | 逐帧动画 |
+| `Play(frames, fps, loop = true)` / `PlayOnce(frames, fps, onComplete = null)` | `Sprite[], float, ...` | `void` | **旧签名（语义逐字不变）**：`fps <= 0` / NaN / ±Inf ⇒ 按 **1 fps** + 限频 Warn；重播 / 换表**从第 0 帧重来**（累计时间归零）；空帧表 ⇒ 不播 + 限频 Warn | 简单的两态动画 |
+| `Play(frames, indices, fps, loop = true)` / `PlayOnce(frames, indices, fps, onComplete = null)` | `Sprite[], int[], float, ...` | `void` | **新重载**：`fps == 0` = **静止帧（停播，不是「1 fps 慢慢抖」）**；`indices` = **帧段子集**（可多区间 / 可乱序，顺序即播放顺序），`null` / 空 ⇒ 等价整表按序播（+ 限频 Warn 一次） | 一档动画的帧**不连续**（如 attack = 帧 182-230 ∪ 247-251） |
+| `PlayStill(frames, index = 0)` | `Sprite[], int` | `void` | 显示第 `index` 帧并**停住**（`fps = 0` 的等价直白入口，`Advance` 不再推进） | 原版 idle 就是单条静止姿态帧 |
+| `SwitchTo(frames, indices, fps, loop = true, force = false)` | `Sprite[], int[], float, bool, bool` | `bool` | **换档（带滞回）**：请求档 == 当前档（帧表 / 切片 / fps / loop 全同）⇒ **什么都不做**（⛔ 绝不从第 0 帧重播）；当前档「播一次且没播完」⇒ **扣住**并返回 `false`，除 `force = true`；其余 ⇒ 正常换（当帧即贴新档首帧） | 服务端瞬时的 `anim` 字段（挥砍只在一 tick 置 attack） |
+| `static ExpandRuns(runs, frameCount, out error)` | `int[], int, out string` | `int[]` | 把 `[起始, 长度, …]` 的**段表**展开成下标集合（形状对齐配表里的 `Clip.Runs`）；**严格校验**（表为 null / 空、长度为奇数、某段长度 ≤ 0、某段越界 ⇒ 返回 `null` + `error` 给原因，⛔ **不做静默裁剪**） | 配表里的帧段表 |
+| `Advance(dt)` | `float` | `void` | **唯一的时间入口**（由业务 Tick 调）：`dt <= 0` ⇒ 不推进（`0` 是合法的「暂停帧」，负值按 0 + 限频 Warn）；单次推进超过 `MaxAdvanceSteps` 帧 ⇒ 丢弃剩余累计时间 + 限频 Warn（⛔ 不把一帧卡成死循环） | 业务 Tick |
+| `Stop()` / `SetFrame(index)` | `int` | `void` | 停止（**保留当前帧的画面**、未触发的完成回调作废）/ 直接定位到第 `index` 帧并立刻推给渲染器（越界**收敛** + 限频 Warn，**不改播放状态**；定位后累计时间归零） | 暂停 / 定帧调试 |
+| `Frames` / `ClipIndices` / `ClipLength` / `FrameCount` / `FrameIndex` / `Fps` / `Loop` / `IsPlaying` / `Target` | - | `Sprite[]` / `int[]` / `int` / `float` / `bool` / `SpriteRenderer` | 只读状态；用帧切片时 `FrameIndex` 是**档位位置**（对应的帧下标 = `ClipIndices[FrameIndex]`）；`Fps` 是归一化后的生效值（静止帧档恒为 0） | 自检 / 诊断 |
+
+> ⚠️ **什么时候不要用它**：要「在编辑器里编 State / Clip、有状态混合 / Avatar」⇒ 用 `IAnimationManager`（落地的是一颗 `Animator` + controller 资产）。本件是「`Sprite[]` 进、`SpriteRenderer` 出」—— 平台游戏每套动画的节奏就是**一个 fps**，为 4 张帧图建 controller + clip 是纯负担。
+> ⛔ 不要自己再写一份 `_animTimer += dt; if (_animTimer >= 0.11f) { 换帧 }` —— 这个形状在某个工程里被**逐字手写了 5 处以上**（节奏常量散落各 MonoBehaviour）。
+> ⚠️ 传入的 `frames` / `indices` **按只读对待**（本类**不克隆** —— 换档是热路径）⇒ 每个档位的切片**缓存起来复用**，不要每次换档现造。
+> ⚠️ 本类**不加载任何资源**（帧表由调用方给，谁加载谁 Release）；帧表怎么来见上面的 `FrameBank`。
+
+### SpriteSet —— 批量异步预加载 + 按名同步取
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `new SpriteSet(resource = null)` | `IResourceManager` | `SpriteSet` | `null` ⇒ 回落 `Game.Res`（可注入替身做离线自检） | 随用随取的精灵组合 |
+| `LoadSet(paths, onDone = null)` | `IEnumerable<string>, Action` | `void` | 批量**异步**预加载；回调**必定被调用一次**（含「清单为空」「资源管理器未挂接」「Preload 抛异常」三种情形 —— 否则调用方永久等待）。每条路径登记**两个名字**：① 全路径原样 ② 末段去扩展名；**短名冲突** ⇒ 保留先注册的 + Warn（此时请改用全路径取）。可多次调用**追加**清单 | 进图前预热一整套精灵 |
+| `Get(name)` | `string` | `Sprite` | **纯读缓存：不加载、不阻塞**。取不到（不在清单 / 尚未驻留 / 已被水位淘汰）⇒ `null` + **按名字只报一次 Error**（它会每帧被调用，逐帧刷屏会把日志打爆） | 每帧取图 |
+| `IsReady` | - | `bool` | 预加载**流程**是否结束（⛔ 它**不代表**「每一张都拿到」 —— 缺哪张由 `Get` 报） | 读条判定 |
+| `Count` | - | `int` | 已登记的名字条数（含全路径与短名） | 诊断 / 自检 |
+| `Clear()` | - | `void` | 清名字索引 + `IsReady` 复位（下次 `LoadSet` 是全新一批）；**只清本件的索引** —— 引擎缓存的引用计数不由本件持有，淘汰交给水位 / LRU | 出图 |
+
+> ⚠️ **与 `FrameBank` 的分工**：`SpriteSet` = 「异步 `Preload` 一批 → 按**名**同步 `TryGet` 单张」，**没有**目录级全量数组、条目**可被水位 LRU 淘汰**；`FrameBank` = 「一次拿到**整目录有序数组** + 按**帧号**定位 + 统一锚点」。要「第 N 帧动画」用后者，要「随用随取单张」用前者。
+> ⚠️ 忘了把某个动作放进 `LoadSet` 清单的表现是**角色整段隐形、零报错零日志** ⇒ 所以「取不到必须报、且因为每帧都会被调用所以只报一次」。
+> ⚠️ 需要**长期常驻**请自行 `Game.Res.LoadAsset` 持有引用（本件不持有引用计数）。
+
+### Screenshot —— 截图落盘
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `Screenshot.CaptureToFile(path, superSize = 1)` | `string, int` | `bool` | 把当前画面**立即**读成像素并写 PNG；传入路径的**父目录不存在时自动递归创建**；空 / `null` 路径、屏幕尺寸非法（0×0）、任何异常 ⇒ **返回 `false` + Error 留痕（⛔ 永不抛）**；`superSize < 1` ⇒ 按 1 处理 + 限频 Warn（放大是**读屏后最近邻**，不是渲染层超采样 —— `ReadPixels` 拿不到比屏幕更高的分辨率） | 自动化验证取证 / 玩家反馈 |
+
+> ⚠️ **必须在「帧末」那一拍调用**：`ReadPixels` 只能主线程、且必须在**渲染完成后同帧内**取 —— Play 模式用 `yield return new WaitForEndOfFrame()`；Editor 菜单 / 自动化脚本直接调。
+> ⚠️ 引擎**刻意不替调用方排帧末**（引擎不接管业务 Tick 的生命周期：替业务起协程去等帧末 = 引擎持有一次业务生命周期，`Game.Shutdown` 时那个协程还在等）。⛔ 不要为了「一行截图」在引擎里加协程 wrapper。
+> ⚠️ 截图功能的失败是**静默**高发区（调用方以为存了、磁盘上没有文件）⇒ 判据必须看**返回值 + 日志**，⛔ 不要只看目录里有没有图。
+
+### OrderedAsyncResult\<T\> —— 乱序异步结果按下标落位
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `new OrderedAsyncResult<T>(count)` | `int` | `OrderedAsyncResult<T>` | `count <= 0` ⇒ **立即视为 complete**（`TryTakeOrdered` 返回空数组 + `true`）+ 限频 Warn（零任务也是「齐了」；否则调用方永远等一个不会到来的交付） | 并行加载 / 逐帧采集 |
+| `Put(index, value)` | `int, T` | `void` | 把一个结果落到指定下标（**到达顺序任意**）。越界 ⇒ **忽略** + 限频 Warn（⛔ 不抛：异步回调路径上抛异常会打断调用方的循环）；同一 `index` 重复 ⇒ **覆盖**旧值 + 限频 Warn（后到的算新值；静默覆盖会让「结果错」无从查起） | 并行回调里落位 |
+| `TryTakeOrdered(out ordered)` | `out T[]` | `bool` | **仅在 `IsComplete` 时返回 `true`**：`ordered` = 长度 `Count`、**按下标升序**的数组，并**清空自己**（可复用：再 `Put` 一轮即可交付下一次）；未收齐 ⇒ `ordered = null` + `false`（⛔ **不交付半成品**）；`Count == 0` ⇒ 空数组 + `true` | 「齐了才组装」 |
+| `Count` / `FilledCount` / `IsComplete` | - | `int` / `bool` | 期待的结果个数 / 已落位的下标个数（重复 `Put` 同一 index **不重复计数**）/ 是否已收齐 | 读条判定 / 自检 |
+
+> ⚠️ **什么时候不要用它**：**非线程安全（主线程使用）** ⇒ 多线程回调请先在各自线程排队、回到主线程再 `Put`。回调本来就有序时也不需要它（直接数组赋值）。
+> ⚠️ 它解决的是「异步回调的到达顺序 ≠ 业务需要的顺序」：① 帧序随回调次序抖动（回放不可复现、对比判据随机红）② 结果被「到达即消费」。
+> ⛔ 不要自己再攒一层「N 个 boolean + 计数」（同形状在多个项目 / 多个功能里被各自手写过一遍）。
+
+### FramePacingPolicy —— 帧节奏（帧率上限 / 垂直同步）
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `FramePacingPolicy.Recommend(out targetFrameRate, out vSyncCount, out refreshHz)` | `out int, out int, out float` | `bool` | 由**显示器刷新率**给推荐档位；返回 `false` = 刷新率读不到（此时按兜底口径：`DefaultTargetFrameRate` / `DefaultVSyncCount`） | 启动期定帧节奏 |
+| `FramePacingPolicy.Pin(targetFrameRate, vSyncCount, out readBackFps, out readBackVSync, out error)` | `int, int, out int, out int, out string` | `bool` | 写 `Application.targetFrameRate` + `QualitySettings.vSyncCount` 并**读回校验**（原生 API 可能被平台改写）。`true` = 写入且读回一致；`false` = 抛异常（`error` 给原因）**或**读回值 ≠ 目标（`out` 给出**实际**读回值，调用方据此判「未生效」） | 钉死帧节奏 |
+| `FramePacingPolicy.TryRead(out fps, out vSyncCount, out error)` | `out int, out int, out string` | `bool` | **只读**当前帧节奏（不改任何值）；离线宿主里这两个原生 API 会抛 `UnityException` ⇒ `false` + 原因（「宿主里失败」是正常现象，不是崩溃） | `Pin` 前后对比 / 自检 |
+| `FramePacingPolicy.Describe(targetFrameRate, vSyncCount, reason, beforeFps, beforeVSync)` | `int, int, string, int, int` | `string` | 生效口径的**单行文本**（⛔ 不含日志级别、不含业务文案 —— 业务在自己那层加前缀） | 日志留痕 |
+| `RecommendVSyncCount(refreshHz)` / `TryReadRefreshHz()` | `float` | `int` / `float` | **纯函数**（离线可断言）：刷新率可读（> 0）⇒ **1**（帧交付锁到刷新率 ⇒ 帧间隔恒定，100 Hz 面板 ⇒ 10.0 ms）；读不到（无头 / 离线宿主 / 平台不提供）⇒ `0` | 档位计算 / 显示刷新率 |
+| `DefaultTargetFrameRate` / `DefaultVSyncCount` | - | `int` | 兜底帧率上限 `60` / 兜底垂直同步档位 `0`（**只在刷新率读不到时使用**） | - |
+
+> ⚠️ **什么时候不要用它**：**画质内容**（阴影 / 分辨率缩放 / LOD / 贴图限制）属 `Quality`（`Game.Quality.SetLevel`）—— 本件**只碰**帧率上限与垂直同步这两件「帧交付节奏」的事。
+> ⚠️ **口径（调用方要抄）**：① `vSyncCount > 0` 时平台会**忽略** `targetFrameRate` ⇒ 两个必须**一起写**；② `QualitySettings.SetQualityLevel` 会**按档位重置 `vSyncCount`** ⇒ **每次改画质档位之后都要重新 `Pin`**。
+> ⚠️ **为什么必须与显示器对齐（真机 A/B 实测）**：位置是 `f(t)` 的光滑函数（按 `dt` 积分）⇒ **帧间隔不匀直接变成画面推进不匀**。实测（100 Hz 显示器 + 配置 60/0）：`dt` 8.5~62.6 ms（sd 5.0 ms），相机世界滚动**每帧推进量 sd = 2.97 px**（速度 sd ÷ 标称 = 31%），且 `corr(纵向偏差, dt − 均值) = 0.923` ⇒ **不匀就是帧时间造成的**（不是代码）；跟拍链路本身已干净（横向 sd 0.19 px）。⇒ 帧节奏必须与显示器对齐，而刷新率只有引擎能可靠读到 ⇒ 策略放这里。
+> ⛔ 不要在业务侧再写一处 `Application.targetFrameRate =`（这就是它被下沉的原因）；`vSync` 开启时平台忽略 `targetFrameRate` **属预期**，⛔ 别当 bug 修。
+
+### UI 通用小件（品牌署名行 / 飘字 / 静音状态）
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `UIWidgets.CreateCreditLabel(parent, font = null, fontSize = 14, bottomOffset = 16f, text = "by clover-engine")` | `Transform, Font, int, float, string` | `Text` | **品牌署名行**：底部锚点居中（`anchorMin = anchorMax = (0.5, 0)` / `pivot = (0.5, 0)` / `anchoredPosition.y = bottomOffset`）+ 小字号 + 低调色。建 Text 一律走 `CreateText`（保证 `TextHooks` 挂钩不被绕过）、贴底一律走 `AnchoredBottom`，⛔ 本方法不新建第三套定位 / 建文本工具 | 首页画面底部的 `by clover-engine` |
+| `Game.UI.FloatText(worldPos, text, color = null, duration = 1.2f, riseWorld = 0f, fade = true)` | `Vector3, string, Color?, float, float, bool` | `void` | 世界坐标飘字；`riseWorld` = 上升高度（世界单位）；`fade = false` = **不淡出**（用于「原版不淡出」的飘字，例如分数：0.5s 直线上升、动画剪辑里没有 alpha 曲线） | 伤害 / 分数飘字 |
+| `Game.Sound.IsMuted(group)` | `SoundGroup` | `bool` | 该音频分组**当前是否静音** —— 画面上的静音图标状态要查它，⛔ 不要自己再记一份镜像状态 | 设置面板 / 静音按钮图标 |
+
+> ⚠️ `CreateCreditLabel` 的 `font = null` ⇒ 回落引擎内置字体并**限频 Warn 一次**：**像素 / 点阵字体常常只有大写字形 ⇒ 小写会被静默渲染成全大写（`BY CLOVER-ENGINE`）**，这是真实发生过的事故 ⇒ 要保证小写请**显式传入带小写字形的字体**。判据 = **实机截图 / 运行时那个标签的实际文本 + 实际字体**，⛔ 不是 grep 源码字符串（源码对 ≠ 画面上对）。
+> ⚠️ `text` 的默认值**逐字** = `by clover-engine`（首字母小写，⛔ 不要改大小写）。
+> ⚠️ `bottomOffset` 用**底部锚点**而不是「y = 常量」的原因：`CanvasScaler`（match=0.5）的真实画布高度随窗口变化（1600×900 时只有约 972），y 一旦超过画布高度元素就**整体掉到屏幕外**（节点 active、文本正确，但一个像素都看不见，只有实机截图才发现）。
+
+### UnitFacingMap —— 朝向档 → 视角号 + 是否镜像（多视角 2D sprite）
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `new UnitFacingMap(stepToView, flipFromStep = 0)` | `int[], int` | `UnitFacingMap` | 档位 → 视角号（下标 = 档位号，长度即 `StepCount`）；⛔ 表**按只读对待**（本类不克隆、热路径直接索引）。`flipFromStep <= 0` ⇒ 自动取 `StepCount/2 + 1`（16 档 ⇒ 9）；显式给了越界值 ⇒ 收敛到自动值 + 限频 Warn。表为空 ⇒ **抛 `ArgumentException`**（唯一会抛的入口，构造期错就是错） | 16 / 32 向素材的视角选择 |
+| `UnitFacingMap.Default` | - | `UnitFacingMap` | 标准 16 档 / 9 视角（共用实例，只读使用） | 直接用标准表 |
+| `ViewForHeading(headingDeg, out view, out flip)` | `float, out int, out bool` | `void` | **热路径推荐这个**（一次取全，省一次取模）：档位由 `round((90° − φ) / (360°/StepCount))` 再取模求出，`view` ≥ 1、`flip` = 是否水平镜像 | 每帧更新朝向 |
+| `StepForHeading(headingDeg)` | `float` | `int` | 朝向极角（度）→ 档位号 `[0, StepCount)`；取整用 `Math.Round` 的**中点取偶**（换成"四舍五入远离零"会在恰好落档边界时差一档 ⇒ 偶发"朝向跳一格"）；非有限值 ⇒ 按 0° + 限频 Warn | 单要档位 |
+| `ViewForStep(step)` / `StepFlip(step)` / `Wrap(step)` | `int` | `int` / `bool` / `int` | 由档位取视角号（`<= 0` 返回 0）/ 该档是否镜像（`step >= FlipFromStep`）/ 把任意档位折回 `[0, StepCount)`（负数也折回正区间） | 按档位驱动表现 |
+| `StepCount` / `FlipFromStep` | - | `int` | 档位数（= 表长）/ 镜像起始档位 | 诊断 |
+| `DefaultStepCount` / `HeadingOffsetDeg` / `Standard16StepToView` | - | `int` / `float` / `int[]` | `16`（= 360° ÷ 22.5°）/ `90f`（档位 0 = 远离镜头的**约定原点**）/ `{1,2,3,4,5,6,7,8,9,8,7,6,5,4,3,2}` | 常量 / 换表基线 |
+
+> ⚠️ **什么时候不要用它**：**滞回**与**噪声门槛**是调用方策略，⛔ 引擎不替它定死（来源工程取 `0.25 档` 滞回 / `0.01 格` 位移门槛）。朝向极角**必须由插值窗口两端快照之差**求，⛔ 不能用逐帧位移：服务端位置是毫格量化的，站立单位会被 ±2 毫格噪声把方向翻 180°（实测某 id 的步进片段 `[4,12,12,12,4]` 而同期逐帧位移仅 `-0.002 格`）。
+> ⚠️ **档位 / 视角搞反不会报错**，只会"人物朝向看着别扭" ⇒ 这张表**只能靠断言 + 负控**保证，肉眼判不了（`Standard16StepToView` 逐字搬自来源工程的权威副本，改动必须同步改表并重跑其断言 + `--corrupt` 负控）。
+> ⚠️ 本件**只回答「该选哪一个视角」**，⛔ 不负责 clip 内容 —— 「每档只取一个视角」是调用方（帧段表）的约束。旧事故：把 9 个视角的 clip **取并集**再依次播 ⇒ 现象 =「1 秒 9 次视角、走路原地打转 / 抽搐」。
+> ⛔ 不要自己再写一份「`step > 8` ⇒ 镜像」的散装判断（原项目里它只是项目专有数据表上的四个静态成员，别的项目要用就得整张表一起抄）。
+
+### TextFit —— 可变长文本的单行截断
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `TextFit.Clamp(label, raw)` / `Clamp(label, raw, ellipsis)` | `Text, string` / `Text, string, string` | `string` | 装得下 ⇒ **原样写入**（⛔ 不无端加省略号）；装不下 ⇒ **二分找最长可行前缀 + 省略号**，写入并返回实际文本。`label == null` ⇒ 原样返回（调用方不必判空）；`rect.width <= 1`（布局还没算 / 未挂画布）或空串 ⇒ 原样写入、**不裁**（那时判定依据不存在，裁只会裁错）；空的 `ellipsis` 按 `Ellipsis` 处理 | 玩家昵称 / 卡名等**长度由数据决定**且必须单行的标签 |
+| `TextFit.ClampSelf(label)` | `Text` | `void` | 把标签**当前**文本按同规则裁一次（用于已在别处赋过值的标签） | 复用处 / 编辑器脚本 |
+| `TextFit.Measure(label, text)` | `Text, string` | `float` | 量一串文本在**不受矩形约束**时的单行像素宽（口径 = uGUI `Text.preferredWidth`：`TextGenerator.GetPreferredWidth(text, GetGenerationSettings(Vector2.zero)) / pixelsPerUnit`）。**⛔ 必须自建 `TextGenerator`，不许读 `label.preferredWidth`** | 调用方断言 / 判据 |
+| `TextFit.Ellipsis` / `TextFit.Tag` | - | `string` | 默认省略号 `"\u2026"`（U+2026；⛔ 不用三个 ASCII 点 —— CJK 字体下宽度不一致）/ 日志标签 | 常量 |
+
+> ⚠️ **为什么要自建 `TextGenerator`（这条必须留，否则后人一定"顺手优化"回去）**：uGUI 的 `preferredWidth` 走的是**缓存**的布局用生成器 —— 刚 `label.text = 新值` 之后，同一帧里读到的还是**上一串文本**的宽度（原件实测：3 字串 `rectW=58 / preferredW=44` 却被判超宽、截成 1 字 + 省略号，就是读到了旧值）。
+> ⚠️ **为什么必须"显式调用"而不是把引擎的文本创建点全局改成截断**：一旦全局截断，**多行说明文案**（规则两行、加载提示）也会被裁成一行 —— 那是另一类破坏。截断只对「内容长度由数据决定、且必须单行显示」的标签成立 ⇒ 由各面板在"把数据写进标签"的那一处调一次。
+> ⛔ **不许用改字号来"糊过去"**（会让同一列标签字号不一致，且仍然可能溢出）；⛔ 本件不换行、不裁剪多行文案。uGUI 的 `HorizontalWrapMode` **只有 `Wrap` / `Overflow`**，不存在 `horizontalOverflow = Truncate` ⇒ 横向截断只能自己把**字符串**裁短（这就是它被下沉的原因）。
+> ⚠️ 二分之后**仍要向前退到确实装得下为止**（宽度随长度"单调不减"在换行点上有轻微非单调，由那一步兜住）；`Clamp` 之后 `preferredW <= rectW` 恒成立，可直接拿它做断言。
+
+### DragGestureRouter —— 「拖拽 vs 滚动」手势仲裁
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `new DragGestureRouter(dragThresholdPx = 12f, allowScroll = true)` | `float, bool` | `DragGestureRouter` | `<= 0` ⇒ 用 `DefaultDragThresholdPx`；`allowScroll = false` ⇒ 所有越阈值手势都归拖拽（例如已选中那一行不允许滚动） | ScrollRect 里放可拖出的格子 |
+| `Begin(pointer)` | `Vector2` | `void` | 按下：开一段新手势（归 `Undecided`）并**清掉上一段可能残留的"压点击"标记** | `OnBeginDrag` / `OnPointerDown` |
+| `Move(pointer, escapedScrollRegion)` | `Vector2, bool` | `Step` | 指针移动一拍，返回调用方该做的事（见下「让位规则」）。`escapedScrollRegion` = 指针是否已**离开滚动区**，由调用方算（几何属调用方的画布结构）—— ⛔ 不要偷懒传 `false`，那正是"格子拖不出来"的成因 | `OnDrag` |
+| `End()` | - | `Step` | 抬起：返回 `EndScroll` / `EndContent` / `None`，并**在这里一并清掉"压点击"标记**（`ReleaseMouse` 是**先 click 后 endDrag**，此刻清既不影响本次尾巴，又避免残留标记吞掉下一次正常点击） | `OnEndDrag` |
+| `ConsumeClickSuppressed()` | - | `bool` | 读一次并清掉"压点击"标记：业务的点击处理**第一行**调它，`true` = "这次点击是拖动的尾巴，忽略" | `Button.onClick` 首行 |
+| `DragThresholdPx` / `AllowScroll` | `float` / `bool` | - | 判"拖动而不是点击"的位移阈值（像素）/ 是否允许"纵向占优 ⇒ 归滚动" | 手感配置 |
+| `Current` / `LastGestureName` / `ClickSuppressed` | - | `Gesture` / `string` / `bool` | 当前归属（`Undecided`/`Scroll`/`Content`）/ **最近一次实际走的分支名**（自检 / 驱动脚本读它，避免"只看日志"）/ 本手势是否已"真的拖动过" | 自检 / 诊断 |
+| `Gesture` / `Step`（枚举） | - | - | `Gesture`：`Undecided` / `Scroll` / `Content`。`Step`：`None` / `BeginScroll` / `MoveScroll` / `EndScroll` / `BeginContent` / `MoveContent` / `EndContent` / `EscalateToContent` | 驱动转发 |
+
+> **让位规则（优先级从高到低，一段手势只有一个归属）**：① 指针已拖到**滚动区之外**（`escapedScrollRegion`）⇒ 归**拖拽**（**必须优先于方向判定**：列表在下方、目标槽位在上方时，"把格子拖到槽位"的主方向恰恰是纵向，只按方向判会把它当滚动 —— 实测拖向槽位 `Δ=(62.8, +251.3)` 被判成 scroll，格子一个都没动）；② 否则**纵向占优**（`|dy| > |dx|`）⇒ 归滚动、**横向占优** ⇒ 归拖拽；③ 一旦定为拖拽就**不再改主意**；滚动中的手势若拖出滚动区仍会**升格**为拖拽（真实手势一定是"先在列表里、再拖出去"）⇒ 返回 `EscalateToContent`。**升格时必须先给滚动收尾**（调用方转 `ScrollRect.OnEndDrag`），否则它会一直停在"拖动中"，残留的速度 / 惯性会在下一帧继续挪内容。
+> ⚠️ **为什么是"返回 `Step` 让调用方去转发"而不是本件自己搬 content**：`ScrollRect.OnBeginDrag/OnDrag/OnEndDrag` 是 `public virtual` 的正式事件入口，转发后惯性 / 回弹 / 边界全走既有实现（⛔ 不重造轮子）；而且它是在**转发那一刻**才记 `m_PointerStartLocalCursor` / `m_StartPosition` ⇒ 从手指中段接管**不会跳一下**。本件**不引用** `ScrollRect` / `EventSystem` / `PointerEventData`。
+> ⚠️ **为什么必须有它（两条 uGUI 机制）**：① uGUI 把 `pointerDrag` 判给**最靠前（最深层）**的 `IDragHandler` ⇒ 格子上的本件拿到事件后**必须自己决定**归谁，否则"纵向拖动 = 滚动列表"和"把格子拖出来"会在同一个 GameObject 上互相抢；② uGUI **只在** `pointerPress != pointerDrag` 时才清 `eligibleForClick` ⇒ 把 `Button` 与本件挂在**同一个 GameObject** 上时两者相等 ⇒ 拖完**仍会**触发 `Button.onClick`（现象 = "拖动换位之后又顺手点了这张卡"）。
+> ⚠️ 阈值小于 `EventSystem.pixelDragThreshold`（默认 10）**也没用**（轮不到本件）⇒ 别把阈值调到比引擎那道还小。
+
+### SortingLayers —— 2D `sortingOrder` 层级预算 + 深度序 + 同序次级键
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `new SortingLayers(fieldHeightTiles, depthLevelsPerTile = 16, tiebreakMod = 256, tiebreakStep = 1e-4f)` | `float, int, int, float` | `SortingLayers` | `fieldHeightTiles` **必给**（世界尺寸属业务，⛔ 引擎不替它定死；`<= 0` / Inf ⇒ 按 1 格 + 限频 Warn）；**一层一实例**（同进程里横版 / 竖版或两个不同尺寸的世界各持一份） | 俯视 2D 的层级分配 |
+| `DepthOrder(worldY)` | `float` | `int` | 角色层在给定世界 y 处的 `sortingOrder` = `Actor + round((FieldHeightTiles/2 − worldY) × DepthLevelsPerTile)` —— **y 越小（越靠屏幕下方）order 越大（后画 ⇒ 挡在前面）** | 角色写 `renderer.sortingOrder` |
+| `TiebreakOffset(id)` | `int` | `float` | 同 `sortingOrder` 下的**确定性次级键**：只由实体 id 决定的微小 **z** 偏移（格）。⛔ 只允许用**逐帧不变**的量（id）—— 用帧号 / lerp 进度会让次序来回翻，等于没修 | 同格堆叠写 `transform.localPosition.z` |
+| `ValidateBudget()` | - | `bool` | 检查层级预算，不自洽 ⇒ 限频 Warn + `false`（建好配置后调一次即可） | 启动期自检 |
+| `BudgetValid` | - | `bool` | `ActorOrderMin > Structure`（角色不压在建筑下）且 `ActorOrderMax < Overlay`（血条不被角色盖）且 `Overlay < Effect` | 判据 |
+| `ActorOrderMin` / `ActorOrderMax` | - | `int` | 角色层可能取到的最小 / 最大 order（= 场地最上 / 最下端，由 `DepthOrder` 在同端点上求，⛔ 不另写一份公式） | 预算计算 |
+| `Ground` / `Decoration` / `Structure` / `Indicator` / `Actor` / `Overlay` / `Effect` | `int` | - | **层级预算表**（默认 `0 / 10 / 50 / 200 / 1000 / 2000 / 3000`，与原项目取值一致）—— ⛔ 每项都可覆盖 | 分层 |
+| `FieldHeightTiles` / `DepthLevelsPerTile` / `TiebreakMod` / `TiebreakStep` | `float` / `int` / `int` / `float` | - | 场地纵向格数 / 深度分辨率（级/格，默认 16）/ 次级键取模基数（默认 256 = 可区分的同格堆叠上限）/ 次级键步长（默认 1e-4 格） | 参数化 |
+| `DefaultDepthLevelsPerTile` / `DefaultTiebreakMod` / `DefaultTiebreakStep` | - | `int` / `float` | `16` / `256` / `1e-4f` | 常量 |
+
+> ⚠️ **同序为什么必须有确定性次级键（Unity 官方手册「2D 渲染顺序」）**：排序层 → 层内顺序 → 渲染队列 → **距离** → 排序组 → 材质；「距离」条目明写"正交：Unity 使用从相机平面到游戏对象中心的距离，**要控制渲染顺序，请增加或减少 z 位置**"，同页又写明"若两个游戏对象上述值都相同，Unity 用内部渲染队列顺序决定先后 —— **此顺序是不固定的，您无法控制**"。⇒ 位置**完全重合**的单位（一次 6 只落在同一格）必然拿到同一个 `sortingOrder`，谁盖谁就回到枚举顺序 ⇒ **每帧可能不同**（实测 `frame=5907 pos=(-5.5,2.5) n=3 order=[1216,1216,1216]`）⇒ 两张不同动画帧的贴图在同像素上互相翻盖。
+> ⚠️ **次级键用 z 而不是再细分 `sortingOrder`**：`sortingOrder` 是 int，再细分就会撞穿层级预算（角色层上界要 **< 血条层**）；z 是**同一 `sortingOrder` 内**的次级排序键，不占 int 预算。
+> ⚠️ **两个必查口径**：① 预算**必须逐段检查**（`ValidateBudget`）—— 角色层最大 order 一旦 ≥ 血条层，症状是"血条被自己单位的精灵盖住"（很显眼但很难猜是层级算错），也可能是"站在建筑前面的兵被建筑盖住"；② **深度序的方向不能反**（写反不会报错，只会"后面的兵盖住前面的兵"）。③ 次级键的 `TiebreakStep × TiebreakMod`（默认 `1e-4 × 256 = 0.0256`）**必须小于 1 个 order 级**（1/16 格 = 0.0625 格），否则 z 会把本该在前的单位压到后面。
+> ⛔ 不要把 `sortingOrder` 的取值散落在各 `MonoBehaviour` 里（原项目散在视图类 + 它的嵌套静态类里，别的项目要照抄一遍，连同"忘了留预算"的坑）。
+
+### ScreenPointUtil —— 屏幕点 ↔ 画布矩形 / 世界点换算（+ 正交「屏幕 → 地面」）
+
+| API | 入参 | 返回 | 说明 | 典型场景 |
+| --- | --- | --- | --- | --- |
+| `ScreenPointUtil.CameraForCanvas(canvas)` | `Canvas` | `Camera` | **按画布模式取相机**（本件的核心口径）：`ScreenSpaceOverlay` ⇒ **`null`**（它的世界坐标**就是屏幕像素**，不能再投一次）；否则 ⇒ 画布自己的 `worldCamera`；`canvas == null` ⇒ `null` | 换算前取相机 |
+| `ScreenPointUtil.CameraForUi(context)` | `Component` | `Camera` | 同上，从 `context` 用 `GetComponentInParent<Canvas>()` 向上找画布；`context == null`（面板还没挂到画布上）⇒ 取不到画布 ⇒ 按 Overlay 处理（`null`） | 面板内取相机 |
+| `TryScreenToWorldInRect(rect, screen, cam, out world)` / `(…, context, out world)` | `RectTransform, Vector2, Camera / Component, out Vector3` | `bool` | 屏幕点 → 矩形所在平面上的**世界点**（拖幽灵体 / 定位子节点）；`rect == null` ⇒ `false` + 限频 Warn（⛔ 不返回"成功 + 零向量"，那会让调用方把元素摆到原点）。`context` 重载按画布模式自动取相机 | 拖拽幽灵体定位 |
+| `TryScreenToLocalInRect(rect, screen, cam, out local)` / `(…, context, out local)` | `RectTransform, Vector2, Camera / Component, out Vector2` | `bool` | 屏幕点 → 矩形内的**局部点**（命中测试 / 列表内定位）；口径随锚点轴心，⛔ 别自己拿 `anchoredPosition` 凑 | 列表内定位 |
+| `ContainsScreenPoint(rect, screen, cam)` / `(…, context)` | `RectTransform, Vector2, Camera / Component` | `bool` | 屏幕点是否落在矩形的**屏幕矩形**内（命中测试）；⛔ **相机必须按画布模式取**（见下方根因）。`rect == null` ⇒ `false` + 限频 Warn | 手牌命中测试 / "拖出列表上沿"判定 |
+| `TryScreenToGround(cam, screen, out world, fallbackDepth = 10f)` | `Camera, Vector2, out Vector3, float` | `bool` | 屏幕点 → **地面（z = 0）世界点**（正交相机）。契约：`depth = -cam.transform.position.z`；`Mathf.Approximately(depth, 0)` ⇒ **退化为固定值** `fallbackDepth`（否则 `ScreenToWorldPoint` 恒返回同一点，表现为"点击位置不随鼠标移动"）。相机为 `null` ⇒ `false` + 限频 Warn（⛔ 不返回 `(0,0,0)` 当成功）；相机非正交 ⇒ 限频 Warn 后照算 | 点击落点格换算 |
+| `DefaultFallbackDepth` / `Tag` | - | `float` / `string` | `10f` / 日志标签 | 常量 |
+
+> **★ 根因（照抄来源工程的实机读数，2026-09-22）**：常驻画布 `canvas.renderMode = ScreenSpaceOverlay`（引擎 `Runtime/Presentation/UI.cs:49`），其世界坐标**就是屏幕像素**。实测（1080×1920 画布 + 正交半高 16 的场地相机，相机在 `(0,0,-10)`）：某 UI 元素中心的真屏幕点 `=(214,221)`，`RectangleContainsScreenPoint(rect, (214,221), mainCam) = False`、传 `null` 时为 `True` ⇒ 命中测试返回 -1 ⇒ **按下根本不进入拖拽链**（症状 = "卡牌拖不动 / 放不上战场"）。⇒ **⛔ 所以相机必须按画布模式取，不是"取一台相机就完事"**：Overlay ⇒ `null`；`ScreenSpaceCamera` / `WorldSpace` 才用画布自己的 `worldCamera`。**⚠️ 与之相反的一条别混**：竞技场那边"屏幕 → 格"要的**正是**相机的投影，仍用 `UIFactory.UICamera()`（引擎给 UI 侧取世界相机的官方入口）—— 两件事，⛔ 不要互换。
+> **★ 裁决（2026-09-24，本次下沉评审）**：`TryScreenToGround` 与 `IsoLayout.ScreenToWorldOnGround` **两份保持两份、不收敛**。理由与前提：· 「正交 → 地面」是同一条规则的两份实现 —— 本件 fallback **参数化**、只出**世界点**（面向 UI / 输入侧）；`IsoLayout` 那份 fallback **写死 `10`**、顺带产出**格**坐标（面向格子的调用点）。· ⛔ **将来若要收敛，前提是先给 `IsoLayout` 补 static 入口** —— 否则调用方（UI / 输入侧）为了拿一个世界点，得先 `new IsoLayout(...)` 填齐 4 个它根本用不到的构造参（格宽 / 格高 / 排序基准 / 步长）。即：收敛的**前置条件**是 `IsoLayout` 自己先提供一个不需要实例的等价入口，⛔ 而不是把调用方赶去填 4 个用不到的参数。
+> ⚠️ **越界代价（这就是它被下沉的原因）**：`RectTransformUtility` 收**非空**相机时会把屏幕点当成"相机视锥里的一个方向"再投到画布平面 ⇒ 与 Overlay 画布（世界坐标 = 屏幕像素）相差一次相机投影。三份逐字重复的实现各自把这条写了一遍注释（说明它**每处都要重新踩一次**）。
+> ⚠️ 画布模式取错**不会抛异常**，只会让命中**恒为 `false`**（"点了没反应"）或让元素整体偏一次投影；所有 `Try*` 入口失败返回 `false` 并把 `out` 置零、**不抛异常**（拖拽链路上"抛出去"会打断 uGUI 事件派发）。
+> ⛔ **唯一真相包的边界**：面向**格坐标**的换算请用 `IsoLayout.ScreenToWorldOnGround` / `ScreenToGrid`；本件只做「屏幕 ↔ 画布矩形 / 世界点」与「正交屏幕 → 地面世界点（退化值可参数化）」。
+
 ---
+
+## 局域网寻服（LanBrowser / ILanResponder）
+
+| API | 参数 | 返回值 | 说明 | 使用场景 |
+|-----|------|--------|------|----------|
+| `Game.LanBrowser.Scan(options)` | `LanScanOptions` | `void` | 开始一轮扫描（`null` = 全默认：端口 `47777` / 窗口 1500ms / 回环 + 广播 + 子网广播） | 进「找服」界面 |
+| `Game.LanBrowser.Stop()` | - | `void` | 提前结束本轮（保留已发现结果）；未扫描时幂等空操作 | 玩家取消 |
+| `Game.LanBrowser.Hosts` | - | `IReadOnlyList<LanHostInfo>` | 最近一轮只读快照（上限 64，同 gateway 去重） | 列表 UI |
+| `Game.LanBrowser.State` / `IsSupported` / `UnsupportedReason` | - | `LanBrowserState` / `bool` / `string` | 扫描状态 / 平台是否可用 / 不可用原因 | 禁用按钮 + 提示 |
+| `Game.LanBrowser.OnHostFound` / `OnScanFinished` | `Action<LanHostInfo>` / `Action` | - | 发现一台 / 一轮结束（主线程；等价事件 `Net.LanHostFound` / `Net.LanScanFinished`） | 增量刷列表 |
+| `CloverLan.CreateResponder()` | - | `ILanResponder` | 取应答端（**不经 `Game` 门面**，调用方负责 `Dispose()`） | 玩家当主机 |
+| `responder.Start(self, options)` | `LanHostInfo, LanRespondOptions` | `bool` | 开始应答（幂等；`self.Host` 留空 = 自动取本机 IPv4）；失败看 `LastError`，**不抛** | 开主机 |
+| `responder.Stop()` / `responder.Dispose()` | - | `void` | 停止 / 释放（都幂等） | 退出主机 |
+| `responder.QueryCount` / `ReplyCount` / `DroppedCount` / `ListeningPort` / `LastError` | - | `long` / `int` / `string` | 计数与状态（判据用：`QueryCount > 0` = 确实有人在找服） | 诊断面板 |
+| `responder.OnQuery` | `Action<string>` | - | 每收到一次合法查询触发（主线程，参数 = 来源 `ip:port`） | 留痕 / 计数 |
+
+> 协议：UDP `47777`，查询 `CLOVER-LAN-QUERY/1|<nonce>` → **单播**回应答 `CLOVER-LAN-REPLY/1|{json}`，单包 ≤ 512 字节。
+> **旁路**：不占 EMsg 消息号、不进 Router、不走线路族（N13）；仅原生平台可用。完整用法见 [网络与会话](../development/network.md) 的「局域网寻服」。
+
+## 第一人称 rig（CloverFirstPersonCamera）
+
+**纯逻辑类**（非 `MonoBehaviour`，不经 `Game.Camera` 门面）：帧步长由调用方经 `Tick(dt)` 注入。
+
+| API | 参数 | 返回值 | 说明 | 使用场景 |
+|-----|------|--------|------|----------|
+| `new CloverFirstPersonCamera()` | - | - | 直接 `new`（引擎不给门面入口） | 进关卡前建 rig |
+| `rig.Bind()` / `rig.Bind(camera)` / `rig.Unbind()` | `Camera` | `bool` / `void` | 绑 `Game.Camera.Main` / 绑指定相机 / 解绑 | 进图 / 回菜单 |
+| `rig.Tick(dt)` | `float` | `void` | 每帧推进（**每帧只许调一次**；`dt <= 0` 不推进任何状态） | 业务 Update |
+| `rig.ApplyLookDelta(dx, dy)` | `float, float` | `void` | 原始鼠标位移 → 按灵敏度 / 反转 / 限位累加（回放 / 观战接管 / 离线断言走它） | 设备无关注入 |
+| `rig.SetRecoil(pitch, yaw)` / `rig.ClearRecoil()` | `float, float` | `void` | 喂**权威**后坐力（表现跟随，⛔ 不累加第二份）/ 立即清 | 开火 / 换目标 |
+| `rig.AddShake(amp, dur)` / `rig.ClearShake()` | `float, float` | `bool` / `void` | 注入摇晃（幅度**线性**衰减）/ 立即结束（参数非正 ⇒ `false`） | 受击 / 爆炸 / 落地 |
+| `rig.SetView(yaw, pitch)` | `float, float` | `void` | 直接对齐视角（出生 / 接管 / 观战，不做平滑） | 出生 / 切换视角 |
+| `rig.Yaw` / `rig.Pitch` / `rig.AimDirection` / `rig.EyePosition` | - | `float` / `Vector3` | 朝向**合量**（= Look + 后坐力 + 摇晃）/ 视线方向 / 射线起点（不含 `ViewOffset`） | 射线 / 命中判定 |
+| `rig.Look` | - | `LookAccumulator` | **不含**后坐力 / 摇晃的输入视角（喂给移动方向解算） | 移动解算 |
+| `rig.ViewOffset` / `rig.ViewRoll` | `Vector3` / `float` | - | 业务塞进来的视点晃动（典型 = `ViewBob` 输出） | 走路颠簸 |
+| `rig.FovX` / `rig.VerticalFieldOfView` | `float` | - | 水平 FOV（开镜改它）/ 本帧实际下发的**垂直** FOV | 开镜 |
+| `rig.SensitivityX` / `rig.SensitivityY` / `rig.SeparateAxes` / `rig.InvertY` / `rig.PitchLimit` / `rig.EyeAnchor` / `rig.EyeOffset` / `rig.EyeSmoothTau` / `rig.RecoilRiseTau` / `rig.RecoilFallTau` / `rig.ShakeRng` / `rig.ShakeRollScale` | - | - | 全部为公开字段：引擎**不内置任何手感数值**，由业务从设置与手感表填 | 手感配置 |
+| `rig.ControlEnabled` / `rig.SetControlEnabled(on)` / `rig.LockInput()` / `rig.UnlockInput()` | `bool` | `bool` / `void` | 鼠标读取开关 / 加锁 / 解锁（只解**本 rig 加的**那把锁） | 弹窗 / 死亡 / 过场 |
+
+## Separation2D（角色间水平推开）
+
+`Runtime/Core` 的**纯函数静态工具**（与 `Game.Camera` 无关）：只保证任意两圆圆心距 ≥ 两半径之和（+ `Skin`）。
+
+| API | 参数 | 返回值 | 说明 | 使用场景 |
+|-----|------|--------|------|----------|
+| `Separation2D.TryResolve(circles, count, result)` | `Circle[], int, Vector2[]` | `bool` | 一次解开**一整组**（各退一半），结果写进 `result`（不改输入、热路径零分配） | 回合开始 / 传送落点 / 一次性归一化 |
+| `Separation2D.TryResolveOne(pos, radius, others, count, out result)` | `Vector2, float, Circle[], int, out Vector2` | `bool` | 只推**一个**申请位置（`others` 视作不动障碍、退全部） | 每帧角色推进 |
+| `Separation2D.Circle` | `Vector2 Position` / `float Radius` | - | 水平圆（`Radius <= 0` 按 0 处理） | 构造输入 |
+| `Separation2D.MaxIterations` / `Separation2D.Skin` | - | `int` / `float` | 迭代上限 `8` / 缝隙 `0.001f` | - |
+
+> `false` = 迭代上限内仍有重叠（挤成一堆）或缓冲长度不够，**不抛异常**。确定性：不调 `UnityEngine.Random`、不读时钟，遍历顺序 = 数组下标序。
+> 推开结果须再由调用方的墙体判定钳一次（⛔ 别把人推进墙里）；不做寻路 / 不做碰撞检测 / 不做时间积分 / 不处理竖直分层。
+
+## 地图命名标记点（Game.Map）
+
+| API | 参数 | 返回值 | 说明 | 使用场景 |
+|-----|------|--------|------|----------|
+| `Game.Map.Points` | - | `IReadOnlyList<MapPoint>` | **全部**标记点（顺序 = 文件顺序；文件无该段时是空列表） | 遍历全部锚点 |
+| `Game.Map.GetPoints(name)` | `string` | `IReadOnlyList<Vector3>` | 该名字下**全部**坐标（同名多点：一组出生点 / 一条路线）；名字**大小写敏感** | 出生点组 / 路线点 |
+| `Game.Map.TryGetPoint(name, out pos)` | `string, out Vector3` | `bool` | 取第 0 个；取不到 ⇒ `false` + `Vector3.zero` | 单点锚点 |
+
+> 标记点由导出端产（`MapBakeOptions.MarkerRootName` 指定根对象，「对象名 = 标记名、世界坐标 = 点位」）；
+> **旧 `.bytes` 不含该段（flags bit2）⇒ 必须用支持标记段的导出端重新烘焙**（见 [约束](./constraints.md) G14）。
 
 ## UI 构件（UIFactory）
 
