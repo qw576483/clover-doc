@@ -246,6 +246,55 @@ await Game.Net.Call<ELoginReply>(EMsg.Login, new ELoginRequest { token = token }
 - **清空数据 / 重装会换标识**（持久化码丢失后重新生成）。对匿名身份而言可接受；
   需要跨设备 / 跨重装保持同一身份时，应升级到正式账号（注册或渠道登录）。
 
+## 瓦片世界三件套（`TileWorld` / `TileRenderer` / `TileNodePool`）
+
+俯视 2D 的"一格一层"整图渲染，引擎已下沉成一串**单向**的件（`Runtime/Presentation/`）：
+
+```
+TilemapGenUtil（造格数据）
+        ↓
+ITileWorld / TileWorld（持有空间事实：实心格 / 托台顶高 / 世界边界）
+        ↓  一格一层的纯函数
+TileRenderer.StateOf(...)  →  TileRenderState（不可变值：5 字段 / 11 标量）
+        ↓  无条件写全
+TileNodePool.Take(parent) / Return(sr)（节点的借还 —— 复用与新建走同一条路）
+        ↓
+ChunkedTilePlanner（按块 + 每帧节点预算决定本轮铺哪些块）
+```
+
+**各自只回答一件事**：
+
+| 件 | 只回答 | ⛔ 不负责 |
+|---|---|---|
+| `ITileWorld` / `TileWorld` | 这一格实不实心 / 托台顶在世界 y 多少 / 世界边界到哪为止 | 位移解算（用多大半径、几点采样、撞墙是停还是滑都是**玩法手感**，业务自己写） |
+| `TileRenderer` | 一格一层的渲染状态（摆哪 / 用哪张图 / 什么颜色 / 什么 `sortingOrder`） | 节点的生命周期、贴图的加载 |
+| `TileNodePool` | 逐格 `SpriteRenderer` 节点的借 / 还 / 清 | 渲染字段写值（由调用方**写全**）；key / 预制体 / 工厂（那是 `Game.Pool`） |
+| `TileRenderState` | 一格画面的 5 个渲染字段（`Sprite` / `Color` / `LocalScale` / `Position` / `SortingOrder`，共 11 个标量） | 任何业务字段（tile kind / 块号 / 是否已探索…） |
+
+**每格一次的固定顺序**：
+
+```csharp
+// ① 空间事实：能不能站 / 有没有托台 —— 只查询，不含解算
+if (!tileWorld.IsSolid(tx, ty) && !tileWorld.TryGetCarrierTop(tx, ty, out _)) { /* 可走 */ }
+
+// ② 纯函数算出一格的完整渲染状态
+var st = tileRenderer.StateOf(cell, TileLayer.Ground, groundSprite, placeholderColor,
+                              sortOffset: layers.Ground);
+
+// ③ 取节点 + 无条件写全 5 个字段（+ enabled = true）
+var sr = pool.Take(layerRoot);
+tileRenderer.Apply(sr, layerRoot, st);
+
+// ④ 退场：归还（失活 + 挂回池根），⛔ 不是 Destroy
+pool.Return(sr);
+```
+
+> ⚠️ **池化最典型的静默失效**：复用的节点如果"记得就重设、漏了就继承上一次"，第二张图会带着第一张图的贴图 / 颜色 / 排序号出现 —— 不报错、只有看图才发现。所以第 ③ 步必须**写全**，`TileRenderState` 的存在就是让这件事从"人记得"变成**结构性保证**（`SameAs` 是**逐位**比较，判据是"完全相同"不是"差不多"）。
+> ⚠️ `Take` / `Return` **严格配对**：归还即 `SetActive(false)`、取出即 `SetActive(true)`（Unity 语义下"激活父节点**不**复活 `activeSelf=false` 的子节点" —— 少这一步，池化过的瓦片会**永远不可见且不报错**）；本池**不查重**，重复归还会让同一节点被压两次（`FreeCount` 偏大 + `Take` 可能拿到同一个节点两次）。
+> ⚠️ 两个"看不见的错"：`TileWorld.IsSolid` **越界一律 `false`**（`TileWorld` 只在**已给过边界**时对横向越界降频留痕，纵向不设限）；`TileWorld` 的世界坐标 → 格用 `Mathf.FloorToInt`，⛔ 别用 `(int)` 强转（负数向零截断 ⇒ "站在坑里也能踩到地"）。
+> ⚠️ `ChunkedTilePlanner.TryAccept` 超预算返回 `false` ⇒ **本轮不铺这一块、下一帧继续**（⛔ 不是截断已经接受的那些）。
+> ⛔ 不要自己再写一份「节点池 + 逐格渲染 + 复用不写全」的组合。
+
 ## 常见问题
 
 ### 场景已切但内容没出现 / 白屏

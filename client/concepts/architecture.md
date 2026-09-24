@@ -215,7 +215,10 @@ Game.Quality.AutoDetect();
 com.clover.unity-engine/
 ├── Runtime/
 │   ├── Core/         Game / Event / Timer / Fsm（含 Game.NewFsm 多实例）/ Dispatcher / Logger / Setting / Json / DeviceId
-│   │                 / Separation2D（角色间水平推开：纯函数）
+│   │                 / Separation2D（角色间水平推开） / HitShape（命中几何：扇形+走廊+线段） / ProjectileRuntime（投射物飞行积分+逐格扫掠）
+│   │                 / GridGraph / GridBitSet / GridUtil（格图算法 / 格集合位图编解码 / 矩形格遍历）
+│   │                 / PathFollower（沿 A* 逐格推进+转向） / EnterLatch / StableHash（状态闩锁 / 生成结果哈希）
+│   │                 / LogThrottle / Screenshot / JsonWriter / ServiceAutoWire / OrderedAsyncResult / ClientConfig（ConfigSectionLoader：配置来源链）
 │   ├── Data/         DataTable / Localization
 │   ├── Network/      Network / WebRequest / WorldSync / SchemaRegistryManager（Schema 声明表，**不承担数据订阅**；订阅走 WorldSync）
 │   │                 / Lan（局域网寻服：LanBrowser 发现端 + ILanResponder 应答端，UDP 旁路）
@@ -223,7 +226,13 @@ com.clover.unity-engine/
 │   └── Presentation/ Scene / Entity / ObjectPool(GameObject) / UI / UIWidgets / SpriteAtlas
 │                     / Animation / Sound / Input / Camera / Quality
 │                     / CloverFirstPersonCamera（第一人称 rig，纯逻辑类）
-├── Editor/           Debugger（含 GM 控制台） / MapBake（地图烘焙）
+│                     / 瓦片族：TileWorld（空间事实） / TileRenderer（渲染内核） / TileRenderState（一格渲染状态）
+│                     /          TileNodePool（逐格节点池） / TilemapGenUtil（程序化生成） / ChunkedTilePlanner（分块+每帧预算）
+│                     / SpriteEntityView / SpriteFrameAnimator / SpriteSet / BitmapFont / TextFit / WorldOverlayWidgets
+│                     / SortingLayers / SnapshotInterpolator / UnitFacingMap / RuntimePanelProvider / UIPanelGuards / UiImageLoader
+│                     / SpriteStripLoader / SpriteSwapButton / PointerFloatLayer / DragDropLayer / DragGestureRouter
+│                     / CameraBoundsKit / CameraMath / LoadingPacing / FramePacingPolicy
+├── Editor/           Debugger（含 GM 控制台） / MapBake（地图烘焙） / SceneScaffold（最小可运行场景脚手架） / PixelArtSlicing + PixelArtImportSettings/Postprocessor（像素素材导入规范） / PanelPrefabBuilder（面板壳预制体）
 └── Tests/            Editor + PlayMode 测试
 ```
 

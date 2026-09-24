@@ -1168,6 +1168,247 @@ public class PooledObject : MonoBehaviour
 > ⚠️ 画布模式取错**不会抛异常**，只会让命中**恒为 `false`**（"点了没反应"）或让元素整体偏一次投影；所有 `Try*` 入口失败返回 `false` 并把 `out` 置零、**不抛异常**（拖拽链路上"抛出去"会打断 uGUI 事件派发）。
 > ⛔ **唯一真相包的边界**：面向**格坐标**的换算请用 `IsoLayout.ScreenToWorldOnGround` / `ScreenToGrid`；本件只做「屏幕 ↔ 画布矩形 / 世界点」与「正交屏幕 → 地面世界点（退化值可参数化）」。
 
+### HitShape —— 命中判定几何（正面扇形 / 矩形走廊 / 线段通畅）
+
+**含义**：攻击判定形状的**唯一实现**（纯函数静态工具，无状态）。
+两个形状**必须同时成立**才算"在攻击形状内"：① 正面扇形（夹角余弦 ≥ `cosMin`）② 矩形走廊（沿轴 ∈ `[0, reach]` 且 `|垂距| ≤ halfWidth`）；
+`LineClear` 是**独立的一关**（近战与远程都要过）。⛔ 引擎不预设 60° / 1.2 格这类题材数值 —— `cosMin` / `reach` / `halfWidth` 全部由调用方传。
+
+| API | 入参 | 返回 | 说明 |
+| --- | --- | --- | --- |
+| `HitShape.ToUnit(dx, dy, out fx, out fy)` | `int, int, out float, out float` | `bool` | 朝向的**格增量** → **单位向量**。`false` = 零向量（出参置 0）⇒ 调用方据此**拒绝**本次攻击并留痕 |
+| `HitShape.InFrontCone(fx, fy, dx, dy, cosMin)` | `float ×5` | `bool` | 目标偏移与朝向单位向量的夹角余弦 ≥ `cosMin`；**零偏移（与攻击者同格）恒 `true`** |
+| `HitShape.InMeleeRect(fx, fy, dx, dy, reach, halfWidth)` | `float ×6` | `bool` | 以朝向为轴的矩形走廊：`along = (dx,dy)·朝向 ∈ [0, reach]` 且 `\|perp\| ≤ halfWidth`（正后方恒不命中） |
+| `HitShape.LineClear(walkable, from, to, maxSteps = MaxLineSteps)` | `Func<Vector2Int,bool>, Vector2Int, Vector2Int, int` | `bool` | Bresenham 线上**除两端点外**每格都要可走；`from == to` ⇒ 恒 `true` |
+| `HitShape.MaxLineSteps` | - | `int` | `1024`（线段遍历的格步数上限） |
+
+```csharp
+// 朝向的格增量一律走引擎权威表（本件不自己写 Dir8 → 增量映射表）
+var delta = iso.DirectionDelta(dir);
+if (!HitShape.ToUnit(delta.x, delta.y, out var fx, out var fy)) return;   // 零向量 ⇒ 拒绝本次攻击
+var inShape = HitShape.InFrontCone(fx, fy, tdx, tdy, cosMin)      // tdx/tdy = 目标相对攻击者的格偏移
+           && HitShape.InMeleeRect(fx, fy, tdx, tdy, reach, halfWidth);
+var clear   = HitShape.LineClear(walkable, attackerCell, targetCell);     // 独立的一关
+```
+
+> ⚠️ **同格（零偏移）在扇形里恒命中**：原版的近战触及是**距离 / 外接框**口径（`Weapons.txt` 的 `rangeadder`、`MonStats2.txt` 的 `MeleeRng` 都是**格数**）⇒ `0 ≤ reach` 恒真，"同格"本该命中。⛔ 别改成"同格不命中"，也 ⛔ 别把扇形放宽成圆形（只补这一个退化点）。
+> ⚠️ `walkable == null`（地图未接入）⇒ `LineClear` **放行（返回 `true`）** + 降频 Warn —— ⛔ 不把"拿不到地图"变成"打不到"。
+> ⚠️ 格步数超过 `maxSteps` ⇒ 返回 `false`（按"不通"处理 + 降频 Warn）：那是**入参异常**（坐标 / 半径算错）的防御分支，不是正常路径。
+> ⚠️ 格坐标一律 `Mathf.FloorToInt`；⛔ 不要用 `(int)` 强转（负数向零截断会让格错半格，且**不报错**）。
+> ⛔ 不要自己再写一份「扇形 + 走廊 + 线段通畅」（三份逐字重复的实现各自把同一条边界重新踩过一遍）。
+
+### GridGraph / GridBitSet —— 格子图算法底座 + 格集合位图编解码
+
+**含义**：`GridGraph` 是**格子图的通用算法底座**（8 邻接 BFS 连通性 / 未达标目标计数 / 封闭不可达口袋 / 边界环封 / 可走格索引与 O(1) 抽样 / 批量绘制回调）；
+`GridBitSet` 是**「格集合 ↔ base64 位图」编解码**（小地图已探索格这类大集合的落盘格式：逐格幂等 + 越界丢弃 + 坏串不抛）。
+矩形 → 整数格遍历见上文 `GridUtil` 一节（同一族的第三个件）。
+
+| API | 入参 | 返回 | 说明 |
+| --- | --- | --- | --- |
+| `GridGraph.FloodFill(isWalkable, width, height, from, visited)` | `Func<Vector2Int,bool>, int, int, Vector2Int, bool[,]` | `int` | 8 邻接 BFS，可达格在 `visited` 里标 `true`。**对角步要求两侧格都可走**（否则会"贴着墙角穿过去"）。起点不可走 / `visited` 尺寸不符 ⇒ 0 |
+| `GridGraph.CountUnreachableTargets(isWalkable, width, height, from, targets, out reachedCount, out firstUnreachable)` | `…, IReadOnlyList<Vector2Int>, out int, out Vector2Int` | `int` | 数出 `targets` 里**不可达**的目标数（随机撒点用了它才敢保证"掉落拿得到 / 怪物打得到"）。内部自己跑一次 BFS |
+| `GridGraph.FillUnreachablePockets(isWalkable, width, height, visited, isRequired, fill, out keptProtected)` | `…, bool[,], Func<Vector2Int,bool>, Action<int,int>, out int` | `int` | 把**走不到的孤立可走口袋**逐格交给 `fill`；`isRequired` 返回 `true` 的格**不填**（留给连通性自检判失败）。`visited` 必须先由 `FloodFill` 填好 |
+| `GridGraph.SealBorderRing(width, height, n, isWalkable, seal)` | `int, int, int, Func<Vector2Int,bool>, Action<int,int>` | `int` | 把**边界环**（距任一地图边 < `n` 格）里现在还可走的格逐格交给 `seal` 封掉；`n <= 0` ⇒ 0 且不写任何格 |
+| `GridGraph.WalkableIndex.Rebuild(isWalkable, width, height)` / `.Pick(index)` | `Func<Vector2Int,bool>, int, int` / `int` | `int` / `Vector2Int` | 可走格列表索引：`Rebuild` 一次，之后 `Pick` 是 **O(1)**。填充顺序是契约（`x` 外层升序、`y` 内层升序） |
+| `GridGraph.Fill / FillRect / LineH / LineV / FillDisk / SetOnWalkable` | `…, Action<int,int> write` | `void` / `bool` | 批量绘制**回调式**写格 |
+| `GridBitSet.Encode(indices, w, h, maxCells = MaxCells)` | `IEnumerable<int>, int, int, int` | `string` | 格索引集合 → base64 位图（行优先，`i = y*w + x`，低位在前）。越界索引**丢弃**；尺寸非法 / 超上限 ⇒ **空串** |
+| `GridBitSet.Decode(cells, w, h, into, maxCells = MaxCells)` | `string, int, int, List<int>, int` | `int` | 位图 → 格索引（**只并入、不清空** `into`），返回本次并入格数。`base64` 非法（旧档 / 手改）/ 尺寸非法 ⇒ `0` 且**不抛**；短串 ⇒ 后面的格视为未探索 |
+| `GridBitSet.IndexOf(x, y, w, h)` / `ToCell(index, w, h, out x, out y)` | - | `int` / `bool` | 坐标 ↔ 索引互转（越界 ⇒ `-1` / `false`） |
+| `GridBitSet.MaxCells` | - | `int` | `1 << 20` = 1,048,576 格（防坏档里的超大 `w*h` 吃掉几百 MB） |
+
+```csharp
+// 连通性三件：数不可达 → 封不可达口袋 → 封边界环
+var unreachable = GridGraph.CountUnreachableTargets(walkable, w, h, start, targets,
+                                                    out var reached, out var firstBad);
+if (reached == 0) { /* 起点就不可走 ⇒ 整体失败，提前返回 */ }
+GridGraph.FillUnreachablePockets(walkable, w, h, visited, isRequired: null, fill: SetWall, out _);
+GridGraph.SealBorderRing(w, h, 1, walkable, seal: SetWall);
+
+// O(1) 随机取一个可走格（掉落 / 刷怪）
+var index = new GridGraph.WalkableIndex();
+index.Rebuild(walkable, w, h);
+var cell = index.Pick(rng.Next(index.Count));
+
+// 大格集合落盘 / 读回（小地图已探索格这类）
+var cells = GridBitSet.Encode(explored, w, h);     // 同集合 ⇒ 同串（确定性）
+var n     = GridBitSet.Decode(cells, w, h, into);  // 坏串 / 旧档 ⇒ 0，into 不变
+```
+
+> ⚠️ `GridGraph` 的 `isWalkable` **必须对"图外"返回 `false`**（BFS / 口袋填充都按这条判边界）。
+> ⚠️ `CountUnreachableTargets` 在 `reachedCount == 0` 时**仍会数**（结果 = 全部目标不可达）⇒ 调用方必须先判 `reachedCount == 0` 并当作整体失败。
+> ⚠️ `visited` 是调用方按 `[width, height]` 分配、初值全 `false` 的数组；尺寸不符 ⇒ 引擎**拒答**（返回 0 / 不填充）+ 留痕 —— 拿错数组会把可走区**整片填掉**，且不报错。
+> ⚠️ `GridBitSet` 的位图口径（行优先 `i = y*w + x`、低位在前）是**格式契约**：改了就读不了旧档（"同集合恒得同串"是它的自证判据）。
+> ⛔ 不要自己再写一份「格集合 ↔ base64」或「BFS 连通性」。
+
+### PathFollower —— 沿 A* 逐格路径推进 + 朝向
+
+**含义**：把 `AStar.Find` 产出的**逐格路径**变成"每 tick 走多远 + 朝向哪边"（纯逻辑类：不继承 `MonoBehaviour`、不持有 `GameObject` ⇒ 可在离线宿主里逐帧复算）。
+**分工**：`AStar.Find` 负责寻路，`PathFollower` **只沿路走** —— ⛔ 本件不寻路、不判可走性、不认识任何地图类型。速度 / 重寻路间隔由**构造参数**传入；方向判定走**注入的** `IsoLayout.DirectionTo`。
+
+| API | 入参 | 返回 | 说明 |
+| --- | --- | --- | --- |
+| `new PathFollower(iso, minMoveSpeed, repathIntervalSeconds)` | `IsoLayout, float, float` | `PathFollower` | `iso` 传 `null` ⇒ **Error 留痕**（朝向更新被跳过，`Pos` / 路径推进仍可用）；两个 `float` ≤ 0 按 0 处理 |
+| `SnapTo(grid)` | `Vector2Int` | `void` | 落到该格中心并清空路径与路径目标（进图 / 刷怪 / 复活） |
+| `SetPath(path, target)` | `List<Vector2Int>, Vector2Int` | `void` | 喂 `AStar.Find` 的结果（**含起点** ⇒ 本件跳过第 0 个）；`null` / ≤ 1 点 ⇒ 判为"无路径"。同时写入 `RepathTimer` |
+| `Advance(tilesPerSecond, dt)` | `float, float` | `bool` | 沿路径推进（**每 tick 一次**）；`true` = 路径已走完（或本来就没有路径） |
+| `StepToward(target, tilesPerSecond, dt)` | `Vector2, float, float` | `bool` | 朝某点**直线**走一步（逃跑 / 紧急脱身，⛔ 不做寻路）；`true` = 已到达（距离 < 0.05 格） |
+| `Pos` / `Dir` / `Grid` / `Path` / `PathIndex` / `PathTarget` / `HasPathTarget` / `RepathTimer` / `HasRemainingPath` | - | `Vector2` / `Dir8` / `Vector2Int` / … | 连续格坐标（**格中心制**：格 `(gx,gy)` 的中心是 `(gx+0.5, gy+0.5)`）/ 当前朝向（**按格变化**更新）/ 当前格 / 剩余路径 / 下一个路点下标 / 上次寻路目标格 / 重寻路冷却计时 / 是否还有剩余路点 |
+| `PathFollower.Center(grid)` | `Vector2Int` | `Vector2` | 格中心的连续坐标（静态纯函数） |
+| `MinMoveSpeed` / `RepathIntervalSeconds` | - | `float` | 构造时给的两个参数（只读） |
+
+```csharp
+var f = new PathFollower(iso, MonsterTuning.MinMoveSpeed, MonsterTuning.RepathIntervalSeconds);
+f.SnapTo(spawnGrid);                        // 进图 / 刷怪 / 复活
+f.SetPath(AStar.Find(IsWalkable, f.Grid, goal), goal);
+f.Advance(speedTilesPerSecond, dt);         // 每 tick 一次；随后把 f.Dir / f.Pos 同步给视图
+if (f.HasPathTarget && f.RepathTimer <= 0f) { f.SetPath(AStar.Find(IsWalkable, f.Grid, goal), goal); }
+f.StepToward(targetPos, speed, dt);         // 逃跑：直线走一步
+```
+
+> ⚠️ **取格一律 `FloorToInt`**（`Grid` 属性内部就是），⛔ 别用 `(int)` 强转。
+> ⚠️ `Advance` / `StepToward` 的入参速度低于 `MinMoveSpeed` ⇒ **按 `MinMoveSpeed` 处理**（配表 0 / 负值不至于原地卡死）；传入合法值时这条一行不生效。
+> ⚠️ 朝向**只在格发生变化时**更新（零增量不调 `IsoLayout.DirectionTo` —— 那个会打限频日志，而"这一步没跨格"是正常情形）。
+> ⚠️ `RepathTimer` 只是**存好的冷却秒数**，本件**不递减它** —— 由调用方自己 `-= dt` 再判。
+> ⛔ 不要自己再写一份"沿路走 + 转向"（各怪各抄一份就是平行再起一套）。
+
+### 瓦片族 —— 池化 / 渲染状态 / 渲染内核 / 程序化生成 / 分块规划
+
+> 同一张 2D 地图上的五个件，分工：`TilemapGenUtil` 造地图数据 → `TileWorld`（见上文「ITileWorld / TileWorld」一节）持有空间事实 →
+> `TileRenderer` 把「一格一层」算成渲染状态 → `TileNodePool` 借还节点 → `TileRenderState` 保证"复用与新建逐项相同"；
+> `ChunkedTilePlanner` 按块 + 每帧预算决定本轮铺哪些块。
+
+| API | 入参 | 返回 | 说明 |
+| --- | --- | --- | --- |
+| `new TileNodePool(root)` | `Transform` | `TileNodePool` | `root` = 归还节点的挂载根（挂在业务的地图层根下 ⇒ 随场景销毁），允许 `null`（归还时只失活、不换父） |
+| `Take(parent)` / `Return(sr)` / `Clear()` | `Transform` / `SpriteRenderer` | `SpriteRenderer` / `void` | **只有 `Take` 会把节点真建出来**（`new GameObject` + `SpriteRenderer`）；取出即 `SetActive(true)`、归还即 `SetActive(false)`（**严格配对**）；`Clear()` 只销毁**空闲**节点，**不影响已取出的** |
+| `SplitDemand(freeCount, demand, out fromFree, out create)` | `int, int, out int, out int` | `void` | **纯函数**：池够 ⇒ 新建 0，不够 ⇒ 只补差额（离线宿主用它做池化收益的算术断言，不必真建 `GameObject`） |
+| `CreatedCount` / `ReusedCount` / `FreeCount` | - | `int` | 累计新建 / 累计复用 / **当前空闲数**（⛔ "池里现在几个"看 `FreeCount`，不是 `CreatedCount`；两个计数只增不减，`Clear()` 也不清零） |
+| `new TileRenderState(sprite, color, localScale, position, sortingOrder)` | `Sprite, Color, Vector3, Vector3, int` | `TileRenderState` | 一格瓦片的**不可变**渲染状态（5 字段 / 11 标量，全 `readonly`）。⛔ 不许用 `default(TileRenderState)` 当"空状态"（那是全 0，**不是**合法的一格画面） |
+| `TileRenderState.SameAs(other)` | `TileRenderState` | `bool` | 5 个字段**逐项逐位**相等（`Sprite` 比引用；不用 `Vector3.Equals` 的 epsilon 语义 —— 判据是"逐位相同"不是"差不多"） |
+| `new TileRenderer(iso, pixelsPerUnit, tilePixelsPerUnit)` | `IsoLayout, float, float` | `TileRenderer` | `PixelsPerUnit` = 业务画布口径；`TilePixelsPerUnit` = 一格纹理的像素口径 |
+| `StateOf(cell, layer, sprite, placeholderColor, sortOffset, sortBias = 0)` | `Vector2Int, TileLayer, Sprite, Color, int, int` | `TileRenderState` | 把「一格一层」算成一个完整渲染状态（摆位 / 缩放 / 颜色 / 排序号）。层只决定**对齐方式**：`TileLayer.Ground` = 地砖式（贴图顶边贴格中心上方半格）、`Object` / `Overlay` = 墙 / 物件式 |
+| `Apply(sr, parent, state)` / `Build(takeNode, parent, state)` / `ApplyPlan(plan, cell, …)` | `SpriteRenderer, Transform, TileRenderState` / … | `void` / `SpriteRenderer` / `int` | **无条件写全** 5 个渲染字段（+ `enabled = true`）；`Build` = 取节点 + 写全一步到位。输入值类型为 `TileCellPlan`（计划）与 `TileLayerParams`（该层排序偏移 / 偏置 / 占位色） |
+| `TilemapGenUtil.TryBuildSlotMaze(rng, slotsX, slotsY, loopsMin, loopsMax, …)` | `Rng, int, int, int, int, …` | `bool` | **块级迷宫**生成（全连通 + 环路）；配套 `ConnectSlots` / `TryVerifySlotConnectivity`（连通性自检） |
+| `TilemapGenUtil.TryPickByEdges(rng, pieces, group, …)` / `StampPiece(…)` | `Rng, IReadOnlyList<EdgePiece>, int, …` | `bool` / `int` | 按**四边开口**（`PieceEdges` / `Dir4Mask`）挑拼块并盖章（支持翻转 —— `EffectiveEdges` 会同步换算边） |
+| `new ChunkedTilePlanner(chunkSize, maxNodesPerFrame)` | `int, int` | `ChunkedTilePlanner` | 块划分 + **每帧节点预算** + 双缓冲换块 |
+| `BeginFrame()` / `TryAccept(nodeCost)` / `RequestRebuild()` / `ConsumeRebuild()` | - / `int` | `void` / `bool` | 每帧先 `BeginFrame` 复位计数，再逐个 `TryAccept`（超预算 ⇒ `false`，**不截断已接受的**）；`RequestRebuild` / `ConsumeRebuild` 管"有待重建"标志 |
+| `ChunkRangeOf(…)` / `EnumerateChunks(…)` / `ChunkCount(…)` / `FloorDiv(v)` | `int, …` | `void` / `int` | 格范围 → 块范围 / 枚举可见块 / 块计数 / 向下取整除法（负格口径） |
+| `AcceptedThisFrame` / `RejectedThisFrame` / `RebuildPending` / `FrontBuffer` / `BackBuffer` | - | `int` / `bool` | 本轮接受 / 拒绝的节点数、"有待重建"标志、双缓冲下标 |
+
+```csharp
+// ① 一格一层的完整渲染状态：由纯函数算出
+var st = tileRenderer.StateOf(cell, TileLayer.Ground, groundSprite, placeholderColor,
+                             sortOffset: layers.Ground);
+
+// ② 取节点 + 无条件写全 5 个字段（+ enabled）
+var sr = pool.Take(layerRoot);
+tileRenderer.Apply(sr, layerRoot, st);
+
+// ③ 退场：归还（失活 + 挂回池根），⛔ 不是 Destroy
+pool.Return(sr);
+
+// ④ 每帧预算 + 分块规划
+planner.BeginFrame();
+foreach (var chunk in visibleChunks)
+{
+    if (!planner.TryAccept(chunkNodeCount)) break;   // 超预算 ⇒ 本轮不铺，下一帧继续
+    BuildChunk(chunk);
+}
+```
+
+> ⚠️ **池化最典型的静默失效**：复用出来的节点如果"记得就重设、漏了就继承上一次"，画面会带着**上一格的贴图 / 颜色 / 排序号**出现 —— 不报错、只有看图才发现。所以渲染字段**无条件写全**（`TileRenderState` 就是这件事的结构性保证）。
+> ⚠️ `TileNodePool` 的 `Take` / `Return` 必须**严格配对**：`Return` **不查重**（重复归还会让同一节点被压两次 ⇒ `FreeCount` 偏大 + `Take` 可能拿到同一个节点两次）。
+> ⚠️ `TileNodePool` ≠ `Game.Pool`：`Game.Pool` 是 **GameObject 级**池（key / 预制体 / 工厂 / 归还时归零变换 / `DontDestroyOnLoad` 池根）；`TileNodePool` 只池化一种东西、**故意不归零变换**（渲染字段由调用方写全）、池根随场景销毁。两者可并存。
+> ⚠️ `TileRenderState` ⛔ **只放渲染状态**：业务字段（tile kind / 块号 / 是否已探索…）塞进来会让池化路径开始"继承上一次的残留业务状态"。
+> ⚠️ `ChunkedTilePlanner.TryAccept` 超预算返回 `false` ⇒ **本轮不铺这一块、下一帧继续**（不是截断已经接受的那些）。
+> ⛔ 不要自己再写一份「节点池 + 逐格渲染」（同形状在各工程里重写过 N 遍，每次都要重新踩一遍"复用不写全"）。
+
+### SceneScaffold —— 最小可运行场景脚手架（编辑器）
+
+**含义**：把**每个工程开工都要写一遍**的三件事收进引擎的 `Editor` 程序集：
+① 生成（覆盖）一个最小可运行场景（主相机正交 + `MainCamera` tag + `AudioListener` + 可选 URP 2D 灯光 + 命名根节点 + 入口脚本）；
+② **幂等**写 `EditorBuildSettings`；③ **幂等**设 Play 起始场景。
+⛔ 引擎侧**一个业务取值都不带**：场景名 / 相机参数 / 根节点名 / 入口类型全由调用方给。
+
+| API | 入参 | 返回 | 说明 |
+| --- | --- | --- | --- |
+| `SceneScaffold.Create(scenePath, options, out error)` | `string, SceneScaffoldOptions, out string` | `bool` | 生成并保存场景；`false` ⇒ `error` 是可定位原因（`scenePath` 为空 / 保存失败 / **入口脚本类型找不到**）。随后按选项写 Build Settings / Play 起始场景 |
+| `SceneScaffoldOptions` | 结构体（公开字段） | - | `OrthoSize` / `CameraZ` / `MapRootName` / `EntityRootName` / `EntryTypeName` / `Create2DLight` / `SolidColorBackground` / `ClearColor` / `NearClip` / `FarClip` / `AddUrpCameraData` / `AdditiveMode` / `CloseAfterSave` / `ApplyBuildSettings` / `SetPlayModeStartScene` |
+| `SceneScaffold.ApplyBuildSettings(scenePaths, replace = false)` | `IList<string>, bool` | `bool` | **幂等**：给定场景按序在最前（`replace` ⇒ 结果只有它们）；**返回是否真的发生了写入**（已正确 ⇒ `false` 且不写） |
+| `SceneScaffold.SetPlayModeStartScene(scenePath, onlyIfNull = false)` | `string, bool` | `bool` | 设为 Play 起始场景（幂等），返回是否写入；找不到场景资产 ⇒ 限频告警 + `false`（保持原值，**不抛**） |
+| `SceneScaffold.FindTypeByName(fullName)` / `FindTypeBySimpleName(simpleName)` | `string` | `Type` | **反射**解析业务类型（Editor 工具不依赖业务程序集 ⇒ 业务程序集编译失败时仍能给诊断）。简名命中多个 ⇒ 取第一个 + 限频告警 |
+| 菜单 / 批处理入口 | - | - | 菜单 `Clover/场景脚手架/生成最小可运行场景…`；批处理 `-executeMethod CloverEngine.Editor.SceneScaffold.ExecuteFromCommandLine -scene <path>`（可加 `-ortho` / `-cameraZ` / `-mapRoot` / `-entityRoot` / `-entry`；**失败在批处理下 `Exit(1)`**） |
+
+```csharp
+// 代码路径（编辑器脚本 / 自己的工程生成器里调）
+var ok = SceneScaffold.Create(
+    "Assets/Scenes/Boot.unity",
+    new SceneScaffoldOptions
+    {
+        OrthoSize = 5f,
+        CameraZ = -10f,
+        MapRootName = "MapRoot",
+        EntityRootName = "EntityRoot",
+        EntryTypeName = "MyGame.GameMain",
+        Create2DLight = true,
+        ApplyBuildSettings = true,
+        SetPlayModeStartScene = true,
+    },
+    out var err);
+```
+
+```
+# 批处理路径（CI / 命令行）
+unity -batchmode -projectPath <client> \
+  -executeMethod CloverEngine.Editor.SceneScaffold.ExecuteFromCommandLine -scene Assets/Scenes/Boot.unity
+```
+
+> ⚠️ **场景必须在 Build Settings 里** —— `Game.Scene.Load(name)` 走 Unity 场景加载，不在表里就加载不到。
+> ⚠️ `AdditiveMode = true` ⇒ 新场景**按叠加方式**建（不替换用户当前打开的场景、不弹保存框）；配合 `CloseAfterSave = true` 存完立刻关掉临时场景。代码里 `new GameObject(...)` 会落进**当前活动场景** ⇒ `AdditiveMode` 下本件会主动 `MoveGameObjectToScene`。
+> ⚠️ URP 2D 灯光与 `UniversalAdditionalCameraData` 走**反射可选接入**（拿不到 `Light2D` 类型就跳过 + 留一行日志）：Editor 程序集只引用引擎自己的程序集，硬引用 URP 会让没装 URP 的工程**编不过**。
+> ⛔ 不要自己再写一份场景生成器 / Build Settings 写入（同形状曾每个工程重写一遍）；`ApplyBuildSettings` / `SetPlayModeStartScene` 的**返回值**就是"有没有写"的判据。
+> 另有启动自愈体检：Build Settings **为空**时只发一条 Warn（正常工程零日志），因为那会让 `Game.Scene.Load` 必失败。
+
+### ClientConfig（`ConfigSectionLoader<T>` / `ConfigSource`） —— 带默认值的配置段加载链
+
+**含义**：把「**按顺序试 N 个配置来源 → 任一来源读不出 / 解析不了就退到下一个 → 全坏就用内置默认值 → 改完文件能 `Reload`**」这段控制流收进引擎。
+⛔ 本件**不写盘、不认识键、不做类型转换** —— "值从哪来"由调用方注入；**字段类型（泛型 `T`）、具体来源、具体默认值全留调用方**。
+分工（⛔ 别当第二套 `Setting` 用）：`Setting` = **可写的单文件 KV 存储**（`Set` / `Get` / `Save`）；`FileSlotStore` = **一槽一文件**的文本存储（存档 / 回放 / 草稿）；本件 = **只读的配置来源链**。
+
+| API | 入参 | 返回 | 说明 |
+| --- | --- | --- | --- |
+| `new ConfigSource(name, readText, logLabel = null)` | `string, Func<string>, string` | `ConfigSource` | 一条来源：显示名（命中它时会成为 `Source` 的取值）+ 读文本的委托 + 解析/日志标签（空 ⇒ 用 `name`） |
+| `new ConfigSectionLoader<T>(tag, sources, parse, createDefault, normalize = null)` | `string, IEnumerable<ConfigSource>, Func<string,string,T>, Func<T>, Action<T,string>` | `ConfigSectionLoader<T>` | `T` 是**引用类型**（`where T : class`）；`sources` **按顺序**试（`null` / 空 ⇒ 直接走默认值）；`parse` 返回 `null` = 本来源解析失败；`createDefault` 是**默认值的唯一出处** |
+| `Value` | - | `T` | 配置对象（**惰性**：首次访问触发一次加载，之后返回缓存值直到 `Reload()`） |
+| `Source` / `Loaded` / `LoadCount` | - | `string` / `bool` / `int` | 当前命中的来源显示名（`"默认值"` / `"(未加载)"`）/ 是否加载过 / 已执行过几次加载。**读 `Source` 不会触发加载** |
+| `Reload()` / `Load()` | - | `T` | 重跑整条来源链（热改）返回新值 / 显式加载一次（调用方通常只用 `Value` + `Reload`） |
+| `ConfigSectionLoader<T>.DefaultSourceName` / `NotLoadedSourceName` | - | `string` | `"默认值"` / `"(未加载)"`（判据常量） |
+
+```csharp
+var loader = new ConfigSectionLoader<MyRoot>(
+    "Cfg",
+    new[]
+    {
+        new ConfigSource("Resources/Configs/config", () => AssetText()),
+        new ConfigSource("文件:" + path,              () => ReadFileText(path), path),
+    },
+    parse: (json, from) => Parse(json, from),      // 返回 null = 本来源解析失败（解析器自己留痕）
+    createDefault: () => new MyRoot(),             // 默认值的唯一出处
+    normalize: (root, from) => Clamp(root, from)); // 可选：逐字段兜底 / 裁剪 / 越界告警
+
+var cfg = loader.Value;      // 惰性：首次访问触发一次加载
+loader.Reload();             // 热改（重跑整条链）
+var log = loader.Source;     // "Resources/…" / "文件:…" / "默认值" / "(未加载)"
+```
+
+> ⚠️ **`ReadText` 的两种"坏"语义不同**：返回 `null` / 空串 / **纯空白** = 「本来源**没有内容**」⇒ 引擎**静默跳过**（不打日志）；**抛异常** = 「本来源读取失败」⇒ 引擎记一条 Warn 后改试下一个来源（⛔ **不向上抛**）。
+> ⚠️ `parse` 返回 `null` = 本来源解析失败（引擎补一条来源级跳过日志后改试下一个）；`parse` 抛异常按"解析失败"处理。
+> ⚠️ `normalize` 抛异常 ⇒ **该来源整体不可用**（拿它继续跑等于把坏值交给业务）⇒ 引擎改试下一个来源。它收到的第二参就是该来源的 `LogLabel`，便于点名是哪份配置越界。
+> ⚠️ 全部来源都不可用 ⇒ `Source = "默认值"`、`Value = createDefault()`（+ 一条 Warn）；⛔ **绝不抛异常**（配置问题不该让游戏起不来）。
+> ⚠️ 非线程安全（主线程使用，与 `Setting` / `FileSlotStore` 一致）；本件不依赖 `UnityEngine`（只用 `System`）⇒ 离线自检宿主可直接链进工程跑。
+> ⚠️ **与 `Setting` 的分工**：要"存下来 / 改一改"用 `Game.Setting`；要"读一份配置、坏了就回默认"用本件。
+> ⛔ 不要自己再写一份"多来源回退 + 容错解析 + Reload"（那是每个工程重写一遍的控制流；项目侧只剩"这项目的 config.json 长什么样"）。参考实现见 `clover-ai-skill/patterns/client/config.md`。
+
 ---
 
 ## 局域网寻服（LanBrowser / ILanResponder）
