@@ -22,15 +22,15 @@ Clover 的 **AI 开发规范（skill）体系**：两层 skill 的分工与目�
 | 位置 | [`clover-ai-skill`](https://github.com/qw576483/clover-ai-skill) 仓库 → 装进**你自己用的 AI 宿主的 skill 目录**（目录名保持 `ai-skill`）：CodeBuddy `~/.codebuddy/skills/ai-skill/` · Claude Code `~/.claude/skills/ai-skill/` · Cursor `~/.cursor/skills/ai-skill/`；其他工具 ⇒ 把 `~/.<工具>` 换成它自己的 skill 根目录 | `<项目根>/tools/ai-skill/` |
 | 范围 | 所有 Clover 项目通用（引擎 API / 范式 / 速查 / 模板） | **只有该项目** |
 | 内容 | 引擎 API、范式（`patterns/**`）、速查（`reference/**`）、模板（`scaffold/**`） | 该项目的消息号 / handler / 面板 / 配表登记与约束 |
-| 优先级 | **规则层（`SKILL.md` 的 §0~§7）不可被项目级覆盖**：项目文档**只能加严** | 本项目**特有的事实**（消息号段、命名、目录边界、目录内既有写法）优先 |
+| 优先级 | 全局规则层（`SKILL.md` 的 §0~§7）**不会被项目级覆盖**，项目文档只能加严 | 本项目**特有的事实**（消息号段、命名、目录边界、目录内既有写法）优先 |
 
 > ⚠️ **优先级那行最容易读反**：项目级 skill 管的是"本项目特有的事实"，**不是**"可以把全局规则放宽"。
-> 两者冲突 ⇒ **照全局做，并把项目文档里冲突的那行改掉**。
+> 两者冲突时以全局规则为准，项目文档里冲突的那行应改掉。
 >
 > **skill 的名字 ≠ 目录名**：宿主里显示的 skill 名（`clover-engine`）来自 `SKILL.md` front matter 的 `name:` 字段，
 > 目录名是 `ai-skill` —— 两者不一致是正常的。
 
-**动任何项目代码前，先读该项目的 `tools/ai-skill/SKILL.md`。**
+项目级 skill 放在 `<项目根>/tools/ai-skill/`，工程开工前先读这一份。
 
 ## 全局 skill 的结构
 
