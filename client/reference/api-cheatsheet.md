@@ -910,9 +910,11 @@ public class PooledObject : MonoBehaviour
 | `ShouldLog(key, intervalSeconds = 5f)` | `string, float` | `bool` | **时间口径**：同一 key 在间隔内只出第一条；空 key 恒 `false` + 只报一次 Warn | 每帧刷屏的分支 |
 | `WarnThrottled / ErrorThrottled / WarnOnce / ErrorOnce(tag, key, message, ...)` | `string, string, string, ...` | `bool` | 直接出日志（`*Once` = `ShouldLog(key, +∞)`） | 兜底分支留痕 |
 | `ShouldLogEvery(key, everyN)` / `InfoCounted` / `WarnCounted` / `ErrorCounted` | - | `bool` | **计数口径**：每 key 独立计数、**第 1 次必打**、之后每 N 次一条 | 偶发但一局很多次 |
-| `Clock` / `ClockSource` / `Reset()` | - | - | 注入单调秒（离线宿主**必须注入**才有确定性）/ `Injected`/`Unity`/`Process` / 换场景时清限频表 | 确定性 / 测试 |
+| `Clock` / `ClockSource` / `Reset()` | - | - | 注入单调秒（离线宿主**必须注入**才有确定性）/ `Injected`/`Unity`/`Process` / 换场景时清**全部**限频表 | 确定性 / 测试 |
+| `Forget(keyPrefix)` | `string` | `void` | 清掉**某个 key 前缀**下的限频记录（时间口径与计数口径**一起**，语义 = "只对该前缀 `Reset()` 一次"）⇒ 该前缀下每个 key 重新「首次必打」，**别处记账不受影响**。前缀按 Ordinal `StartsWith` 匹配 ⇒ 要收在分隔符上（如 `"Foo[12]/"`）；空前缀 ⇒ **不动作** + 只报一次 Warn（要清全部用 `Reset()`） | 换对局 / 重连后重新武装留痕 |
 
 > ⚠️ **两种口径语义不同、不可互相替换**：时间治"每帧刷屏"、计数治"偶发但一局出现很多次"的打点抽样。
+> ⚠️ **「只报一次」不随业务状态复位**：`WarnOnce` / `ErrorOnce` 的记账是 `LogThrottle` 里的表，模块自己的 `Reset()` / 换局不会清它 ⇒ 要么在自己的复位里调 `Forget(<本实例键前缀>)`，要么把"只报一次"换成可自复位的状态位（如 `SnapshotInterpolator.OutOfWindow` / `ClockLeadCapped`）。
 
 ### FrameBank —— 精灵目录抓帧（整目录有序数组 / 帧号寻址 / 统一画布锚点）
 
@@ -958,11 +960,14 @@ public class PooledObject : MonoBehaviour
 | `new SnapshotInterpolator(options = null, clockSeconds = null)` | `SnapshotInterpolatorOptions?, Func<float>` | `SnapshotInterpolator` | `options` 传 `null` 取 `Default()`；非正 / 过小的值被**归一化 + 一条 Warn**（⛔ 不静默、⛔ 不抛）。`clockSeconds` **返回秒**、语义同 `Time.realtimeSinceStartup` ⇒ 离线单测 / 回放灌数据注入它即可完全复现 | 建插值器 |
 | `Push(serverMs, payload = null)` | `float, object` | `bool` | 推入一帧权威快照：**只入历史，⛔ 绝不重置渲染时钟、⛔ 绝不换正在渲染的窗口**。`true` = 入了历史；`false` = 被丢弃（`serverMs <= 0` ⇒ 退化按标称周期推定；时间戳没前进 / 乱序 ⇒ **整帧丢**，历史必须按时间戳单调） | 网络回调里推 |
 | `Tick()` | - | `float` | **每帧一次**：推进渲染时钟 → 有界比例速率修正 → 按渲染时钟选插值窗口 → 返回 `t ∈ [0,1]`（未就绪 = 返回 `1f`，语义「冻在最后一个已知位置」） | 业务 Tick |
-| `Reset()` | - | `void` | 复位到「还没收到任何快照」（换对局 / 重连 / 出图）；「只报一次」的告警**不重置** | 换对局 |
-| `HasWindow` / `WindowStartPayload` / `WindowEndPayload` / `InterpRatio` | - | `bool` / `object` / `object` / `float` | 窗口是否可用 / **该插值的那一对载荷**（调用方自己的 `payload`，本件只存**引用**、⛔ 不读不拷贝）/ 上次的 `t`。调用方拿 `prev` / `cur` 自己 Lerp 自己的实体字段 | 渲染实体 |
-| `RenderClockMs` / `NewestSnapshotMs` / `RenderLagMs` / `BufferLagMs` / `WindowStartMs` / `WindowEndMs` / `ClockRate` / `SnapshotCount` / `HistoryLength` / `CatchingUp` / `OutOfWindow` / `DroppedOutOfOrderCount` / `Options` | - | `float` / `int` / `bool` / 结构体 | 渲染时钟（服务端时间轴上的哪一毫秒）/ 最新快照时间戳 / 落后最新多少 ms / 缓冲多深 / 窗口两端 / 当前速率 / 计数 / 状态标志 —— **留痕与自检用** | 自检 / 诊断 |
+| `Reset(resetWarnOnce = false)` | `bool` | `void` | 复位到「还没收到任何快照」（换对局 / 重连 / 出图）；`resetWarnOnce: true` ⇒ **连「只报一次」的记账一起清**（`LogThrottle.Forget`，只清**本实例**日志键前缀 —— 别的实例不受影响）⇒ 下一局同类分支仍能留痕；默认 `false` = 记账跨局保留（现行为） | 换对局 |
+| `HistoryStartIndex` / `HistoryLength` | - | `int` | 最旧那个已填充槽在历史数组里的下标（一格都没有 = `HistSlots`；有效区间 `[HistoryStartIndex, HistSlots-1]`）/ 已填充槽数 | 判"历史攒够没" |
+| `PayloadAt(slotFromOldest)` / `TimestampAt(slotFromOldest)` | `int` | `object` / `float` | **按历史槽读载荷 / 时间戳**：`0` = 最旧、`HistoryLength-1` = 最新（槽序**最旧 → 最新**），不限于"正在渲染那一对"。越界 ⇒ `null` / `NaN` + **只报一次** Warn（⛔ 不抛、⛔ **不夹到别的槽**）。例：拿"环里最旧那格"当朝向基线（落后最新 5 个间隔 = 500 ms；只落后 1 个间隔时朝向会反复翻转） | 读更早的快照 |
+| `HasWindow` / `WindowStartPayload` / `WindowEndPayload` / `InterpRatio` | - | `bool` / `object` / `object` / `float` | 窗口是否可用 / **该插值的那一对载荷**（调用方自己的 `payload`，本件只存**引用**、⛔ 不读不拷贝）/ 上次的 `t`。调用方拿 `prev` / `cur` 自己 Lerp 自己的实体字段。⚠️ **未就绪（`HasWindow == false`）时两个载荷都是 `null`** —— 载荷类型由调用方自定，引擎造不出合法的"空载荷"（造一个 = 把「没有数据」伪装成「有一份空数据」）⇒ 调用点必须先判 `HasWindow`（或判空），否则 `foreach` / 转类型当场 NRE | 渲染实体 |
+| `RenderClockMs` / `NewestSnapshotMs` / `RenderLagMs` / `BufferLagMs` / `WindowStartMs` / `WindowEndMs` / `ClockRate` / `SnapshotCount` / `CatchingUp` / `OutOfWindow` / `ClockLeadCapped` / `DroppedOutOfOrderCount` / `Options` | - | `float` / `int` / `bool` / 结构体 | 渲染时钟（服务端时间轴上的哪一毫秒）/ 最新快照时间戳 / 落后最新多少 ms / 缓冲多深 / 窗口两端 / 当前速率 / 计数 / 状态标志 —— **留痕与自检用**。`OutOfWindow` = 时钟掉出历史（插值静默失效）；`ClockLeadCapped` = 时钟被超前上限夹住（快照停推中），**快照一恢复自动复位** ⇒ 业务可拿这两位自己按局记账 | 自检 / 诊断 |
 | `static SteerRate(lagErrorMs, options)` / `SteerRate(lagErrorMs)` | `float, SnapshotInterpolatorOptions` | `float` | **纯函数**控制律（离线可断言）：偏差 ≤ 阈值 ⇒ 在 ±`LagSteerMaxRate` 内**按比例**微调；超阈值 ⇒ 放开到 `CatchUpMaxRate` 有界追帧（超前时只放一半） | 离线断言 |
 
+> ⚠️ **「只报一次」的记账与状态复位是两回事**：「无时间戳 / 乱序丢弃 / 时钟超前上限 / 历史槽越界」这几条走 `LogThrottle.WarnOnce`，记账活在 `LogThrottle` 里、**不随 `Reset()` 归零** ⇒ 一个实例第 2 局起同类分支**零日志**（表现为"只有第一局好查"）。要在下一局重新留痕：`Reset(resetWarnOnce: true)`（只清本实例）或读状态位 `OutOfWindow` / `ClockLeadCapped` 自己记账；要全清用 `LogThrottle.Reset()`。
 > ⚠️ **三个已知坑（改之前先读）**：① ⛔ **不要把渲染时钟写成「每帧累加 `Time.deltaTime`」** —— 那个值被 Unity 夹在 `Time.maximumDeltaTime`（默认 1/3 秒），一次卡顿就让时钟**永久落后**（实测 1915~2108 ms）⇒ `t` 恒为 0、单位冻住；② ⛔ 速率修正**必须每帧都调**，不许写成 `|err| > 阈值 ? SteerRate(err) : 1f`（落后量一旦被成批到达的快照推过阈值就**再也回不来**）；③ ⛔ **换窗口必须按时钟跨过时间戳**，不许「按包到达换窗口」（那是抖动的来源：实测速度 cv 0.24~0.28，改成按时钟后 cv 0.000）。
 > ⚠️ **分工**：`WorldSync` 是 MMO/AOI 的**逐实体**镜像同步（回答「这个实体怎么平滑到下一格」）；本件只管**时间轴 / 窗口**（对快照内容一无所知，可叠加使用）。也**不是** `FramePacingPolicy` 的重复（那个管帧**交付**节奏，本件管取**哪一时刻**的状态）。
 > ⚠️ **代价（明知）**：画面比服务端晚 `RenderLagIntervals` 个间隔 —— 这是「**绝不前跳**」换来的（前跳会瞬间把单位推过头、甚至穿墙）。

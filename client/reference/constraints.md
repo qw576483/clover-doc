@@ -85,6 +85,7 @@ Game.Event.On<EResumeSessionReply>("Net.OnResumed", data =>
 | **G14** | 地图标记点段 | 标记点由导出端产（`MapBakeOptions.MarkerRootName` 指定根对象，子物体「对象名 = 标记名」）；**留空 ⇒ 不导该段**。**旧 `.bytes` 不含该段（bit2）⇒ 必须用支持标记段的导出端重新烘焙** —— 客户端不会"补"出来，也不会从别处推断 | `Game.Map.GetPoints` / `TryGetPoint` **全部落空**：出生点取不到、AI 路线锚点为空，现象是"AI 集体不动"，而文件能读、游戏能起 |
 | **G15** | 多层地图的层过滤 | `MapBakeOptions.LayerFilterEnabled` **默认 `false` = 现状行为**（所有非地面碰撞体参与烘焙）。多层地图（上下楼板 / 楼梯高台）开它并**逐层各烘一份单层位图**（`LayerMin` / `LayerMax` 按 Unity Layer、`LayerMinY` / `LayerMaxY` 按世界 Y 相交判定） | 把多层塞进单层位图 ⇒ 上层楼板整片算成阻挡、连通性当场断掉，**且不报错** |
 | **G16** | `Fsm.Reset()` 之后须重新注册 | `Reset()` 清空状态表 / 触发器表 / `Current`（不销毁实例、不触发任何回调、**保留** `OnChange` 订阅表）；调用后必须**重新** `RegisterState(...)` 再 `Force` / `Transition` | 重置后 `Transition` 到旧状态名会打 `State not registered` 并**静默不转换**（表现为"状态机点不动"，其实状态表已空） |
+| **G17** | 「只报一次」的记账与状态复位解耦 | `LogThrottle.WarnOnce` / `ErrorOnce` 的记账活在 `LogThrottle` 的**进程级表**里，**不随模块自己的 `Reset()` / 换局 / 换场景归零** ⇒ 要在下一局重新留痕，必须显式做一处：按实例清（`LogThrottle.Forget("<本实例键前缀>")`，如 `SnapshotInterpolator.Reset(resetWarnOnce: true)`）、换场景全清（`LogThrottle.Reset()`）、或把"只报一次"换成**可自复位**的状态位（`OutOfWindow` / `ClockLeadCapped`）后由业务自己记账 | 第 2 局起同类异常**零日志**（如"快照时间戳缺失 / 乱序丢弃 / 时钟停推"不再留痕），现象是"只有第一局好查、后面全是静默失效" |
 
 ### 通用约束详解
 
