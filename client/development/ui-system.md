@@ -26,7 +26,7 @@
 | 窗口管理 | Open/Close/Get/IsOpen/CloseAll |
 | 固定层级 | Background / Normal / Popup / Top / System 五级 |
 | 面板生命周期 | IUIPanel 接口定义 OnOpen/OnClose/OnUpdate |
-| 面板事件 | OnPanelOpened / OnPanelClosed 回调 |
+| 面板事件 | OnPanelOpened / OnPanelClosed 回调，退订为 OffPanelOpened / OffPanelClosed（按同一委托实例） |
 
 ### API 参考
 
@@ -40,6 +40,8 @@
 | `Game.UI.IsOpen<T>()` | - | `bool` | 检查窗口是否已打开 |
 | `Game.UI.OnPanelOpened(handler)` | `Action<string>` | `void` | 注册面板打开回调 |
 | `Game.UI.OnPanelClosed(handler)` | `Action<string>` | `void` | 注册面板关闭回调 |
+| `Game.UI.OffPanelOpened(handler)` | `Action<string>` | `void` | 退订面板打开回调（须传订阅时的同一委托实例；未订阅过 / null 为空操作） |
+| `Game.UI.OffPanelClosed(handler)` | `Action<string>` | `void` | 退订面板关闭回调（同上） |
 
 ### 写一个面板
 
