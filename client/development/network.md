@@ -219,7 +219,7 @@ if (Game.Net.IsQueued) Debug.Log($"{Game.Net.QueueAhead}/{Game.Net.QueueTotal}")
 | 项 | 说明 |
 |---|---|
 | 谁开启 | **引擎自动**：`Game.Net.Call<ELoginReply>(EMsg.Login, …)` 时按平台能力自动填 `ELoginRequest.encrypt`，业务不要手填 |
-| 平台不支持 | 拿不到 AES-GCM 的平台（如 WebGL）**不声明**加密 → 服务端保持明文，链路安全由 wss/QUIC/WT 的 TLS 承担（不会出现"声明了却解不开"） |
+| 平台不支持 | 拿不到 AES-GCM 的平台（如 WebGL）**不声明**加密 → 服务端保持明文，链路安全由 wss/QUIC/WT 的 TLS 承担（不会出现"声明了却解不开"）。能力判定是**独立探测**（直接试构造 `AesGcm` + 一次加 / 解密，不经过加 / 解密入口）⇒ 不支持只给**一次性 Warn**（⛔ 不记成 `channel encrypt failed` 的 Error）；`Encrypt` / `TryDecrypt` 对该平台**短路**（返回 `null` / `false` + 一次性 Warn，与既有失败契约一致） |
 | 状态查询 | `Game.Net.IsChannelEncrypted` |
 | 明文例外 | ① 登录回包自身（客户端要靠它拿密钥）；② `EMsg.BindUDP` 绑定帧（网关按明文读令牌） |
 | 断线重连 | 新连接是**新会话**：密钥作废、由新的登录回包重新协商（引擎自动清掉旧密钥） |

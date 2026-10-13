@@ -25,6 +25,8 @@
 | 容量上限 | 超出上限时裁剪不活跃实例（TrimPool） |
 | 空闲过期回收 | `IdleExpirySeconds` > 0 时，闲置超时的非活跃实例在下次 `Spawn`/`Despawn` 被销毁（**默认 0 = 关闭**）；另有 `TrimIdle()` 可手动清理一次 |
 | 按场景分组清理 | 场景卸载时自动批量回收 |
+| 池化回调 | 对象实现 `IObjectPoolable`（`OnSpawn` / `OnDespawn`）时，取出 / 归还会**自动回调**复位——与引用池的 `IReferencePoolable` 对称（那个管纯 C# 对象，这个管 `GameObject`） |
+| 代码工厂 | `Register(key, factory)` 注册"怎么造"（工厂优先，未注册的 key 才回落 Resources 预制体）；`IsRegistered(key)` 只回答该 key **注册过代码工厂**没有 |
 
 ### API 参考
 
@@ -39,6 +41,8 @@
 | `Game.Pool.GetActiveCount(key)` / `GetInactiveCount(key)` | `string` | `int` | 活跃 / 非活跃实例数 |
 | `Game.Pool.IdleExpirySeconds` | `float`（属性） | `float` | 空闲过期回收阈值（秒）：>0 时闲置超时的非活跃实例在下次 `Spawn`/`Despawn` 被销毁；**默认 0 = 关闭**（负数按 0 处理） |
 | `Game.Pool.TrimIdle()` | - | `void` | 立即按 `IdleExpirySeconds` 清理一次全部池的空闲对象（阈值为 0 时无操作） |
+| `Game.Pool.Register(key, factory)` | `string, Func<GameObject>` | `void` | 注册代码工厂（`Spawn` / `Preload` 时**工厂优先**，未注册的 key 才回落 `Resources.Load<GameObject>(key)`）；传 `null` = 注销该 key |
+| `Game.Pool.IsRegistered(key)` | `string` | `bool` | 该 key 在本池上是否注册过**代码工厂**（⛔ 不回答 Resources 里的预制体） |
 
 ### 使用示例
 
@@ -59,6 +63,27 @@ Game.Pool.Preload("bullet_prefab", 50, "bullets");
 // 清空指定池
 Game.Pool.Clear("bullet_prefab");
 ```
+
+### 池化回调（`IObjectPoolable`）
+
+池化对象在**根节点**上实现 `IObjectPoolable`，取出 / 归还时引擎自动回调，把"忘记复位上一次的字段"固定在池的两个动作上：
+
+```csharp
+using CloverEngine;
+
+// 挂在池化对象的根节点上（引擎只查根节点自身，不递归子节点）
+class Bullet : MonoBehaviour, IObjectPoolable
+{
+    public void OnSpawn()   { /* 取出：复位速度 / 计时 / 拖尾 */ }
+    public void OnDespawn() { /* 归还前：释放外部引用 / 解绑每实例数据 */ }
+}
+
+var bullet = Game.Pool.Spawn("Prefabs/Bullet");   // 新建与复用两条路径都会调 OnSpawn
+Game.Pool.Despawn(bullet);                        // 禁用前调 OnDespawn
+```
+
+> `Spawn`（含**新建与复用**两条路径）取出时调 `OnSpawn`、`Despawn` **禁用前**调 `OnDespawn`；`Preload` 只预造、**不**回调。
+> 回调异常由引擎接住并留痕（**不打断** `Spawn` / `Despawn` 链）；⛔ 回调里别做重活。
 
 ## 引用池（纯 C# 对象）
 

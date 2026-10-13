@@ -346,6 +346,16 @@ public class GoodExamples : MonoBehaviour
 > 这是**约定**（不占 G 编号）："公开 API 仅主线程可调"与"处理器里别阻塞"一样靠**约定 + 评审**保障
 > （**引擎未内置主线程断言**）—— 违反后的表现是掉帧、卡死、被系统判无响应（或线程安全问题），而不是自解释的报错。
 
+## 工作流口径（GI / 编辑器取证）
+
+> 这三条是**工作流口径**（不占 G 编号）：不做对会得出"看起来像 bug、其实是口径"的结论。
+
+| 项 | 口径 |
+|---|---|
+| **GI** | 本工作流的动态物件 / 角色吃 `ambient + 实时光`，**不吃烘焙 GI** —— 场景 `lightProbes` / `lightmaps` 为空时 `BlendProbes` **无探针可用**，背光面偏平是**口径差异**（⛔ 不是"某个物件被调暗了"，调它的材质 / 颜色解决不了）。排查用编辑器菜单 `Clover/诊断/光照口径 dump`（`LightProbeAudit.Dump()`，一行给出 ambient / skybox / lightmaps / lightProbes / 各 `lightProbeUsage` 分桶） |
+| **编辑器取证三入口** | ⛔ 三件互补、不互相替代：`EditorScreenCapture`（`Editor/capture-editor-screen.cs`）= **窗口级屏幕像素**，含编辑器叠加层（图标 / Gizmos），**需可见窗口**；`EvidenceCamera`（`Editor/EvidenceCamera.cs`）= 相机**离屏渲染**，尺寸 / 路径任意、**不需窗口**；`BackbufferCapture`（`Editor/backbuffer-capture.cs`）= **Play 模式合成后缓冲**（含 Overlay 画布），落盘路径任意、带退化帧自检 |
+| **run_script 常驻对象** | `run_script`（ephemeral）里 `new GameObject()` 的对象**只被临时程序集持有、出调用即失效** ⇒ 要跨调用存活就挂 `CloverEngine.Editor.PersistentSceneHost.Root` 下（`Attach(go)`）；Play 模式下 `Root` 返回 `null`（对象由 Play 场景持有，天然存活） |
+
 ## 约束检查清单
 
 ### 开发前检查

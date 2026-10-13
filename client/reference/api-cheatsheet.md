@@ -751,17 +751,20 @@ public class ResourceManager : MonoBehaviour
 | `Game.Pool.GetActiveCount(key)` / `GetInactiveCount(key)` | `string` | `int` | 活跃 / 非活跃实例数 | 排障 / 监控 |
 | `Game.Pool.IdleExpirySeconds` | `float`（属性） | `float` | **空闲过期回收**阈值（秒）：>0 时闲置超时的非活跃对象在下次 `Spawn` / `Despawn` 被销毁；**默认 `0` = 关闭**（负数按 0 处理） | 峰值后回收长期闲置实例 |
 | `Game.Pool.TrimIdle()` | - | `void` | 立即按 `IdleExpirySeconds` 清理一次全部池的空闲对象（阈值为 0 时无操作） | 切场景前手动收紧内存 |
+| `Game.Pool.Register(key, factory)` | `string, Func<GameObject>` | `void` | 注册代码工厂（`Spawn` / `Preload` 时**工厂优先**，未注册的 key 才回落 `Resources.Load<GameObject>(key)`）；传 `null` = 注销该 key | 代码造的对象也能入池 |
+| `Game.Pool.IsRegistered(key)` | `string` | `bool` | 该 key 在本池上是否注册过**代码工厂**（⛔ 不回答 Resources 里的预制体） | 判断"本池还要不要补注册" |
+| `IObjectPoolable`（`OnSpawn` / `OnDespawn`） | - | - | 挂在池化对象**根节点**上的复用回调；`Spawn`（新建与复用两条路径）取出时调 `OnSpawn`、`Despawn` 禁用前调 `OnDespawn`；`Preload` 不回调；回调异常被接住并留痕 | 取出自动复位 / 归还前解绑 |
 
 ### 参数说明
 
 **`Game.Pool.Spawn`**
 - `key`: 对象池键名（对应预制体路径）
 - 返回值: `GameObject`，可直接使用
-- 特点: 自动 `SetActive(true)`；**没有 `OnSpawn` 回调**，取出后的初始化由业务自己调
+- 特点: 自动 `SetActive(true)`；对象根节点实现 `IObjectPoolable` 时**调 `OnSpawn`**（新建与复用两条路径都调），否则由取出方自行初始化
 
 **`Game.Pool.Despawn`**
 - `go`: 要归还的游戏对象
-- 特点: 自动 `SetActive(false)` 并挂回池根，归还到对象池；**没有 `OnDespawn` 回调**
+- 特点: 自动 `SetActive(false)` 并挂回池根，归还到对象池；对象根节点实现 `IObjectPoolable` 时**在禁用前调 `OnDespawn`**
 
 **`Game.Pool.Preload`**
 - `key`: 对象池键名
@@ -801,12 +804,11 @@ public class BulletManager : MonoBehaviour
 }
 ```
 
-```csharp 标题：取出后自行初始化（对象池没有 OnSpawn / OnDespawn 回调）
-public class PooledObject : MonoBehaviour
+```csharp 标题：池化回调（IObjectPoolable：取出 / 归还自动复位）
+public class PooledObject : MonoBehaviour, IObjectPoolable
 {
-    // 引擎不会自动调用任何 OnSpawn / OnDespawn：
-    // 取出后的初始化由取出方显式调用，归还前的清理由归还方处理。
-    public void OnTaken()
+    // 挂在池化对象的**根节点**上：引擎在 Spawn 取出时调 OnSpawn、Despawn 禁用前调 OnDespawn。
+    public void OnSpawn()
     {
         // 重置状态
         gameObject.SetActive(true);
@@ -814,7 +816,7 @@ public class PooledObject : MonoBehaviour
         GetComponent<Collider>().enabled = true;
     }
     
-    public void OnReturned()
+    public void OnDespawn()
     {
         // 清理状态
         gameObject.SetActive(false);
@@ -826,8 +828,7 @@ public class PooledObject : MonoBehaviour
         // 碰撞后归还到对象池
         if (collision.gameObject.tag == "Wall")
         {
-            OnReturned();                       // 归还前先清理（引擎不会自动做）
-            Game.Pool.Despawn(gameObject);
+            Game.Pool.Despawn(gameObject);      // 禁用前引擎自动调 OnDespawn
         }
     }
 }
@@ -847,6 +848,25 @@ public class PooledObject : MonoBehaviour
 
 > 对象实现 `IReferencePoolable`（`OnAcquire` / `OnRelease`）时，取出 / 归还会**自动回调**复位；
 > 线程模型：**主线程专用**（内部加锁只为"误从后台线程归还"时不破坏栈结构）。
+
+## 输入（Game.Input）
+
+> 业务⛔ **不许**出现 `UnityEngine.Input` 的 `Input.GetKeyDown` / `Input.mousePosition` / `Input.GetAxis` —— 一律走 `Game.Input`，按键用引擎的 `GameKey`（自动适配旧 / 新输入后端）。完整用法见 [输入](../development/input.md)。
+
+| API | 参数 | 返回值 | 说明 | 使用场景 |
+|-----|------|--------|------|----------|
+| `Game.Input.GetKey(key)` / `GetKeyDown(key)` / `GetKeyUp(key)` | `GameKey` | `bool` | 按住 / 本帧按下 / 本帧抬起 | 键鼠读取 |
+| `Game.Input.GetMouseButton(0\|1\|2)` / `GetMouseButtonDown` / `GetMouseButtonUp` | `int` | `bool` | 鼠标键（0=左 1=右 2=中） | 点击 / 瞄准 |
+| `Game.Input.MousePosition` / `MouseDelta` | - | `Vector3` / `Vector2` | 鼠标坐标（左下角原点）/ 帧位移 | 指针 / 视角 |
+| `Game.Input.GetAxis(name, raw = false)` | `string, bool` | `float` | 轴（`"Horizontal"` / `"Vertical"` / `"Mouse ScrollWheel"`） | 移动 / 缩放 |
+| `Game.Input.GetBinding(slot)` / `GetBindingName(slot)` | `GameKey` | `GameKey` / `string` | 逻辑键**槽位**当前绑定的物理键 / 其枚举名（未改过键 = 槽位自身；已清除 ⇒ `None` / `"None"`，槽位传 `None` ⇒ 空串） | 显示 / 重绑 UI |
+| `Game.Input.TryRebind(slot, physicalKey)` | `GameKey, GameKey` | `bool` | 重绑并持久化到 `Setting`（键 `input.bind.<槽位名>`）；物理键传 `GameKey.None` = **清除绑定**；⛔ 轴不参与重绑 | 设置里的按键改键 |
+| `Game.Input.ResetBindings()` | - | `void` | 恢复全部默认绑定（内存 + 持久化一起） | 恢复默认 |
+| `Game.Input.Lock()` / `Unlock()` | - | `void` | 加锁 / 解锁（锁定时读取返回默认值；⛔ 引擎不会在 UI 打开时自动锁） | 过场 / 结算 |
+| `Game.Input.Available` / `BackendName` / `State` | - | `bool` / `string` / 快照 | 运行状态 / 后端名 / 每帧输入快照 | 排障 / 高层动作 |
+
+> 滚轮只有"**本帧**"语义：`GameKey.MouseScrollUp` / `MouseScrollDown` 的 `GetKey` / `GetKeyDown` = 本帧是否朝该方向滚动，`GetKeyUp` **恒 `false`**（无持续态）。
+> 需先 `CloverInput.Init()`（建 `EventSystem` / 选输入模块），且必须排在**构建 UI 之前**。
 
 ## 数据与通用件（配表 / 存档 / 随机 / 寻路 / 等距 / 日志降频）
 
@@ -895,6 +915,9 @@ public class PooledObject : MonoBehaviour
 | --- | --- | --- | --- | --- |
 | `AStar.Find(walkable, from, to, ...)` | `Func<Vector2Int,bool>, Vector2Int, Vector2Int` | `List<Vector2Int>` | **回调式**（零业务类型依赖）；不可达 / 入参非法 ⇒ `null` + 限频告警 | 随机地图寻路 |
 | `AStar.FindSmoothed` / `Smooth` / `HasLineOfSight` / `Describe` | - | - | 平滑路径 / **视线判定（仅 2D 格网）** / 文字诊断 | 2D 寻路 / 点击移动 |
+| `new AStarContext(initialCapacity = 0)` | `int` | `AStarContext` | **A\* 的可复用工作区**（非线程安全；场景："同一秒问很多次路"）—— 签名与静态 `AStar.*` 同形：`Find` / `CanReach` / `TryFind` / `TryFindSmoothed`；`TryFind*` **写调用方给的列表**（先 `Clear`），返回 `false` 时该列表保持空 | 每帧大量寻路 / 单位各持一个 |
+| `ctx.CanReach(walkable, from, to, maxNodes)` | `Func<Vector2Int,bool>, Vector2Int, Vector2Int, int` | `bool` | **只判连通性**：到达终点即 `true`，**不回溯路径、不写 cameFrom、不分配结果列表**（最快）；展开规则 / 代价 / 上限与 `Find` **同口径**（含对角要求两侧可走）⇒ 不会出现"Find 通而 CanReach 不通" | 只问到不到 / 该不该重寻路 |
+| `ctx.LastExpandedNodes` / `ctx.Reset()` | - | `int` / `void` | 上次展开节点数（诊断）/ 清空内部容器（**保留容量**；不清也行 —— 每次调用开头自己会 `Clear`） | 诊断 / 显式归还 |
 
 > ⚠️ **`AStar.HasLineOfSight` 不是 3D 视线判定**：它是 2D 格网上的 Bresenham + 可走回调（`AStar.cs`），只看"这条格线经过的格子是否可走"。它**没有**层高（`y`）、没有受体（角色/物体）过滤、也没有烟雾/遮挡物概念 ⇒ ⛔ **不能**用来做"怪物能不能看见玩家"。
 > 需要 3D 视线（视锥 + 物理射线 + 受体层）时，客户端引擎目前**没有**等价件（`Frustum` / `ViewCone` / `CanSee` / `Perception` 全仓 0 命中）；服务端的参考口径在 `collide.Grid3.Raycast` / `NavGrid3`，客户端侧要么自己实现、要么登记为引擎缺口。
@@ -1010,7 +1033,8 @@ public class PooledObject : MonoBehaviour
 | `Play(frames, fps, loop = true)` / `PlayOnce(frames, fps, onComplete = null)` | `Sprite[], float, ...` | `void` | **旧签名（语义逐字不变）**：`fps <= 0` / NaN / ±Inf ⇒ 按 **1 fps** + 限频 Warn；重播 / 换表**从第 0 帧重来**（累计时间归零）；空帧表 ⇒ 不播 + 限频 Warn | 简单的两态动画 |
 | `Play(frames, indices, fps, loop = true)` / `PlayOnce(frames, indices, fps, onComplete = null)` | `Sprite[], int[], float, ...` | `void` | **新重载**：`fps == 0` = **静止帧（停播，不是「1 fps 慢慢抖」）**；`indices` = **帧段子集**（可多区间 / 可乱序，顺序即播放顺序），`null` / 空 ⇒ 等价整表按序播（+ 限频 Warn 一次） | 一档动画的帧**不连续**（如 attack = 帧 182-230 ∪ 247-251） |
 | `PlayStill(frames, index = 0)` | `Sprite[], int` | `void` | 显示第 `index` 帧并**停住**（`fps = 0` 的等价直白入口，`Advance` 不再推进） | 原版 idle 就是单条静止姿态帧 |
-| `SwitchTo(frames, indices, fps, loop = true, force = false)` | `Sprite[], int[], float, bool, bool` | `bool` | **换档（带滞回）**：请求档 == 当前档（帧表 / 切片 / fps / loop 全同）⇒ **什么都不做**（⛔ 绝不从第 0 帧重播）；当前档「播一次且没播完」⇒ **扣住**并返回 `false`，除 `force = true`；其余 ⇒ 正常换（当帧即贴新档首帧） | 服务端瞬时的 `anim` 字段（挥砍只在一 tick 置 attack） |
+| `SwitchTo(frames, indices, fps, loop = true, force = false, replaySameClip = false)` | `Sprite[], int[], float, bool, bool, bool` | `bool` | **换档（带滞回）**：请求档 == 当前档（帧表 / 切片 / fps / loop 全同）⇒ **什么都不做**（⛔ 绝不从第 0 帧重播），**除非** `replaySameClip = true`（同档也从头重播，**仍**受下一条约束）；当前档「播一次且没播完」⇒ **扣住**并返回 `false`，除 `force = true`；其余 ⇒ 正常换（当帧即贴新档首帧）。要**无条件重播**（例如死亡必须立刻播）就传 `force: true` | 服务端瞬时的 `anim` 字段（挥砍只在一 tick 置 attack） |
+| `ReplayKeepPosition(frames, indices, fps, loop = true)` | `Sprite[], int[], float, bool` | `bool` | **换帧表 / 换切片但保持播放头**：档位内位置（`FrameIndex`）与「已播完」状态不变（⛔ 不像 `Play` / `SwitchTo` 那样回到第 0 帧）；**帧表与切片引用全同** ⇒ 返回 `false` 且**不动任何状态**（调用方每帧照单全收也不会重置播放） | 逐帧单位按朝向换视角 / 换一套同节奏的帧表 |
 | `static ExpandRuns(runs, frameCount, out error)` | `int[], int, out string` | `int[]` | 把 `[起始, 长度, …]` 的**段表**展开成下标集合（形状对齐配表里的 `Clip.Runs`）；**严格校验**（表为 null / 空、长度为奇数、某段长度 ≤ 0、某段越界 ⇒ 返回 `null` + `error` 给原因，⛔ **不做静默裁剪**） | 配表里的帧段表 |
 | `Advance(dt)` | `float` | `void` | **唯一的时间入口**（由业务 Tick 调）：`dt <= 0` ⇒ 不推进（`0` 是合法的「暂停帧」，负值按 0 + 限频 Warn）；单次推进超过 `MaxAdvanceSteps` 帧 ⇒ 丢弃剩余累计时间 + 限频 Warn（⛔ 不把一帧卡成死循环） | 业务 Tick |
 | `Stop()` / `SetFrame(index)` | `int` | `void` | 停止（**保留当前帧的画面**、未触发的完成回调作废）/ 直接定位到第 `index` 帧并立刻推给渲染器（越界**收敛** + 限频 Warn，**不改播放状态**；定位后累计时间归零） | 暂停 / 定帧调试 |
@@ -1425,7 +1449,9 @@ var log = loader.Source;     // "Resources/…" / "文件:…" / "默认值" / "
 | `Game.LanBrowser.Hosts` | - | `IReadOnlyList<LanHostInfo>` | 最近一轮只读快照（上限 64，同 gateway 去重） | 列表 UI |
 | `Game.LanBrowser.State` / `IsSupported` / `UnsupportedReason` | - | `LanBrowserState` / `bool` / `string` | 扫描状态 / 平台是否可用 / 不可用原因 | 禁用按钮 + 提示 |
 | `Game.LanBrowser.OnHostFound` / `OnScanFinished` | `Action<LanHostInfo>` / `Action` | - | 发现一台 / 一轮结束（主线程；等价事件 `Net.LanHostFound` / `Net.LanScanFinished`） | 增量刷列表 |
-| `CloverLan.CreateResponder()` | - | `ILanResponder` | 取应答端（**不经 `Game` 门面**，调用方负责 `Dispose()`） | 玩家当主机 |
+| `CloverLan.CreateResponder()` | - | `ILanResponder` | 取应答端（**不经 `Game` 门面**，调用方负责 `Dispose()`）；固定监听 UDP `47777`、只单播回查询来源 | 让"我开的主机"被扫到 |
+| `CloverLan.CreateHost()` | - | `ILanHost` | 取局域网**主机**（TCP 监听 → 逐连接 JOIN 握手 → 双向载荷透传；**不经 `Game` 门面**，调用方负责 `Dispose()`）；`Start(LanHostInfo)`（`Port = 0` = 系统分配实际监听端口；广播快照取 `host.Self`，⛔ 不用 `Start` 前那份） | 玩家开一局 LAN 对局 |
+| `CloverLan.CreateClient()` | - | `ILanClient` | 取局域网**客户端**（`ILanHost` 的对侧）：`Connect(LanHostInfo)`（**非阻塞**，成功 / 失败走 `OnConnected` / `OnClosed`）；与 `ILanBrowser` + `CloverNet.Init` 那条「连服务器游戏数据通道」的链是**两回事** | 加入一局 LAN 对局 |
 | `responder.Start(self, options)` | `LanHostInfo, LanRespondOptions` | `bool` | 开始应答（幂等；`self.Host` 留空 = 自动取本机 IPv4）；失败看 `LastError`，**不抛** | 开主机 |
 | `responder.Stop()` / `responder.Dispose()` | - | `void` | 停止 / 释放（都幂等） | 退出主机 |
 | `responder.QueryCount` / `ReplyCount` / `DroppedCount` / `ListeningPort` / `LastError` | - | `long` / `int` / `string` | 计数与状态（判据用：`QueryCount > 0` = 确实有人在找服） | 诊断面板 |
@@ -1468,16 +1494,22 @@ var log = loader.Source;     // "Resources/…" / "文件:…" / "默认值" / "
 > `false` = 迭代上限内仍有重叠（挤成一堆）或缓冲长度不够，**不抛异常**。确定性：不调 `UnityEngine.Random`、不读时钟，遍历顺序 = 数组下标序。
 > 推开结果须再由调用方的墙体判定钳一次（⛔ 别把人推进墙里）；不做寻路 / 不做碰撞检测 / 不做时间积分 / 不处理竖直分层。
 
-## 地图命名标记点（Game.Map）
+## 地图：命名标记点与地形高度场（Game.Map）
 
 | API | 参数 | 返回值 | 说明 | 使用场景 |
 |-----|------|--------|------|----------|
 | `Game.Map.Points` | - | `IReadOnlyList<MapPoint>` | **全部**标记点（顺序 = 文件顺序；文件无该段时是空列表） | 遍历全部锚点 |
 | `Game.Map.GetPoints(name)` | `string` | `IReadOnlyList<Vector3>` | 该名字下**全部**坐标（同名多点：一组出生点 / 一条路线）；名字**大小写敏感** | 出生点组 / 路线点 |
 | `Game.Map.TryGetPoint(name, out pos)` | `string, out Vector3` | `bool` | 取第 0 个；取不到 ⇒ `false` + `Vector3.zero` | 单点锚点 |
+| `Game.Map.HasHeightField` | - | `bool` | 文件是否有**地形高度场**段（`CloverMapFormat.FlagHeightField`，flags bit1） | 判高度场可用性 |
+| `Game.Map.SurfaceCountAt(x, z)` | `int, int` | `int` | 格 (x,z) 的**可站面**数量；越界 / 无该段 = `0` | 判"这一格站哪层" |
+| `Game.Map.TryGetSurfaceHeights(x, z, heightsOut)` | `int, int, List<float>` | `bool` | 该格全部可站面高度（米，**升序**）追加进 `heightsOut`；无面 / 越界 = `false` 且**清空**列表 | 台上 / 台下多面 |
+| `Game.Map.TryGetTopSurfaceHeight(x, z, out y)` | `int, int, out float` | `bool` | 该格**最高**可站面高度；无面 / 越界 = `false` 且 `y = 0` | 落点吸附到最高面 |
 
 > 标记点由导出端产（`MapBakeOptions.MarkerRootName` 指定根对象，「对象名 = 标记名、世界坐标 = 点位」）；
 > **旧 `.bytes` 不含该段（flags bit2）⇒ 必须用支持标记段的导出端重新烘焙**（见 [约束](./constraints.md) G14）。
+> **地形高度场**回答"该站哪一层"（台上 / 台下、箱顶 / 地面在同一格里有多张可站面）—— 可行走位图只回答"这一格能不能走"；
+> 旧产物无该段（flags bit1）⇒ `HasHeightField = false`，三个查询一律返回"无面"。
 
 ## UI 构件（UIFactory）
 

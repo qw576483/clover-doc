@@ -84,6 +84,10 @@ Game.Atlas.GetSprite("ui_common", "btn_ok", sp =>
 `Play(state, normalizedTime)`、`CrossFade(state, duration)`、`SetBool/SetFloat/SetInteger/SetTrigger`、
 `OnComplete(cb)`。
 
+完成回调带**待求值目标段**语义：`Play` / `CrossFade` 之后，被指定的那一段在**成为当前段之前不判完成** ——
+切换当帧 `GetCurrentAnimatorStateInfo(0)` 可能仍是上一段 / 上一轮读数，不确认就判完成会派发一次属于上一段的**陈旧回调**，
+且新段真正播完时回调不再触发；目标段迟迟未出现（超过 `0.5s`）⇒ 放弃等待、恢复常规判定并留一条 Warn。
+
 > 骨骼动画（Spine / DragonBones）不在引擎封装范围内：业务自行接入 SDK。
 > 动画事件同理，在业务侧挂 Unity `AnimationEvent` 接收脚本即可。
 
@@ -94,6 +98,8 @@ player.OnComplete(() => Game.Anim.Destroy(player));
 ```
 
 > 播放完成与播放进度由 `Game.Anim.Tick` 每帧驱动，业务不需要自己调。
+>
+> **帧动画**（`Sprite[]` → `SpriteRenderer`）不在这里：用 `Runtime/Presentation/SpriteFrameAnimator.cs`（业务自持实例、自己 Tick —— ⛔ 无 MonoBehaviour、无协程）。入口：`Play` / `PlayOnce` / `SwitchTo`（换档**滞回**：同档不重播、当前档"播一次未播完"则扣住）/ `ReplayKeepPosition`（换帧表 / 换切片但**保持播放头** —— 档位内位置与"已播完"状态不变，逐帧单位按朝向换视角）/ `SetFrame` / `Advance`。它**不加载任何资源**（帧表由调用方给，谁加载谁 Release），与 `IAnimPlayer` 是两套语义，⛔ 不合并。
 
 ## Sound（声音）
 

@@ -257,6 +257,18 @@ Game.UI.ShowGuide(buyButton.GetComponent<RectTransform>(), "点击这里购买",
 > 缺失时引擎会打一条明确的错误日志（否则表现为「面板能开但点不动」）。
 
 
+## 指针跟随浮层与拖放层（引擎通用件）
+
+这两件**不经 `Game` 门面**（业务自持实例，与 `DragGestureRouter` / `SortingLayers` 同一先例），都在 `Runtime/Presentation/`。
+
+| 件 | 入口 | 说明 |
+|----|------|------|
+| `PointerFloatLayer`（`PointerFloatLayer.cs`） | `Create(parent, name, canvas)` / `Acquire(...)`（走池）/ `Release()` / `SetSize` / `Show` / `Hide` / `Tick` / `ShowAnchored(target, offset)` | 跟随指针的浮层**容器**（不建任何 `Text` / `Image`，内容由调用方挂到 `Content`）。定位纯函数 `PointerFloatPlacement.Resolve(pointerLocal, size, canvasRect[, cursorOffset, edgeMargin[, pivot]])`；定位参数两属性：`CursorOffset`（默认 `(22, -18)`）/ `Pivot`（默认 `PointerFloatPivot.TopLeft`）—— `Pivot = Center` + `CursorOffset` 归零 = **跟手以指针为中心**；`Acquire` 复用时两者**复位默认**。贴边 = **关于指针镜像**翻到另一侧、最后夹进画布（⛔ 不摆到画布外） |
+| `DragDropLayer`（`DragDropLayer.cs`） | `new DragDropLayer(context, gridRect, grid)`（有格盘）**或** `new DragDropLayer(context)`（**拖影模式**：无 UI 网格、缺网格**不告警**） | 「取拖影 → 跟指针 → 屏幕点换算成格 → 高亮目标格 → 松手判落点」；只有**最后一步的业务规则**（哪些格可放 / 装备 vs 背包 / 堆叠 / 丢地面）由调用方给（`CanPlace` / `TargetChanged`）。拖影位置默认按拖影父矩形平面换算；落点在**世界空间平面**的项目注入 `GhostPositionOverride`（`Func<Vector2, Vector3>`：指针屏幕点 → 拖影**完整位置**） |
+
+> ⛔ `DragDropLayer` **不判"手势归谁"** —— 那是 `DragGestureRouter`（纯手势仲裁，不含坐标）；两者串起来才是"从滚动列表里把格子拖到目标槽"。
+> `PointerHoverRelay`（`MonoBehaviour, IPointerEnterHandler, IPointerExitHandler` → `OnEnter` / `OnExit` 两回调）与 `PointerFloatLayer` 同文件，负责悬停接线。
+
 ## 适配
 
 | 适配项 | 说明 |

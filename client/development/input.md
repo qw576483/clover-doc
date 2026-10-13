@@ -44,6 +44,8 @@ void Start()
 | 轴 | `Game.Input.GetAxis("Horizontal")` / `Game.Input.GetAxis("Vertical", raw: true)` |
 | 锁定/解锁输入 | `Game.Input.Lock()` / `Game.Input.Unlock()`（过场、结算弹窗） |
 | 运行状态 | `Game.Input.Available` / `Game.Input.BackendName` |
+| 滚轮 | `Game.Input.GetKey(GameKey.MouseScrollUp)` / `GameKey.MouseScrollDown`（**只有"本帧"语义**：本帧朝该方向滚过 ⇒ true；`GetKeyUp` **恒 false**，滚轮没有持续态） |
+| 键位重绑 | `Game.Input.GetBinding(slot)` / `GetBindingName(slot)` / `TryRebind(slot, physicalKey)` / `ResetBindings()` |
 
 ```csharp
 void Update()
@@ -57,6 +59,26 @@ void Update()
     if (Game.Input.GetMouseButtonDown(0)) Fire();
 }
 ```
+
+### 键位重绑
+
+绑定 = **逻辑键槽位 → 物理键**：业务只认槽位（如 `GameKey.Space` = 跳跃槽位），槽位实际读哪个物理键由绑定表决定。
+
+| API | 说明 |
+|-----|------|
+| `Game.Input.GetBinding(slot)` | 该槽位当前绑定的物理键（**没改过键 = 槽位自身**；已清除绑定 ⇒ `GameKey.None`） |
+| `Game.Input.GetBindingName(slot)` | 物理键的枚举成员名（如 `"W"` / `"Space"` / `"MouseScrollUp"`）；已清除绑定的槽位 ⇒ `"None"`，槽位传 `GameKey.None` ⇒ 空串 |
+| `Game.Input.TryRebind(slot, physicalKey)` | 把槽位重绑到物理键（写内存 + 持久化 + 立即生效）；物理键传 `GameKey.None` = **清除绑定**（该槽位之后恒 false）；槽位传 `None` ⇒ `false` + 留痕 |
+| `Game.Input.ResetBindings()` | 恢复全部默认绑定（清掉本实例已知槽位的重绑记录，内存 + 持久化一起） |
+
+```csharp
+Game.Input.TryRebind(GameKey.Space, GameKey.MouseRight);   // 跳跃改到右键
+var name = Game.Input.GetBindingName(GameKey.Space);       // "MouseRight"
+Game.Input.ResetBindings();                                // 全部恢复默认
+```
+
+> 持久化到 `Game.Setting`（键 `input.bind.<槽位名>`，值 = 物理键枚举名）；`Setting` 未挂载时**只写内存并留痕**（`TryRebind` 返回 `false`）。
+> **生效范围**：`GetKey` / `GetKeyDown` / `GetKeyUp` 与**高层动作的键盘来源**；⛔ **轴**（`Horizontal` / `Vertical` / `Mouse ScrollWheel`）**不参与**重绑。
 
 ### 高层动作（动作游戏）
 
@@ -76,7 +98,8 @@ Game.Input.OnMove(dir => Move(dir));
 所以同一份业务代码，在旧输入 / 新输入系统下都能跑。
 
 常用按键：`A`-`Z`、`Num0`-`Num9`、`LeftArrow` / `RightArrow` / `UpArrow` / `DownArrow`、
-`Space`、`Enter`、`Escape`、`LeftShift`、`LeftCtrl`、`F1`-`F12`、`MouseLeft` / `MouseRight` / `MouseMiddle`。
+`Space`、`Enter`、`Escape`、`LeftShift`、`LeftCtrl`、`F1`-`F12`、`MouseLeft` / `MouseRight` / `MouseMiddle`、
+`Quote` / `BackQuote`、滚轮 `MouseScrollUp` / `MouseScrollDown`（滚轮只有"本帧"语义，`GetKeyUp` 恒 false）。
 
 ## 输入后端机制
 
